@@ -1,0 +1,81 @@
+require "test_helper"
+
+class WorkspacesControllerTest < ActionDispatch::IntegrationTest
+  setup { @user = users(:one) }
+
+  test "index requires authentication" do
+    get root_path
+
+    assert_redirected_to new_session_path
+  end
+
+  test "index lists the signed-in user's workspaces" do
+    sign_in_as @user
+
+    get root_path
+
+    assert_response :success
+    assert_select "a", text: "Workspace One"
+    assert_select "a", text: "Workspace Two", count: 0
+  end
+
+  test "new requires authentication" do
+    get new_workspace_path
+
+    assert_redirected_to new_session_path
+  end
+
+  test "new renders the form" do
+    sign_in_as @user
+
+    get new_workspace_path
+
+    assert_response :success
+  end
+
+  test "create builds a workspace for the current user" do
+    sign_in_as @user
+
+    assert_difference -> { @user.workspaces.count }, 1 do
+      post workspaces_path, params: { workspace: { name: "New WS" } }
+    end
+
+    assert_redirected_to workspace_path(@user.workspaces.order(:created_at).last)
+  end
+
+  test "create renders errors on invalid input" do
+    sign_in_as @user
+
+    assert_no_difference -> { @user.workspaces.count } do
+      post workspaces_path, params: { workspace: { name: "" } }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "show requires authentication" do
+    get workspace_path(workspaces(:one))
+
+    assert_redirected_to new_session_path
+  end
+
+  test "show displays the workspace and its API tokens" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+    workspace.api_tokens.create!(token_digest: "digest", name: "Cursor")
+
+    get workspace_path(workspace)
+
+    assert_response :success
+    assert_select "h1", text: "Workspace One"
+    assert_select "td", text: "Cursor"
+  end
+
+  test "show does not expose another user's workspace" do
+    sign_in_as @user
+
+    get workspace_path(workspaces(:two))
+
+    assert_response :not_found
+  end
+end

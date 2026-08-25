@@ -1,0 +1,27 @@
+<div class="mx-auto md:w-3/4 w-full">
+  <% if flash[:notice] %>
+    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg" id="notice"><%= flash[:notice] %></p>
+  <% end %>
+
+  <% if flash[:alert] %>
+    <p class="py-2 px-3 bg-red-50 mb-5 text-red-500 font-medium rounded-lg" id="alert"><%= flash[:alert] %></p>
+  <% end %>
+
+  <h1 class="font-bold text-4xl">Workspaces</h1>
+
+  <div class="mt-6">
+    <%= link_to "New workspace", new_workspace_path, class: "text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium" %>
+  </div>
+
+  <% if @workspaces.any? %>
+    <ul class="mt-6">
+      <% @workspaces.each do |workspace| %>
+        <li class="py-3 border-b border-gray-200">
+          <%= link_to workspace.name.presence || "Unnamed workspace", workspace, class: "text-blue-600 hover:underline" %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-gray-500 mt-6">No workspaces yet.</p>
+  <% end %>
+</div>

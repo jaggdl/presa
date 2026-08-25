@@ -1,0 +1,27 @@
+<div class="mx-auto md:w-3/4 w-full">
+  <% if @workspace.errors.any? %>
+    <div class="py-2 px-3 bg-red-50 mb-5 rounded-lg">
+      <h2 class="text-red-500 font-medium"><%= pluralize(@workspace.errors.count, "error") %> prohibited this workspace from being saved:</h2>
+      <ul class="text-red-500 list-disc list-inside mt-2">
+        <% @workspace.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <p class="text-sm text-gray-500 mb-2">
+    <%= link_to "Workspaces", workspaces_path, class: "text-blue-600 hover:underline" %>
+  </p>
+  <h1 class="font-bold text-4xl">New workspace</h1>
+
+  <%= form_with model: @workspace, url: workspaces_path, class: "contents" do |form| %>
+    <div class="my-5">
+      <%= form.text_field :name, placeholder: "Workspace name", autofocus: true, class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+    </div>
+
+    <div class="inline">
+      <%= form.submit "Create workspace", class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+    </div>
+  <% end %>
+</div>

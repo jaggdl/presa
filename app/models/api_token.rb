@@ -1,13 +1,14 @@
 class ApiToken < ApplicationRecord
   TOKEN_PREFIX = "mcp_"
 
-  belongs_to :user
+  belongs_to :workspace
+  delegate :user, to: :workspace
 
   scope :active, -> { where(revoked_at: nil).where("expires_at IS NULL OR expires_at > ?", Time.current) }
 
-  def self.issue!(user:, name: nil, expires_at: nil)
+  def self.issue!(workspace:, name: nil, expires_at: nil)
     raw = "#{TOKEN_PREFIX}#{SecureRandom.base58(32)}"
-    create!(user: user, name: name, expires_at: expires_at, token_digest: digest(raw))
+    create!(workspace: workspace, name: name, expires_at: expires_at, token_digest: digest(raw))
     raw
   end
 

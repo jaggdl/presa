@@ -43,8 +43,7 @@ FastMcp.mount_in_rails(
 
       return [] unless user
 
-      # filter tools based on the user
-      tools.select { |t| user.can_use_tool?(t) }
+      tools
     end
   end
 end

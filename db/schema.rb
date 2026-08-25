@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_205009) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_214443) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -19,9 +19,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_205009) do
     t.datetime "revoked_at"
     t.string "token_digest", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.integer "workspace_id", null: false
     t.index ["token_digest"], name: "index_api_tokens_on_token_digest", unique: true
-    t.index ["user_id"], name: "index_api_tokens_on_user_id"
+    t.index ["workspace_id"], name: "index_api_tokens_on_workspace_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -41,6 +41,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_205009) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
-  add_foreign_key "api_tokens", "users"
+  create_table "workspaces", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_workspaces_on_user_id"
+  end
+
+  add_foreign_key "api_tokens", "workspaces"
   add_foreign_key "sessions", "users"
+  add_foreign_key "workspaces", "users"
 end

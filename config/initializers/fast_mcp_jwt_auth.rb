@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Authenticate MCP requests via opaque bearer tokens instead of JWTs.
-# Tokens are issued from the root page (ApiTokensController), stored as a
-# SHA-256 digest in api_tokens, and resolved back to their owning user.
-# See app/models/api_token.rb.
+# Tokens are issued per workspace and stored as a SHA-256 digest in api_tokens.
+# A token resolves to its owning workspace, which identifies the principal
+# (Current.workspace) and its owner (Current.user). See app/models/api_token.rb.
 
 FastMcpJwtAuth.configure do |config|
   config.enabled = true
@@ -14,11 +14,14 @@ FastMcpJwtAuth.configure do |config|
   # The decoder already verifies the token is active; just confirm it exists.
   config.token_validator = ->(token) { token.present? }
 
-  # Find the user that owns the token.
-  config.user_finder = ->(token) { token.user }
+  # The principal is the token's owning workspace, not the user directly.
+  config.user_finder = ->(token) { token.workspace }
 
-  # This app scopes context to a session; set a virtual one so Current.user works.
-  config.current_user_setter = ->(user) { Current.session = Session.new(user: user) }
+  # Set the current workspace; keep Current.user via the existing session pattern.
+  config.current_user_setter = ->(workspace) do
+    Current.workspace = workspace
+    Current.session = Session.new(user: workspace.user)
+  end
 
   # Reset current context after the request.
   config.current_resetter = -> { Current.reset }
