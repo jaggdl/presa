@@ -66,3 +66,5 @@ group :test do
 end
 
 gem "fast-mcp", "~> 1.6"
+
+gem "tailwindcss-rails", "~> 4.6"
