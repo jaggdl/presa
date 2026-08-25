@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require "net/http"
+require "faraday"
+require "json"
 
 module Services
   class Jellyfin < Service
@@ -11,17 +12,22 @@ module Services
 
     # Perform a GET against the server. `auth: false` skips the API key header.
     def get(path, headers: {}, auth: true)
-      uri = URI("#{config[:base_url]}#{path}")
-
-      request = Net::HTTP::Get.new(uri)
-      request["Accept"] = "application/json"
-      request["X-Emby-Token"] = config[:api_key] if auth
-      headers.each { |key, value| request[key] = value }
-
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") { |http| http.request(request) }
-      JSON.parse(response.body)
+      conn.get(path) do |req|
+        req.headers["X-Emby-Token"] = config[:api_key] if auth
+        headers.each { |key, value| req.headers[key] = value }
+      end.body
     rescue StandardError => e
       { error: e.message }
+    end
+
+    private
+
+    def conn
+      @conn ||= Faraday.new(url: config[:base_url]) do |faraday|
+        faraday.request :json
+        faraday.response :json, content_type: /\bjson$/
+        faraday.adapter Faraday.default_adapter
+      end
     end
   end
 end
