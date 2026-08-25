@@ -19,6 +19,42 @@
   </p>
   <h1 class="font-bold text-4xl"><%= @workspace.name.presence || "Unnamed workspace" %></h1>
 
+  <h2 class="font-bold text-2xl mt-10">Services</h2>
+
+  <% if @linked_services.any? %>
+    <table class="w-full text-left mt-4">
+      <thead>
+        <tr class="border-b border-gray-300 text-sm text-gray-500">
+          <th class="py-2">Name</th>
+          <th class="py-2">Kind</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @linked_services.each do |service| %>
+          <tr class="border-b border-gray-200">
+            <td class="py-2"><%= link_to service.name, service_path(service), class: "text-blue-600 hover:underline" %></td>
+            <td class="py-2"><%= service.kind %></td>
+            <td class="py-2 text-right">
+              <%= button_to "Remove", workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-red-600 underline hover:no-underline", form: { data: { turbo_confirm: "Remove this service from the workspace?" } } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="text-gray-500 mt-4">No services linked to this workspace.</p>
+  <% end %>
+
+  <% if @available_services.any? %>
+    <%= form_with url: workspace_workspace_services_path(@workspace), class: "contents mt-4" do |form| %>
+      <div class="my-4 flex items-center gap-3">
+        <%= form.select :service_id, @available_services.map { |s| ["#{s.name} (#{s.kind})", s.id] }, {}, class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2" %>
+        <%= form.submit "Add service", class: "text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-400 inline-block font-medium cursor-pointer" %>
+      </div>
+    <% end %>
+  <% end %>
+
   <h2 class="font-bold text-2xl mt-10">API tokens</h2>
 
   <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace), class: "contents" do |form| %>

@@ -19,6 +19,15 @@ class Service < ApplicationRecord
       config_kind || name.demodulize.chomp("Service").underscore
     end
 
+    # Concrete service subclasses available to instantiate (e.g. Services::Github).
+    def kinds
+      Service.descendants.filter_map { |klass| klass.kind if klass.config_fields.present? }
+    end
+
+    def class_for_kind(kind)
+      Service.descendants.find { |klass| klass.kind == kind }
+    end
+
     def config_field(name, required: false, secret: false, default: nil)
       self.config_fields = config_fields.merge(name.to_sym => { required: required, secret: secret, default: default })
     end
