@@ -1,0 +1,7 @@
+one_github_prod:
+  workspace: one
+  service: github_prod
+
+one_github_staging:
+  workspace: one
+  service: github_staging

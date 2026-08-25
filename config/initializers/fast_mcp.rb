@@ -38,12 +38,16 @@ FastMcp.mount_in_rails(
     # alternatively, you can register tools and resources manually:
     # server.register_tool(MyTool)
     # server.register_resource(MyResource)
-    server.filter_tools do |request, tools|
-      user = Current.user
+    server.filter_tools do |_request, tools|
+      next [] unless Current.workspace
 
-      return [] unless user
+      # Generic tools (no service_kind) are exposed to every workspace.
+      generic = tools.select { |tool| tool.service_kind.blank? }
 
-      tools
+      # One bound tool class per handler per service instance configured on the workspace.
+      bound = Current.workspace.services.flat_map { |service| ApplicationTool.expose_for(service) }
+
+      generic + bound
     end
   end
 end

@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_secure_password
   has_many :sessions, dependent: :destroy
   has_many :workspaces, dependent: :destroy
+  has_many :services, dependent: :destroy
 
   def can_use_tool?(_tool)
     true

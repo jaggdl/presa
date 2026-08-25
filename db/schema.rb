@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_214443) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_223020) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -22,6 +22,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_214443) do
     t.integer "workspace_id", null: false
     t.index ["token_digest"], name: "index_api_tokens_on_token_digest", unique: true
     t.index ["workspace_id"], name: "index_api_tokens_on_workspace_id"
+  end
+
+  create_table "services", force: :cascade do |t|
+    t.json "config"
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.string "type", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id", "type", "name"], name: "index_services_on_user_id_and_type_and_name", unique: true
+    t.index ["user_id"], name: "index_services_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -41,6 +52,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_214443) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  create_table "workspace_services", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "service_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["service_id"], name: "index_workspace_services_on_service_id"
+    t.index ["workspace_id", "service_id"], name: "index_workspace_services_on_workspace_id_and_service_id", unique: true
+  end
+
   create_table "workspaces", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
@@ -50,6 +70,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_214443) do
   end
 
   add_foreign_key "api_tokens", "workspaces"
+  add_foreign_key "services", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "workspace_services", "services"
+  add_foreign_key "workspace_services", "workspaces"
   add_foreign_key "workspaces", "users"
 end

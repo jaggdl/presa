@@ -16,6 +16,11 @@ module Presa
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Allow reading unencrypted data for encrypted columns. This lets test
+    # fixtures store plaintext and is intended for migration out of encrypted
+    # attributes over time. New writes are always encrypted.
+    config.active_record.encryption.support_unencrypted_data = true
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
