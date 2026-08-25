@@ -63,4 +63,9 @@ class ApplicationTool < ActionTool::Base
       klass
     end
   end
+
+  # The service instance this tool was bound to, resolved per call.
+  def service
+    @service ||= Service.find(self.class.service_id)
+  end
 end

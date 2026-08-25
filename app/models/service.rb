@@ -20,6 +20,8 @@ class Service < ApplicationRecord
     end
 
     # Concrete service subclasses available to instantiate (e.g. Services::Github).
+    # Subclasses are loaded at boot/reload via config/application.rb to_prepare,
+    # so this sees them all.
     def kinds
       Service.descendants.filter_map { |klass| klass.kind if klass.config_fields.present? }
     end

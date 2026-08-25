@@ -9,7 +9,7 @@
   </div>
 <% end %>
 
-<%= form_with model: service, url: (service.persisted? ? service_path(service) : services_path), class: "contents" do |form| %>
+<%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), class: "contents" do |form| %>
   <div class="my-5">
     <%= form.label :name, "Name", class: "block text-sm text-gray-600" %>
     <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
@@ -22,15 +22,17 @@
     </div>
   <% end %>
 
-  <% service.config_schema.each do |field, opts| %>
-    <div class="my-5">
-      <%= form.label "config[#{field}]", field.humanize, class: "block text-sm text-gray-600" %>
-      <% if opts[:secret] %>
-        <%= form.password_field "config[#{field}]", value: service.config[field], placeholder: opts[:secret] ? "••••••••" : "", class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
-      <% else %>
-        <%= form.text_field "config[#{field}]", value: service.config[field], class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
-      <% end %>
-    </div>
+  <%= form.fields_for :config do |cf| %>
+    <% service.config_schema.each do |field, opts| %>
+      <div class="my-5">
+        <%= cf.label field, field.humanize, class: "block text-sm text-gray-600" %>
+        <% if opts[:secret] %>
+          <%= cf.password_field field, value: service.config[field], placeholder: "••••••••", class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+        <% else %>
+          <%= cf.text_field field, value: service.config[field], class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+        <% end %>
+      </div>
+    <% end %>
   <% end %>
 
   <div class="inline">

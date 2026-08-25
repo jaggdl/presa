@@ -21,6 +21,12 @@ module Presa
     # attributes over time. New writes are always encrypted.
     config.active_record.encryption.support_unencrypted_data = true
 
+    # Zeitwerk autoloads service subclasses lazily, but Service.kinds needs them
+    # all loaded to enumerate the available kinds. Require them at boot/reload.
+    config.to_prepare do
+      Rails.root.glob("app/models/services/*.rb").each { |file| require file }
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

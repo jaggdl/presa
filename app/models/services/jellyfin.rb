@@ -3,19 +3,19 @@
 require "net/http"
 
 module Services
-  class Github < Service
-    kind :github
+  class Jellyfin < Service
+    kind :jellyfin
 
-    config_field :api_token, required: true, secret: true
-    config_field :base_url, default: "https://api.github.com"
+    config_field :api_key, required: true, secret: true
+    config_field :base_url, default: "http://localhost:8096"
 
-    # Perform a GET against the Github API.
-    def get(path, headers: {})
+    # Perform a GET against the server. `auth: false` skips the API key header.
+    def get(path, headers: {}, auth: true)
       uri = URI("#{config[:base_url]}#{path}")
 
       request = Net::HTTP::Get.new(uri)
-      request["Accept"] = "application/vnd.github+json"
-      request["Authorization"] = "Bearer #{config[:api_token]}"
+      request["Accept"] = "application/json"
+      request["X-Emby-Token"] = config[:api_key] if auth
       headers.each { |key, value| request[key] = value }
 
       response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") { |http| http.request(request) }
