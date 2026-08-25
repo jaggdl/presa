@@ -1,0 +1,83 @@
+<div class="mx-auto md:w-3/4 w-full">
+  <% if token = flash[:token] %>
+    <p class="py-2 px-3 bg-yellow-50 mb-3 text-yellow-700 font-medium rounded-lg" id="created-token-label">
+      API token created. Copy it now — it won't be shown again:
+    </p>
+    <pre class="py-2 px-3 bg-gray-100 rounded-lg mb-5 overflow-x-auto select-all" id="created-token"><%= token %></pre>
+  <% end %>
+
+  <% if notice = flash[:notice] %>
+    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg" id="notice"><%= notice %></p>
+  <% end %>
+
+  <% if alert = flash[:alert] %>
+    <p class="py-2 px-3 bg-red-50 mb-5 text-red-500 font-medium rounded-lg" id="alert"><%= alert %></p>
+  <% end %>
+
+  <h1 class="font-bold text-4xl">API tokens</h1>
+
+  <%= form_with model: @api_token, url: api_tokens_path, class: "contents" do |form| %>
+    <div class="my-5">
+      <%= form.text_field :name, placeholder: "Token name (e.g. Cursor)", class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+    </div>
+
+    <div class="inline">
+      <%= form.submit "Create token", class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+    </div>
+  <% end %>
+
+  <div class="mt-10">
+    <% if @api_tokens.any? %>
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b border-gray-300 text-sm text-gray-500">
+            <th class="py-2">Name</th>
+            <th class="py-2">Created</th>
+            <th class="py-2">Last used</th>
+            <th class="py-2">Expires</th>
+            <th class="py-2">Status</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @api_tokens.each do |api_token| %>
+            <tr class="border-b border-gray-200">
+              <td class="py-2"><%= api_token.name.presence || "–" %></td>
+              <td class="py-2"><%= api_token.created_at && api_token.created_at.strftime("%b %d, %Y") %></td>
+              <td class="py-2">
+                <% if api_token.last_used_at %>
+                  <%= api_token.last_used_at.strftime("%b %d, %Y %H:%M") %>
+                <% else %>
+                  <span class="text-gray-400">never</span>
+                <% end %>
+              </td>
+              <td class="py-2">
+                <% if api_token.expires_at %>
+                  <%= api_token.expires_at.strftime("%b %d, %Y") %>
+                <% else %>
+                  <span class="text-gray-400">never</span>
+                <% end %>
+              </td>
+              <td class="py-2">
+                <% if api_token.revoked? %>
+                  <span class="text-red-500">Revoked</span>
+                <% elsif api_token.expired? %>
+                  <span class="text-yellow-600">Expired</span>
+                <% else %>
+                  <span class="text-green-500">Active</span>
+                <% end %>
+              </td>
+              <td class="py-2 text-right">
+                <% if api_token.active? %>
+                  <%= button_to "Revoke", api_token_path(api_token), method: :delete, class: "text-red-600 underline hover:no-underline", form: { data: { turbo_confirm: "Revoke this token?" } } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="text-gray-500">No API tokens yet.</p>
+    <% end %>
+  </div>
+</div>

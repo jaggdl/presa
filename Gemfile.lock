@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/jchsoft/fast_mcp_jwt_auth.git
+  revision: 2726fa63da0cbe15cccf307c143a1ee78ca6c453
+  specs:
+    fast_mcp_jwt_auth (0.2.0)
+      rails (>= 7.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -440,6 +447,7 @@ DEPENDENCIES
   capybara
   debug
   fast-mcp (~> 1.6)
+  fast_mcp_jwt_auth!
   image_processing (~> 1.2)
   importmap-rails
   jbuilder
@@ -504,6 +512,7 @@ CHECKSUMS
   erubi (1.13.1) sha256=a082103b0885dbc5ecf1172fede897f9ebdb745a4b97a5e8dc63953db1ee4ad9
   et-orbi (1.4.1) sha256=007e2685b1d873415a7587ef889336c6dcdf8a47fc9c9a63547582b21660a11b
   fast-mcp (1.6.0) sha256=d68abb45d2daab9e7ae2934417460e4bf9ac87493c585dc5bb626f1afb7d12c4
+  fast_mcp_jwt_auth (0.2.0)
   ffi (1.17.4-aarch64-linux-gnu) sha256=b208f06f91ffd8f5e1193da3cae3d2ccfc27fc36fba577baf698d26d91c080df
   ffi (1.17.4-aarch64-linux-musl) sha256=9286b7a615f2676245283aef0a0a3b475ae3aae2bb5448baace630bb77b91f39
   ffi (1.17.4-arm-linux-gnu) sha256=d6dbddf7cb77bf955411af5f187a65b8cd378cb003c15c05697f5feee1cb1564

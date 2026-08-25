@@ -38,5 +38,13 @@ FastMcp.mount_in_rails(
     # alternatively, you can register tools and resources manually:
     # server.register_tool(MyTool)
     # server.register_resource(MyResource)
+    server.filter_tools do |request, tools|
+      user = Current.user
+
+      return [] unless user
+
+      # filter tools based on the user
+      tools.select { |t| user.can_use_tool?(t) }
+    end
   end
 end
