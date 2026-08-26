@@ -1,0 +1,2 @@
+<p class="text-xs text-zinc-400 mb-2">Add to <code class="text-zinc-300">~/.codex/config.toml</code>:</p>
+<pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all"><%= "features\nexperimental_use_rmcp_client = true\n\n[mcp_servers.#{client_name}]\nurl = \"#{base_url}/mcp/sse\"\nhttp_headers = { \"authorization\" = \"Bearer #{raw_token}\" }" %></pre>

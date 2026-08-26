@@ -1,0 +1,16 @@
+<%= turbo_stream.remove "clients-empty" if @had_no_clients %>
+
+<%= turbo_stream.prepend "clients-table-body" do %>
+  <%= render "workspaces/client_row", api_token: @api_token, workspace: @workspace %>
+<% end %>
+
+<%= turbo_stream.update "client_form" do %>
+  <div id="client_form" class="rounded-md border border-yellow-700 bg-yellow-950 p-3 mb-4">
+    <p class="text-sm text-yellow-300 font-medium mb-2">Client created — copy the token now, it won't be shown again:</p>
+    <pre class="text-xs text-yellow-100 overflow-x-auto select-all whitespace-pre-wrap break-all"><%= @raw_token %></pre>
+  </div>
+<% end %>
+
+<%= turbo_stream.update "client-modal-result" do %>
+  <%= render "client_instructions", raw_token: @raw_token, base_url: base_url, client_name: @workspace.name.to_s.strip.downcase.presence || "workspace" %>
+<% end %>

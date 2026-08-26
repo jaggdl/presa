@@ -1,0 +1,31 @@
+<div data-controller="tabs">
+  <h4 class="font-bold text-sm mb-2">Connect an MCP client</h4>
+
+  <div class="flex flex-wrap gap-1 mb-3">
+    <% [
+      ["claude", "Claude Desktop"],
+      ["code", "Claude Code"],
+      ["cursor", "Cursor"],
+      ["codex", "Codex CLI"]
+    ].each_with_index do |(key, label), index| %>
+      <button type="button"
+              data-action="tabs#select"
+              data-tabs-target="tab"
+              data-tabs-label="<%= key %>"
+              class="px-2.5 py-1 rounded-md border text-xs <%= index == 0 ? "border-blue-500 text-white bg-blue-500/20" : "border-zinc-700 text-zinc-400 hover:text-zinc-200" %>"><%= label %></button>
+    <% end %>
+  </div>
+
+  <div>
+    <% {
+      "claude" => render("api_tokens/client_instructions/claude", raw_token: raw_token, base_url: base_url, client_name: client_name),
+      "code" => render("api_tokens/client_instructions/code", raw_token: raw_token, base_url: base_url, client_name: client_name),
+      "cursor" => render("api_tokens/client_instructions/cursor", raw_token: raw_token, base_url: base_url, client_name: client_name),
+      "codex" => render("api_tokens/client_instructions/codex", raw_token: raw_token, base_url: base_url, client_name: client_name)
+    }.each_with_index do |(key, content), index| %>
+      <div data-tabs-target="panel" data-tabs-panel="<%= key %>" class="<%= index == 0 ? "" : "hidden" %>">
+        <%= content %>
+      </div>
+    <% end %>
+  </div>
+</div>

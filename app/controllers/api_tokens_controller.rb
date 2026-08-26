@@ -1,8 +1,13 @@
 class ApiTokensController < ApplicationController
   def create
-    raw_token = ApiToken.issue!(workspace: workspace, name: api_token_params[:name].presence)
+    @had_no_clients = workspace.api_tokens.none?
+    @raw_token = ApiToken.issue!(workspace: workspace, name: api_token_params[:name].presence)
+    @api_token = workspace.api_tokens.find_by(token_digest: ApiToken.digest(@raw_token))
 
-    redirect_to workspace_path(workspace), flash: { token: raw_token }, notice: "API token created. Copy it now — it won't be shown again."
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to workspace_path(workspace), flash: { token: @raw_token }, notice: "API token created. Copy it now — it won't be shown again." }
+    end
   end
 
   def destroy

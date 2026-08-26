@@ -1,0 +1,2 @@
+<p class="text-xs text-zinc-400 mb-2">Add to <code class="text-zinc-300">.cursor/mcp.json</code>:</p>
+<pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all"><%= JSON.pretty_generate({ "mcpServers" => { client_name => { type: "streamable-http", url: "#{base_url}/mcp/sse", headers: { "Authorization" => "Bearer #{raw_token}" } } } }) %></pre>

@@ -47,75 +47,58 @@
 
   <p class="text-sm text-zinc-500 mt-1">Each client connects with its own API token to use this workspace's tools.</p>
 
-  <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace), class: "contents mt-4" do |form| %>
-    <div class="my-5 flex items-center gap-3">
-      <%= form.text_field :name, placeholder: "Client name (e.g. Cursor)", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-900" %>
-      <%= form.submit "Connect client", class: "text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
-    </div>
-  <% end %>
+  <div data-controller="clients" data-clients-show-revoked-value="false" class="group">
+    <div class="flex items-center justify-between mt-3">
+      <% if @api_tokens.any? %>
+        <button type="button" data-action="clients#toggle" title="Toggle revoked clients" class="text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5" aria-label="Toggle revoked clients">
+          <span class="inline group-data-[clients-show-revoked-value=true]:hidden"><%= icon "eye", class: "size-5" %></span>
+          <span class="hidden group-data-[clients-show-revoked-value=true]:block"><%= icon "eye-off", class: "size-5" %></span>
+          <span class="text-sm">revoked</span>
+        </button>
+      <% else %>
+        <span></span>
+      <% end %>
 
-<% if @api_tokens.any? %>
-    <div data-controller="clients" data-clients-show-revoked-value="false" class="group">
-      <button type="button" data-action="clients#toggle" title="Toggle revoked clients" class="mt-2 text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5" aria-label="Toggle revoked clients">
-        <span class="inline group-data-[clients-show-revoked-value=true]:hidden"><%= icon "eye", class: "size-5" %></span>
-        <span class="hidden group-data-[clients-show-revoked-value=true]:block"><%= icon "eye-off", class: "size-5" %></span>
-        <span class="text-sm">revoked</span>
-      </button>
-      <table class="w-full text-left mt-2">
-        <tbody>
-          <% @api_tokens.each do |api_token| %>
-            <tr class="border-b border-zinc-800 <%= api_token.revoked? ? "hidden group-data-[clients-show-revoked-value=true]:table-row" : "" %>">
-              <td class="py-2">
-                <div class="flex items-center gap-3">
-                <%= icon "monitor", class: "size-5 text-zinc-500" %>
-                <span class="font-medium"><%= api_token.name.presence || "Unnamed client" %></span>
-                <span class="inline-flex items-center gap-1.5 text-xs">
-                  <% if api_token.revoked? %>
-                    <span class="inline-block size-2 rounded-full bg-red-500"></span>
-                    <span class="text-red-500">Revoked</span>
-                  <% elsif api_token.expired? %>
-                    <span class="inline-block size-2 rounded-full bg-yellow-400"></span>
-                    <span class="text-yellow-400">Expired</span>
-                  <% else %>
-                    <span class="inline-block size-2 rounded-full bg-green-400"></span>
-                    <span class="text-green-400">Active</span>
-                  <% end %>
-                </span>
-                <span class="text-xs text-zinc-500"><%= pluralize(api_token.invocation_count, "invocation") %> in 24h</span>
-              </div>
-            </td>
-            <td class="py-2 text-xs text-zinc-500">
-              <% if api_token.last_used_at %>
-                Last used <%= time_ago_in_words(api_token.last_used_at) %> ago
-              <% else %>
-                Never used
-              <% end %>
-            </td>
-            <td class="py-2 text-right text-xs text-zinc-500">
-              <div class="flex items-center justify-end gap-2">
-                <% if api_token.last_used_at || api_token.expires_at || api_token.created_at %>
-                  <span>
-                    <%= api_token.created_at ? "created #{api_token.created_at.strftime("%b %d, %Y")}" : "" %>
-                    <% if api_token.expires_at %>
-                      · expires <%= api_token.expires_at.strftime("%b %d, %Y") %>
-                    <% end %>
-                  </span>
-                <% end %>
-                <% if api_token.active? %>
-                  <%= button_to workspace_api_token_path(@workspace, api_token), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Revoke this token?" } }, "aria-label": "Revoke token" do %>
-                    <%= icon "trash", class: "size-4" %>
-                  <% end %>
-                <% end %>
-              </div>
-            </td>
+      <button type="button" data-action="clients#open" class="text-center rounded-md px-2.5 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 inline-block font-medium cursor-pointer">Connect client</button>
+    </div>
+
+    <table class="w-full text-left mt-2">
+      <tbody id="clients-table-body">
+        <% if @api_tokens.any? %>
+          <%= render partial: "client_row", collection: @api_tokens, as: :api_token, locals: { workspace: @workspace } %>
+        <% else %>
+          <tr id="clients-empty">
+            <td class="py-4 text-zinc-500">No clients connected yet.</td>
           </tr>
         <% end %>
       </tbody>
     </table>
-    </div>
-  <% else %>
-    <p class="text-zinc-500 mt-4">No clients connected yet.</p>
-  <% end %>
+
+    <dialog data-clients-target="dialog"
+            data-action="click->clients#backdrop"
+            class="m-auto p-0 rounded-lg bg-transparent border-0 backdrop:bg-black/60 data-[open]:backdrop:bg-black/60 open:backdrop:bg-black/60">
+      <div class="p-6 rounded-lg bg-zinc-900 text-zinc-100 border border-zinc-700 w-96">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-xl">Connect a client</h3>
+          <button type="button" data-action="clients#close" class="text-zinc-400 hover:text-zinc-200 transition" aria-label="Close">
+            <%= icon "x", class: "size-5" %>
+          </button>
+        </div>
+
+        <div id="client_form">
+          <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace) do |form| %>
+            <div class="mb-4">
+              <%= form.label :name, "Client name", class: "block text-sm text-zinc-400 mb-1" %>
+              <%= form.text_field :name, placeholder: "e.g. Cursor", id: "client_modal_name", class: "block w-full shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-800" %>
+            </div>
+            <%= form.submit "Create client", id: "client_modal_submit", class: "w-full text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+          <% end %>
+        </div>
+
+        <div id="client-modal-result" class="mt-4"></div>
+      </div>
+    </dialog>
+  </div>
 
   <h2 class="font-bold text-2xl mt-10">Tool invocations</h2>
 

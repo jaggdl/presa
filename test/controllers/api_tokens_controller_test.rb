@@ -23,6 +23,22 @@ class ApiTokensControllerTest < ActionDispatch::IntegrationTest
     assert_match(/\Amcp_[A-Za-z0-9]{32}\z/, flash[:token])
   end
 
+  test "create responds with a turbo stream appending the client and showing the token" do
+    sign_in_as @user
+
+    post workspace_api_tokens_path(@workspace),
+         params: { api_token: { name: "Cursor" } },
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_match(/turbo-stream action="prepend"/, response.body)
+    assert_match(/target="client_form"/, response.body)
+    assert_match(/data-controller="tabs"/, response.body)
+    assert_match(/claude_desktop_config/, response.body)
+    assert_match(/supergateway/, response.body)
+    assert_match(/\Amcp_[A-Za-z0-9]{32}\z/, response.body.match(/select-all[^>]*>(.*?)<\/pre>/m)[1])
+  end
+
   test "create does not issue into another user's workspace" do
     sign_in_as @user
     other_workspace = workspaces(:two)
