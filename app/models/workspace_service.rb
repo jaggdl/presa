@@ -29,6 +29,17 @@ class WorkspaceService < ApplicationRecord
     all_tools_allowed? || allowed_tools.include?(tool_key.to_s)
   end
 
+  # Number of the service's exposed tools that this workspace may use. `["*"]`
+  # counts every exposed tool.
+  def enabled_tool_count(tools)
+    if all_tools_allowed?
+      tools.count
+    else
+      allowed = allowed_tools
+      tools.count { |tool| allowed.include?(tool.tool_key) }
+    end
+  end
+
   private
 
   def service_belongs_to_same_user

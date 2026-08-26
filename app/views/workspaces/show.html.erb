@@ -16,10 +16,12 @@
                 <%= service_icon(service, size: "h-5 w-5") %>
                 <% if join = @ws_links[service.id] %>
                   <%= link_to service.name, workspace_workspace_service_path(@workspace, join), class: "text-blue-500 hover:underline" %>
+                  <span class="text-zinc-500"><%= service.kind %></span>
+                  <%= render "shared/tool_count_badge", title: "Enabled tools", count: join.enabled_tool_count(ApplicationTool.expose_for(join.service)), label: "enabled" %>
                 <% else %>
                   <span class="text-zinc-100"><%= service.name %></span>
+                  <span class="text-zinc-500"><%= service.kind %></span>
                 <% end %>
-                <span class="text-zinc-500"><%= service.kind %></span>
               </div>
             </td>
             <td class="py-2 text-right">

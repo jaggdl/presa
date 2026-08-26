@@ -22,6 +22,7 @@
                 <%= service_icon(service, size: "h-5 w-5") %>
                 <%= link_to service.name, service_path(service), class: "text-blue-500 hover:underline" %>
                 <span class="text-zinc-500"><%= service.kind %></span>
+                <%= render "shared/tool_count_badge", title: "Available tools", count: ApplicationTool.expose_for(service).count, label: "available" %>
               </div>
             </td>
             <td class="py-2 text-right">
