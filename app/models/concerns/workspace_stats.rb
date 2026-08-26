@@ -6,9 +6,10 @@
 module WorkspaceStats
   extend ActiveSupport::Concern
 
-  # Number of API tokens (clients) linked to this workspace.
+  # Number of active (non-revoked, non-expired) API tokens (clients) linked to
+  # this workspace.
   def api_token_count
-    api_tokens.size
+    api_tokens.active.size
   end
 
   # Number of tool invocations recorded for this workspace since `since`.
