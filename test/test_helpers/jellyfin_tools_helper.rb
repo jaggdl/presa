@@ -7,14 +7,20 @@
 module JellyfinToolTestHelper
   # Captures the path passed to `get` so tests can assert the endpoint.
   class FakeService
+    # Responds to the `/Users` lookup used by `resolve_user_id` so the bound
+    # tool always resolves a concrete user id in tests. Override via `users:`.
     attr_reader :paths
 
-    def initialize
+    def initialize(users: nil)
       @paths = []
+      @users = users || [ { "Id" => "user-1" } ]
     end
 
     def get(path)
       @paths << path
+      return @users if path.to_s == "/Users"
+
+      nil
     end
 
     # The path from the last `get` call — the tool's actual media request (not

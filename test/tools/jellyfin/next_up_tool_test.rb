@@ -10,12 +10,13 @@ class JellyfinNextUpToolTest < ActiveSupport::TestCase
     assert_includes kinds, "next_up"
   end
 
-  test "hits the shows next-up endpoint" do
+  test "hits the shows next-up endpoint with a resolved user id" do
     tool, fake = expose_jellyfin_tool("next_up")
     tool.call(limit: 5)
 
     path = fake.last_path
     assert_includes path, "/Shows/NextUp?"
+    assert_includes path, "userId=user-1"
     assert_includes path, "limit=5"
   end
 

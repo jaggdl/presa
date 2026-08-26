@@ -15,7 +15,7 @@ module Tools
 
       def call(user_id: nil, series_id: nil, limit: nil)
         user_id = resolve_user_id(user_id)
-        params = {}
+        params = { userId: user_id }
         params[:seriesId] = series_id if series_id.present?
         params[:limit] = limit if limit.present?
 
