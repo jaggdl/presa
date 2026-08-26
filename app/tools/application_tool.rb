@@ -122,6 +122,26 @@ class ApplicationTool < ActionTool::Base
     @service ||= Service.find_by(id: self.class.service_id)
   end
 
+  # Friendly input parameters [{name, type, required, description}] derived
+  # from the tool's declared input schema.
+  def self.input_parameters
+    schema = (input_schema_to_json || {}).with_indifferent_access
+    properties = (schema[:properties] || {}).with_indifferent_access
+    required = Array(schema[:required]).map(&:to_s)
+
+    properties.map do |name, meta|
+      meta = meta.with_indifferent_access
+      type = meta[:type] || (meta[:anyOf].is_a?(Array) && meta[:anyOf].map { |o| o[:type] }.compact.uniq.join(" | "))
+      type = "array[#{Array(meta.dig(:items, :type)).first}]" if meta[:items].is_a?(Hash) && meta[:items][:type]
+      {
+        name: name,
+        type: type || "any",
+        required: required.include?(name.to_s),
+        description: meta[:description]
+      }
+    end
+  end
+
   def elapsed_ms(started_at)
     ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1_000).round
   end

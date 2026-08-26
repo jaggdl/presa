@@ -46,6 +46,22 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Prod"
   end
 
+  test "show lists the service's available tools" do
+    get service_path(services(:github_prod))
+    assert_response :success
+    assert_select "h2", text: "Tools"
+    assert_select "code", text: "list_issues_github_prod"
+    assert_select "code", text: "repo"
+  end
+
+  test "show renders no-argument tools without error" do
+    jellyfin = @user.services.create!(name: "Jellyfin", type: "Services::Jellyfin", config: { api_key: "key", base_url: "https://jellyfin.local" })
+    get service_path(jellyfin)
+    assert_response :success
+    assert_select "code", text: "get_system_info_jellyfin_jellyfin"
+    assert_select "p", text: "Accepts no arguments."
+  end
+
   test "edit and update a service" do
     service = services(:github_prod)
 

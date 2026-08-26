@@ -21,6 +21,7 @@ class ServicesController < ApplicationController
   end
 
   def show
+    @tools = ApplicationTool.expose_for(@service)
   end
 
   def edit
