@@ -2,6 +2,8 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 require_relative "test_helpers/session_test_helper"
+require_relative "test_helpers/jellyfin_tools_helper"
+require_relative "test_helpers/github_tools_helper"
 
 module ActiveSupport
   class TestCase

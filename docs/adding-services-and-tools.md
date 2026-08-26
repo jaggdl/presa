@@ -118,6 +118,30 @@ This reads config at call time, so editing a service's credentials takes effect 
 
 Exposed MCP tool names are built as `<service_kind>_<kind>`, service kind first so every tool a service exposes clusters under one prefix. For a GitHub service, a tool `kind :list_issues` becomes `github_list_issues`. The service name is only appended when the workspace has more than one service of that kind — two GitHub services named "Prod" / "Staging" produce `github_list_issues_prod` and `github_list_issues_staging` — keeping names short (and token-efficient) by default while still avoiding collisions.
 
+## Testing tools
+
+Tool tests live in **one file per tool**, mirroring the `app/tools/<kind>/` layout under `test/tools/<kind>/`. A tool `app/tools/jellyfin/get_item_details_tool.rb` gets its own `test/tools/jellyfin/get_item_details_tool_test.rb`.
+
+Why per-file rather than one shared `jellyfin_tools_test.rb`: new tools are often contributed in parallel (e.g. by subagents or teammates), and a single shared file makes concurrent edits collide (duplicate `end`s, misplaced tests). Splitting lets each tool's test be added, reviewed, and edited independently.
+
+Shared helpers for a tool family go in `test/test_helpers/` and are required once from `test/test_helper.rb`:
+
+```ruby
+# in a tool test
+include JellyfinToolTestHelper
+
+test "hits the season endpoint" do
+  tool, fake = expose_jellyfin_tool("get_seasons")   # binds to the :jellyfin fixture, injects fake service
+  tool.call(series_id: "abc123")
+
+  assert_includes fake.last_path, "/Shows/abc123/Seasons?"   # last_path = the tool's real request, not the internal user lookup
+end
+```
+
+Each per-tool test asserts:
+1. The tool kind is exposed: `assert_includes ApplicationTool.expose_for(services(:jellyfin)).map(&:kind), "get_seasons"`.
+2. `call` requests the expected endpoint/query via the captured fake path (no network).
+
 ## Wiring / refresh
 
 Tool exposure is driven by `config/initializers/fast_mcp.rb`:
