@@ -11,6 +11,7 @@ module Services
   # and re-exposes the tools that server advertises.
   class Mcp < Service
     kind :mcp
+    icon "mcp.png"
 
     config_field :url, required: true
     config_field :headers, default: "{}"

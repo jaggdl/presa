@@ -7,6 +7,8 @@ class Service < ApplicationRecord
 
   class_attribute :config_kind, default: nil
   class_attribute :config_fields, default: {}
+  class_attribute :config_icon, default: nil
+  class_attribute :config_icon_invert, default: false
 
   validates :name, presence: true, uniqueness: { scope: %i[user_id type] }
 
@@ -17,6 +19,19 @@ class Service < ApplicationRecord
     def kind(value = nil)
       self.config_kind = value.to_s if value
       config_kind || name.demodulize.chomp("Service").underscore
+    end
+
+    # Declares the brand image for this service kind (filename under
+    # app/assets/images, e.g. "github.png").
+    def icon(value = nil)
+      self.config_icon = value.to_s if value
+      config_icon
+    end
+
+    # Declares whether this kind's image needs CSS inversion to read as
+    # light-on-dark (e.g. a black logo on a dark theme).
+    def invert_icon(value = true)
+      self.config_icon_invert = value
     end
 
     # Concrete service subclasses available to instantiate (e.g. Services::Github).
@@ -37,6 +52,17 @@ class Service < ApplicationRecord
 
   def kind
     self.class.kind
+  end
+
+  # The brand image filename for this service, or the generic placeholder when
+  # the kind has not declared an icon.
+  def icon
+    self.class.config_icon.presence || "placeholder.png"
+  end
+
+  # Whether the icon must be inverted to read on a dark background.
+  def invert_icon?
+    self.class.config_icon_invert
   end
 
   def config

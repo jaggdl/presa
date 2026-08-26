@@ -6,6 +6,7 @@ require "json"
 module Services
   class Jellyfin < Service
     kind :jellyfin
+    icon "jellyfin.png"
 
     config_field :api_key, required: true, secret: true
     config_field :base_url, default: "http://localhost:8096"
