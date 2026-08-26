@@ -91,4 +91,38 @@ class ApplicationTool < ActionTool::Base
   def service
     @service ||= Service.find(self.class.service_id)
   end
+
+  # Wrap the framework's actual execution in our invocation logging. We hook
+  # here (rather than the subclass `call`) so success/error/status and timing
+  # are captured for every tool, bound to the current API token's workspace.
+  def call_with_schema_validation!(**args)
+    started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    result, meta = super
+    record_invocation(args: args, result: result, status: "success", duration_ms: elapsed_ms(started_at))
+    [result, meta]
+  rescue StandardError => e
+    record_invocation(args: args, result: nil, status: "error", error_message: e.message, duration_ms: elapsed_ms(started_at))
+    raise
+  end
+
+  private
+
+  def record_invocation(args:, result:, status:, error_message: nil, duration_ms: nil)
+    ToolInvocation.record!(
+      api_token: Current.api_token,
+      service: service,
+      tool_name: self.class.tool_name,
+      arguments: args,
+      status: status,
+      error_message: error_message,
+      duration_ms: duration_ms,
+      response: result
+    )
+  rescue StandardError => e
+    Rails.logger.error("Tool invocation logging failed: #{e.message}")
+  end
+
+  def elapsed_ms(started_at)
+    ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1_000).round
+  end
 end

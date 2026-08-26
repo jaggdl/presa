@@ -40,6 +40,45 @@
     <% end %>
   <% end %>
 
+  <h2 class="font-bold text-2xl mt-10">Tool invocations</h2>
+
+  <% if @tool_invocations.any? %>
+    <table class="w-full text-left mt-4">
+      <thead>
+        <tr class="border-b border-zinc-800 text-sm text-zinc-500">
+          <th class="py-2">Time</th>
+          <th class="py-2">Tool</th>
+          <th class="py-2">Service</th>
+          <th class="py-2">Token</th>
+          <th class="py-2">Status</th>
+          <th class="py-2">Duration</th>
+          <th class="py-2">Arguments</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @tool_invocations.each do |invocation| %>
+          <tr class="border-b border-zinc-800">
+            <td class="py-2"><%= invocation.created_at.strftime("%b %d, %Y %H:%M:%S") %></td>
+            <td class="py-2"><%= invocation.tool_name %></td>
+            <td class="py-2"><%= invocation.service&.name.presence || "–" %></td>
+            <td class="py-2"><%= invocation.api_token.name.presence || "–" %></td>
+            <td class="py-2">
+              <% if invocation.success? %>
+                <span class="text-green-400">Success</span>
+              <% else %>
+                <span class="text-red-500">Error</span>
+              <% end %>
+            </td>
+            <td class="py-2"><%= invocation.duration_ms ? "#{invocation.duration_ms} ms" : "–" %></td>
+            <td class="py-2"><code class="text-sm text-zinc-400"><%= truncate(JSON.generate(invocation.arguments), length: 80) %></code></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="text-zinc-500 mt-4">No tool invocations yet.</p>
+  <% end %>
+
   <h2 class="font-bold text-2xl mt-10">API tokens</h2>
 
   <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace), class: "contents" do |form| %>

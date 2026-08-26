@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_231547) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_014102) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -44,6 +44,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_231547) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "tool_invocations", force: :cascade do |t|
+    t.integer "api_token_id", null: false
+    t.json "arguments", default: {}
+    t.datetime "created_at", null: false
+    t.integer "duration_ms"
+    t.text "error_message"
+    t.json "response"
+    t.integer "service_id"
+    t.string "status", default: "success", null: false
+    t.string "tool_name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["api_token_id", "created_at"], name: "index_tool_invocations_on_api_token_id_and_created_at"
+    t.index ["api_token_id"], name: "index_tool_invocations_on_api_token_id"
+    t.index ["service_id"], name: "index_tool_invocations_on_service_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
@@ -72,6 +88,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_231547) do
   add_foreign_key "api_tokens", "workspaces"
   add_foreign_key "services", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "tool_invocations", "api_tokens"
+  add_foreign_key "tool_invocations", "services"
   add_foreign_key "workspace_services", "services"
   add_foreign_key "workspace_services", "workspaces"
   add_foreign_key "workspaces", "users"

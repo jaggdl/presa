@@ -15,7 +15,10 @@ FastMcpJwtAuth.configure do |config|
   config.token_validator = ->(token) { token.present? }
 
   # The principal is the token's owning workspace, not the user directly.
-  config.user_finder = ->(token) { token.workspace }
+  config.user_finder = ->(token) do
+    Current.api_token = token
+    token.workspace
+  end
 
   # Set the current workspace; keep Current.user via the existing session pattern.
   config.current_user_setter = ->(workspace) do

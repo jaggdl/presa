@@ -43,6 +43,19 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to workspace_path(@user.workspaces.order(:created_at).last)
   end
 
+  test "show displays tool invocations" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+    token = ApiToken.issue!(workspace: workspace, name: "Cursor")
+    invocation_token = workspace.api_tokens.active.take
+    ToolInvocation.record!(api_token: invocation_token, service: services(:github_prod), tool_name: "list_issues_github_prod", arguments: { repo: "org/repo" })
+
+    get workspace_path(workspace)
+
+    assert_response :success
+    assert_select "td", text: "list_issues_github_prod"
+  end
+
   test "create renders errors on invalid input" do
     sign_in_as @user
 
