@@ -68,12 +68,23 @@ module Mcp
     end
 
     def handle_body(response)
-      json = response.body.is_a?(String) ? JSON.parse(response.body) : response.body
+      json = parse_body(response.body)
       raise Error, json["error"].inspect if json["error"]
 
       json
     rescue JSON::ParserError => e
       raise Error, "Invalid JSON-RPC response: #{e.message}"
+    end
+
+    # Streamable HTTP endpoints may reply with Server-Sent Events framing
+    # (`event: message` / `data: {...}`) rather than a bare JSON body. Extract
+    # the last `data:` payload when present, otherwise parse as plain JSON.
+    def parse_body(body)
+      return body unless body.is_a?(String)
+
+      lines = body.lines.map(&:strip)
+      data = lines.grep(/\Adata:/).map { |l| l.sub(/\Adata:\s*/, "") }
+      data.any? ? JSON.parse(data.last) : JSON.parse(body)
     end
 
     def post(payload)

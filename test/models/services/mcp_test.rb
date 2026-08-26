@@ -26,6 +26,21 @@ class Services::McpTest < ActiveSupport::TestCase
     assert_equal({}, service.extra_headers)
   end
 
+  test "validates headers are parseable json" do
+    service = Services::Mcp.new(name: "Headers Test", user: users(:one))
+    service.config = { url: "https://example.com/mcp", headers: "not-json" }
+
+    assert_not service.valid?
+    assert service.errors[:config].any? { |e| e.to_s.include?("headers") }
+  end
+
+  test "accepts valid json headers" do
+    service = Services::Mcp.new(name: "Headers Valid", user: users(:one))
+    service.config = { url: "https://example.com/mcp", headers: '{"Authorization":"Bearer x"}' }
+
+    assert service.valid?
+  end
+
   test "discovers remote tools from the client" do
     service = Services::Mcp.new(name: "Search")
     service.config = { url: "https://example.com/mcp", headers: "{}" }

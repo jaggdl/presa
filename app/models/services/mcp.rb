@@ -14,7 +14,9 @@ module Services
     icon "mcp.png"
 
     config_field :url, required: true
-    config_field :headers, default: "{}"
+    config_field :headers, default: "{}", textarea: true
+
+    validate :headers_must_be_valid_json
 
     # The MCP server's extra HTTP headers, parsed from the JSON config field.
     # Used for e.g. `{"Authorization": "Bearer <key>"}`.
@@ -37,6 +39,17 @@ module Services
       @remote_tools ||= Rails.cache.fetch([ "mcp_remote_tools", config[:url] ], expires_in: 30.seconds) do
         client.list_tools.with_indifferent_access[:tools] || []
       end
+    end
+
+    private
+
+    def headers_must_be_valid_json
+      value = config[:headers].presence || "{}"
+      return true if value.is_a?(Hash)
+
+      JSON.parse(value)
+    rescue JSON::ParserError
+      errors.add(:config, "headers must be valid JSON")
     end
   end
 end

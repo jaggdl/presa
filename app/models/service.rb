@@ -45,8 +45,8 @@ class Service < ApplicationRecord
       Service.descendants.find { |klass| klass.kind == kind }
     end
 
-    def config_field(name, required: false, secret: false, default: nil)
-      self.config_fields = config_fields.merge(name.to_sym => { required: required, secret: secret, default: default })
+    def config_field(name, required: false, secret: false, default: nil, textarea: false)
+      self.config_fields = config_fields.merge(name.to_sym => { required: required, secret: secret, default: default, textarea: textarea })
     end
   end
 

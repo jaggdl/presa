@@ -23,7 +23,9 @@
     <% service.config_schema.each do |field, opts| %>
       <div class="my-5">
         <%= cf.label field, field.humanize, class: "block text-sm text-zinc-400" %>
-        <% if opts[:secret] %>
+        <% if opts[:textarea] %>
+          <%= cf.text_area field, value: service.config[field], rows: 4, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900 font-mono text-xs" %>
+        <% elsif opts[:secret] %>
           <%= cf.password_field field, value: service.config[field], placeholder: "••••••••", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
         <% else %>
           <%= cf.text_field field, value: service.config[field], class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
