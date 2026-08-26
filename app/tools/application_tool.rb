@@ -121,7 +121,7 @@ class ApplicationTool < ActionTool::Base
     started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     result, meta = super
     record_invocation(args: args, result: result, status: "success", duration_ms: elapsed_ms(started_at))
-    [result, meta]
+    [ result, meta ]
   rescue StandardError => e
     record_invocation(args: args, result: nil, status: "error", error_message: e.message, duration_ms: elapsed_ms(started_at))
     raise

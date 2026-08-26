@@ -46,6 +46,6 @@ class ToolInvocationTest < ActiveSupport::TestCase
     ToolInvocation.record!(api_token: token_two, tool_name: "b", arguments: {})
 
     names = ToolInvocation.for_workspace(workspaces(:one)).pluck(:tool_name)
-    assert_equal ["a"], names
+    assert_equal [ "a" ], names
   end
 end
