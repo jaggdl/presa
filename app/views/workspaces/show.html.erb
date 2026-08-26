@@ -105,7 +105,8 @@
   <%= turbo_stream_from "invocations_#{@workspace.id}" %>
 
   <div class="mt-4 rounded-md border border-zinc-700 bg-black font-mono text-xs overflow-x-auto">
-    <ul id="tool-invocations" class="divide-y divide-zinc-800/60 max-h-80 overflow-y-auto">
+    <div class="max-h-80 overflow-y-auto">
+      <ul id="tool-invocations" class="divide-y divide-zinc-800/60">
         <% if @tool_invocations.any? %>
           <%= render partial: "tool_invocations/invocation", collection: @tool_invocations %>
         <% else %>
@@ -113,8 +114,9 @@
         <% end %>
       </ul>
       <div id="invocations-more" class="border-t border-zinc-800">
-        <% if @tool_invocations.size >= 10 %>
-          <%= link_to "Load more", invocations_workspace_path(@workspace, before_id: @tool_invocations.last.id), class: "block px-4 py-2 text-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900" %>
+        <% if @tool_invocations.size >= 50 %>
+          <%= link_to "Load more", invocations_workspace_path(@workspace, before_id: @tool_invocations.last.id), data: { turbo_stream: true }, class: "block px-4 py-2 text-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900" %>
         <% end %>
       </div>
-</div>
+    </div>
+  </div>
