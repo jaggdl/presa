@@ -3,7 +3,7 @@
 
   <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
     <% @kinds.each do |kind| %>
-      <%= link_to new_service_path(kind), class: "flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
+      <%= link_to new_kind_service_services_path(kind), class: "flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
         <%= service_icon(Service.class_for_kind(kind).new, size: "h-9 w-9") %>
         <span class="font-medium text-zinc-100"><%= kind.humanize %></span>
       <% end %>
