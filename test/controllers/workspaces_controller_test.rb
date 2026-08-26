@@ -53,7 +53,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get workspace_path(workspace)
 
     assert_response :success
-    assert_select "td", text: "github_list_issues_prod"
+    assert_select "li span", text: "github_list_issues_prod"
   end
 
   test "create renders errors on invalid input" do

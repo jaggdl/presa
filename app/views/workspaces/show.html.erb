@@ -46,38 +46,20 @@
   <h2 class="font-bold text-2xl mt-10">Tool invocations</h2>
 
   <% if @tool_invocations.any? %>
-    <table class="w-full text-left mt-4">
-      <thead>
-        <tr class="border-b border-zinc-800 text-sm text-zinc-500">
-          <th class="py-2">Time</th>
-          <th class="py-2">Tool</th>
-          <th class="py-2">Service</th>
-          <th class="py-2">Token</th>
-          <th class="py-2">Status</th>
-          <th class="py-2">Duration</th>
-          <th class="py-2">Arguments</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="mt-4 rounded-md border border-zinc-700 bg-black font-mono text-xs overflow-x-auto">
+      <ul class="divide-y divide-zinc-800/60">
         <% @tool_invocations.each do |invocation| %>
-          <tr class="border-b border-zinc-800">
-            <td class="py-2"><%= invocation.created_at.strftime("%b %d, %Y %H:%M:%S") %></td>
-            <td class="py-2"><%= invocation.tool_name %></td>
-            <td class="py-2"><%= invocation.service&.name.presence || "–" %></td>
-            <td class="py-2"><%= invocation.api_token.name.presence || "–" %></td>
-            <td class="py-2">
-              <% if invocation.success? %>
-                <span class="text-green-400">Success</span>
-              <% else %>
-                <span class="text-red-500">Error</span>
-              <% end %>
-            </td>
-            <td class="py-2"><%= invocation.duration_ms ? "#{invocation.duration_ms} ms" : "–" %></td>
-            <td class="py-2"><code class="text-sm text-zinc-400"><%= truncate(JSON.generate(invocation.arguments), length: 80) %></code></td>
-          </tr>
+          <li class="flex items-center gap-3 px-4 py-2 whitespace-nowrap">
+            <span class="text-zinc-500"><%= invocation.created_at.strftime("%H:%M:%S") %></span>
+            <%= tag.span invocation.tool_name, class: (invocation.success? ? "text-green-400" : "text-red-500") %>
+            <span class="text-zinc-500"><%= invocation.duration_ms ? "#{invocation.duration_ms} ms" : "–" %></span>
+            <span class="text-zinc-300"><%= invocation.service&.name.presence || "–" %></span>
+            <code class="text-zinc-400 flex-1 min-w-0 truncate"><%= truncate(JSON.generate(invocation.arguments), length: 60) %></code>
+            <span class="ml-auto text-zinc-500"><%= invocation.api_token.name.presence || "–" %></span>
+          </li>
         <% end %>
-      </tbody>
-    </table>
+      </ul>
+    </div>
   <% else %>
     <p class="text-zinc-500 mt-4">No tool invocations yet.</p>
   <% end %>
