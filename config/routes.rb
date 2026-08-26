@@ -3,6 +3,13 @@ Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
   resource :session
   resources :passwords, param: :token
+
+  namespace :bots do
+    resources :tools, only: %i[ index show ] do
+      post :execute, on: :member
+    end
+  end
+
   resources :workspaces do
     resources :api_tokens, only: %i[ create destroy ]
     resources :workspace_services, only: %i[ show create update destroy ]

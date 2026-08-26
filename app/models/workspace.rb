@@ -1,5 +1,6 @@
 class Workspace < ApplicationRecord
   include WorkspaceStats
+  include WorkspaceTools
 
   belongs_to :user
   has_many :api_tokens, dependent: :destroy
