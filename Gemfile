@@ -71,3 +71,5 @@ gem "fast_mcp_jwt_auth", github: "jchsoft/fast_mcp_jwt_auth"
 gem "faraday", "~> 2.0"
 
 gem "tailwindcss-rails", "~> 4.6"
+
+gem "rails_icons", "~> 1.9"
