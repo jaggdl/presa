@@ -6,7 +6,7 @@ Rails.application.routes.draw do
     resources :workspace_services, only: %i[ create destroy ]
   end
   resources :services do
-    get "new/:kind", action: "new", on: :collection, as: :new_kind_service
+    get ":kind/new", action: "new", on: :collection, as: :new_kind_service
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
