@@ -36,6 +36,7 @@ class WorkspacesController < ApplicationController
     @api_tokens = ApiToken.with_invocation_counts(@workspace.api_tokens.order(created_at: :desc))
     @api_token = ApiToken.new
     @linked_services = Service.with_invocation_counts(@workspace.services.order(:type, :name))
+    @ws_links = @workspace.workspace_services.includes(:service).index_by(&:service_id)
     @available_services = Current.user.services.where.not(id: @linked_services.pluck(:id)).order(:type, :name)
     @tool_invocations = ToolInvocation.for_workspace(@workspace).recent(50).includes(:service, :api_token)
   end

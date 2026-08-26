@@ -11,7 +11,16 @@
     </div>
     <div class="py-2 border-b border-zinc-800">
       <dt class="text-sm text-zinc-500">Workspaces</dt>
-      <dd><%= @service.workspaces.map(&:name).presence&.join(", ") || "None" %></dd>
+      <dd>
+        <% joins = @service.workspace_services.includes(:workspace).to_a %>
+        <% if joins.any? %>
+          <% joins.each do |join| %>
+            <%= link_to join.workspace.name, workspace_workspace_service_path(join.workspace, join), class: "text-blue-500 hover:underline" %><%= "," unless join.equal?(joins.last) %>
+          <% end %>
+        <% else %>
+          None
+        <% end %>
+      </dd>
     </div>
   </dl>
 

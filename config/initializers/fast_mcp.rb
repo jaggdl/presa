@@ -44,8 +44,11 @@ FastMcp.mount_in_rails(
       # Generic tools (no service_kind) are exposed to every workspace.
       generic = tools.select { |tool| tool.service_kind.blank? }
 
-      # One bound tool class per handler per service instance configured on the workspace.
-      bound = Current.workspace.services.flat_map { |service| ApplicationTool.expose_for(service) }
+      # One bound tool class per handler per service instance configured on the
+      # workspace, restricted to the tools allowed for that service.
+      bound = Current.workspace.workspace_services.includes(:service).flat_map do |wc|
+        ApplicationTool.expose_for(wc.service).select { |tool| wc.tool_allowed?(tool.tool_key) }
+      end
 
       generic + bound
     end

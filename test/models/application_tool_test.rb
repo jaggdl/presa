@@ -40,6 +40,59 @@ class ApplicationToolTest < ActiveSupport::TestCase
     assert schema.dig(:properties, :repo, :type) == "string"
   end
 
+  test "tool_key is the handler kind for non-remote tools" do
+    assert_equal "list_issues", Github::ListIssuesTool.tool_key
+    assert_equal "list_issues", ApplicationTool.expose_for(services(:github_prod)).first.tool_key
+  end
+
+  test "tool_key is the remote name for proxied MCP tools" do
+    service = Services::Mcp.new(name: "Search")
+    service.config = { url: "https://example.com/mcp", headers: "{}" }
+
+    fake = Object.new
+    def fake.list_tools
+      { "tools" => [ { "name" => "web_search", "description" => "d", "inputSchema" => {} } ] }
+    end
+    service.instance_variable_set(:@client, fake)
+    Rails.cache.delete([ "mcp_remote_tools", service.config[:url] ])
+
+    assert_equal "web_search", ApplicationTool.expose_for(service).first.tool_key
+  end
+
+  test "call blocks a tool the workspace does not allow" do
+    join = workspace_services(:one_jellyfin)
+    join.update!(allowed_tools: ["resume_items"])
+    Current.workspace = join.workspace
+
+    tool = ApplicationTool.expose_for(join.service).find { |t| t.kind == "get_episodes" }.new
+
+    assert_raises(ApplicationTool::NotAllowedToolError) { tool.send(:authorize_call!) }
+  ensure
+    Current.workspace = nil
+  end
+
+  test "authorize allows a permitted tool" do
+    join = workspace_services(:one_jellyfin)
+    join.update!(allowed_tools: ["resume_items"])
+    Current.workspace = join.workspace
+
+    tool = ApplicationTool.expose_for(join.service).find { |t| t.kind == "resume_items" }.new
+
+    assert_nothing_raised { tool.send(:authorize_call!) }
+  ensure
+    Current.workspace = nil
+  end
+
+  test "call is always allowed for generic tools" do
+    Current.workspace = workspaces(:one)
+
+    tool = SampleTool.new
+
+    assert_nothing_raised { tool.send(:authorize_call!) }
+  ensure
+    Current.workspace = nil
+  end
+
   test "bound class does not mutate the shared handler" do
     original_name = Github::ListIssuesTool.tool_name
 

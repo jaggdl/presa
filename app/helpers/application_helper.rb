@@ -6,6 +6,12 @@ module ApplicationHelper
     ENV["BASE_URL"].presence || referer_origin.presence || "<your-presa-url>"
   end
 
+  # The stable identifier used to select an allowed tool: the remote tool name
+  # for proxied MCP tools, otherwise the tool's kind (e.g. "search_user_media").
+  def tool_key(bound_tool)
+    bound_tool.tool_key
+  end
+
   private
 
   def referer_origin

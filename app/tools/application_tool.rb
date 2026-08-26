@@ -17,6 +17,17 @@ class ApplicationTool < ActionTool::Base
       config_tool_kind || name.demodulize.chomp("Tool").underscore
     end
 
+    # The stable identifier used to select this tool in a workspace's
+    # `allowed_tools` list: a proxied remote MCP tool's remote name, otherwise
+    # the tool's kind (e.g. "search_user_media").
+    def tool_key
+      if respond_to?(:remote_tool_name) && remote_tool_name.present?
+        remote_tool_name.to_s
+      else
+        kind.to_s
+      end
+    end
+
     # Marks a base handler as abstract so it is not exposed directly.
     def abstract_tool(value = true)
       @abstract_tool = value
@@ -119,6 +130,7 @@ class ApplicationTool < ActionTool::Base
   # are captured for every tool, bound to the current API token's workspace.
   def call_with_schema_validation!(**args)
     started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    authorize_call!
     result, meta = super
     record_invocation(args: args, result: result, status: "success", duration_ms: elapsed_ms(started_at))
     [ result, meta ]
@@ -126,6 +138,22 @@ class ApplicationTool < ActionTool::Base
     record_invocation(args: args, result: nil, status: "error", error_message: e.message, duration_ms: elapsed_ms(started_at))
     raise
   end
+
+  # A tool may only run if it is allowed for its service within the current
+  # workspace. Generic tools carry no service and are always allowed. This is
+  # a call-time guard in addition to `filter_tools`, which controls only the
+  # advertised tool list.
+  def authorize_call!
+    return if Current.workspace.nil? || !self.class.respond_to?(:service_id) || service.nil?
+
+    join = Current.workspace.workspace_services.find_by(service_id: service.id)
+    return if join&.tool_allowed?(self.class.tool_key)
+
+    raise NotAllowedToolError, "Tool #{self.class.tool_name} is not allowed in this workspace"
+  end
+
+  # Raised when a tool is invoked that its workspace does not allow.
+  class NotAllowedToolError < StandardError; end
 
   private
 

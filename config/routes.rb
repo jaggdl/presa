@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
   resources :workspaces do
     resources :api_tokens, only: %i[ create destroy ]
-    resources :workspace_services, only: %i[ create destroy ]
+    resources :workspace_services, only: %i[ show create update destroy ]
     get :invocations, on: :member
   end
   resources :services do
