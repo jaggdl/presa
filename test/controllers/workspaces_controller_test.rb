@@ -81,7 +81,7 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Workspace One"
-    assert_select "td", text: "Cursor"
+    assert_select "div span", text: "Cursor"
   end
 
   test "show does not expose another user's workspace" do

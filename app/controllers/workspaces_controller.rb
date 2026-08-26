@@ -33,7 +33,7 @@ class WorkspacesController < ApplicationController
   end
 
   def show
-    @api_tokens = @workspace.api_tokens.order(created_at: :desc)
+    @api_tokens = ApiToken.with_invocation_counts(@workspace.api_tokens.order(created_at: :desc))
     @api_token = ApiToken.new
     @linked_services = Service.with_invocation_counts(@workspace.services.order(:type, :name))
     @available_services = Current.user.services.where.not(id: @linked_services.pluck(:id)).order(:type, :name)

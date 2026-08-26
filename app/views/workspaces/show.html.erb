@@ -43,6 +43,73 @@
     <% end %>
   <% end %>
 
+  <h2 class="font-bold text-2xl mt-10">Clients</h2>
+
+  <p class="text-sm text-zinc-500 mt-1">Each client connects with its own API token to use this workspace's tools.</p>
+
+  <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace), class: "contents mt-4" do |form| %>
+    <div class="my-5 flex items-center gap-3">
+      <%= form.text_field :name, placeholder: "Client name (e.g. Cursor)", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-900" %>
+      <%= form.submit "Connect client", class: "text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+    </div>
+  <% end %>
+
+  <% if @api_tokens.any? %>
+    <table class="w-full text-left mt-2">
+      <tbody>
+        <% @api_tokens.each do |api_token| %>
+          <tr class="border-b border-zinc-800">
+            <td class="py-2">
+              <div class="flex items-center gap-3">
+                <%= icon "monitor", class: "size-5 text-zinc-500" %>
+                <span class="font-medium"><%= api_token.name.presence || "Unnamed client" %></span>
+                <span class="inline-flex items-center gap-1.5 text-xs">
+                  <% if api_token.revoked? %>
+                    <span class="inline-block size-2 rounded-full bg-red-500"></span>
+                    <span class="text-red-500">Revoked</span>
+                  <% elsif api_token.expired? %>
+                    <span class="inline-block size-2 rounded-full bg-yellow-400"></span>
+                    <span class="text-yellow-400">Expired</span>
+                  <% else %>
+                    <span class="inline-block size-2 rounded-full bg-green-400"></span>
+                    <span class="text-green-400">Active</span>
+                  <% end %>
+                </span>
+                <span class="text-xs text-zinc-500"><%= pluralize(api_token.invocation_count, "invocation") %> in 24h</span>
+              </div>
+            </td>
+            <td class="py-2 text-xs text-zinc-500">
+              <% if api_token.last_used_at %>
+                Last used <%= time_ago_in_words(api_token.last_used_at) %> ago
+              <% else %>
+                Never used
+              <% end %>
+            </td>
+            <td class="py-2 text-right text-xs text-zinc-500">
+              <div class="flex items-center justify-end gap-2">
+                <% if api_token.last_used_at || api_token.expires_at || api_token.created_at %>
+                  <span>
+                    <%= api_token.created_at ? "created #{api_token.created_at.strftime("%b %d, %Y")}" : "" %>
+                    <% if api_token.expires_at %>
+                      · expires <%= api_token.expires_at.strftime("%b %d, %Y") %>
+                    <% end %>
+                  </span>
+                <% end %>
+                <% if api_token.active? %>
+                  <%= button_to workspace_api_token_path(@workspace, api_token), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Revoke this token?" } }, "aria-label": "Revoke token" do %>
+                    <%= icon "trash", class: "size-4" %>
+                  <% end %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="text-zinc-500 mt-4">No clients connected yet.</p>
+  <% end %>
+
   <h2 class="font-bold text-2xl mt-10">Tool invocations</h2>
 
   <% if @tool_invocations.any? %>
@@ -63,71 +130,4 @@
   <% else %>
     <p class="text-zinc-500 mt-4">No tool invocations yet.</p>
   <% end %>
-
-  <h2 class="font-bold text-2xl mt-10">API tokens</h2>
-
-  <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace), class: "contents" do |form| %>
-    <div class="my-5">
-      <%= form.text_field :name, placeholder: "Token name (e.g. Cursor)", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-    </div>
-
-    <div class="inline">
-      <%= form.submit "Create token", class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
-    </div>
-  <% end %>
-
-  <div class="mt-10">
-    <% if @api_tokens.any? %>
-      <table class="w-full text-left">
-        <thead>
-          <tr class="border-b border-zinc-800 text-sm text-zinc-500">
-            <th class="py-2">Name</th>
-            <th class="py-2">Created</th>
-            <th class="py-2">Last used</th>
-            <th class="py-2">Expires</th>
-            <th class="py-2">Status</th>
-            <th class="py-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @api_tokens.each do |api_token| %>
-            <tr class="border-b border-zinc-800">
-              <td class="py-2"><%= api_token.name.presence || "–" %></td>
-              <td class="py-2"><%= api_token.created_at && api_token.created_at.strftime("%b %d, %Y") %></td>
-              <td class="py-2">
-                <% if api_token.last_used_at %>
-                  <%= api_token.last_used_at.strftime("%b %d, %Y %H:%M") %>
-                <% else %>
-                  <span class="text-zinc-500">never</span>
-                <% end %>
-              </td>
-              <td class="py-2">
-                <% if api_token.expires_at %>
-                  <%= api_token.expires_at.strftime("%b %d, %Y") %>
-                <% else %>
-                  <span class="text-zinc-500">never</span>
-                <% end %>
-              </td>
-              <td class="py-2">
-                <% if api_token.revoked? %>
-                  <span class="text-red-500">Revoked</span>
-                <% elsif api_token.expired? %>
-                  <span class="text-yellow-400">Expired</span>
-                <% else %>
-                  <span class="text-green-400">Active</span>
-                <% end %>
-              </td>
-              <td class="py-2 text-right">
-                <% if api_token.active? %>
-                  <%= button_to "Revoke", workspace_api_token_path(@workspace, api_token), method: :delete, class: "text-red-500 underline hover:no-underline", form: { data: { turbo_confirm: "Revoke this token?" } } %>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="text-zinc-500">No API tokens yet.</p>
-    <% end %>
-  </div>
 </div>
