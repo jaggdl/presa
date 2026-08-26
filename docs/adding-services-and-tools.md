@@ -116,7 +116,7 @@ This reads config at call time, so editing a service's credentials takes effect 
 
 ### MCP tool naming
 
-Exposed MCP tool names are built as `<kind>_<service_kind>`. For a GitHub service, a tool `kind :list_issues` becomes `list_issues_github`. The service name is only appended when the workspace has more than one service of that kind — two GitHub services named "Prod" / "Staging" produce `list_issues_github_prod` and `list_issues_github_staging` — keeping names short (and token-efficient) by default while still avoiding collisions.
+Exposed MCP tool names are built as `<service_kind>_<kind>`, service kind first so every tool a service exposes clusters under one prefix. For a GitHub service, a tool `kind :list_issues` becomes `github_list_issues`. The service name is only appended when the workspace has more than one service of that kind — two GitHub services named "Prod" / "Staging" produce `github_list_issues_prod` and `github_list_issues_staging` — keeping names short (and token-efficient) by default while still avoiding collisions.
 
 ## Wiring / refresh
 

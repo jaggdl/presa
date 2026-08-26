@@ -16,7 +16,7 @@ class ApplicationToolTest < ActiveSupport::TestCase
     klass = bound.first
 
     assert_equal services(:github_prod).id, klass.service_id
-    assert_equal "list_issues_github", klass.tool_name
+    assert_equal "github_list_issues", klass.tool_name
     assert klass < Tools::Github::ListIssues
   end
 
@@ -24,7 +24,7 @@ class ApplicationToolTest < ActiveSupport::TestCase
     Current.workspace = workspaces(:one)
 
     bound = ApplicationTool.expose_for(services(:github_prod))
-    assert_equal "list_issues_github_prod", bound.first.tool_name
+    assert_equal "github_list_issues_prod", bound.first.tool_name
 
     Current.workspace = nil
   ensure

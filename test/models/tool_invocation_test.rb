@@ -9,7 +9,7 @@ class ToolInvocationTest < ActiveSupport::TestCase
       ToolInvocation.record!(
         api_token: token,
         service: services(:github_prod),
-        tool_name: "list_issues_github_prod",
+        tool_name: "github_list_issues_prod",
         arguments: { repo: "org/repo" },
         response: { content: "ok" },
         status: "success",
@@ -20,7 +20,7 @@ class ToolInvocationTest < ActiveSupport::TestCase
     record = ToolInvocation.last
     assert_equal workspaces(:one), record.workspace
     assert_equal "Cursor", record.api_token.name
-    assert_equal "list_issues_github_prod", record.tool_name
+    assert_equal "github_list_issues_prod", record.tool_name
     assert_equal({ "repo" => "org/repo" }, record.arguments)
     assert record.success?
   end

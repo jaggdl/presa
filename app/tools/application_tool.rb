@@ -86,12 +86,13 @@ class ApplicationTool < ActionTool::Base
       klass
     end
 
-    # The MCP tool name for a static handler: "<kind>_<service kind>", e.g.
-    # "list_issues_github". The service name is only appended when it is needed
-    # to disambiguate — i.e. the workspace has more than one service of the same
-    # kind — keeping names short and token-efficient.
+    # The MCP tool name for a static handler: "<service kind>_<kind>", e.g.
+    # "github_list_issues". Service kind first groups every tool a service
+    # exposes under one prefix. The service name is only appended when it is
+    # needed to disambiguate — i.e. the workspace has more than one service of
+    # the same kind — keeping names short and token-efficient.
     def bound_tool_name(handler, service)
-      base = "#{handler.kind}_#{service_kind_slug(service)}"
+      base = "#{service_kind_slug(service)}_#{handler.kind}"
       service_name_needed?(service) ? "#{base}_#{service.name.parameterize}" : base
     end
 

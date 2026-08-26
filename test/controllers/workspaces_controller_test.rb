@@ -48,12 +48,12 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     workspace = workspaces(:one)
     token = ApiToken.issue!(workspace: workspace, name: "Cursor")
     invocation_token = workspace.api_tokens.active.take
-    ToolInvocation.record!(api_token: invocation_token, service: services(:github_prod), tool_name: "list_issues_github_prod", arguments: { repo: "org/repo" })
+    ToolInvocation.record!(api_token: invocation_token, service: services(:github_prod), tool_name: "github_list_issues_prod", arguments: { repo: "org/repo" })
 
     get workspace_path(workspace)
 
     assert_response :success
-    assert_select "td", text: "list_issues_github_prod"
+    assert_select "td", text: "github_list_issues_prod"
   end
 
   test "create renders errors on invalid input" do
