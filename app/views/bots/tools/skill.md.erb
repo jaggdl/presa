@@ -1,0 +1,114 @@
+---
+name: presa-bot-api
+description: Authenticate an agent against a Presa workspace via the share-code device flow and use its tools over HTTP. Use when a bot needs to authenticate to Presa, list available tools, or execute a tool.
+---
+
+# Presa Bot API
+
+Allows an agent to authenticate against a Presa workspace and use its tools over plain HTTP.
+
+## Authentication
+
+Before you can call any tool you must obtain an API token for the workspace you want to use. The flow is interactive and requires the user's approval.
+
+### 1. Ask the user for the workspace share code
+
+Presa does not hand out tokens directly to bots over the network. Instead, each workspace has a *share code* — a secret the workspace owner creates or resets from the Presa web UI. The owner shares this code with you out-of-band.
+
+- Ask the user to open the Presa web app and generate the workspace's bot share code.
+- Ask them to send it to you in chat.
+- Do not request a raw API token; the share code is what you need.
+
+### 2. File an authorization request
+
+POST to the workspace's authorize endpoint with the share code, a name for the bot, and a justification:
+
+```
+POST <%= base_url %>/bots/workspaces/{workspace_id}/authorize
+Content-Type: application/json
+
+{
+  "share_code": "<share-code>",
+  "name": "<bot-name>",
+  "justification": "<why this bot needs access>"
+}
+```
+
+On success you receive:
+
+```json
+{
+  "request_id": "<id>",
+  "authorize_url": "<%= base_url %>/bots/authorizations/<id>"
+}
+```
+
+Give the `authorize_url` to the user.
+
+### 3. User approves in the browser
+
+The user opens the authorize URL, and, if they approve, the page shows a short numeric code. Ask them to read the code back to you.
+
+### 4. Redeem the code for an API token
+
+```
+POST <%= base_url %>/bots/authorizations/{request_id}/token
+Content-Type: application/json
+
+{ "code": "<the-numeric-code>" }
+```
+
+On success:
+
+```json
+{ "token": "mcp_..." }
+```
+
+Store this token securely (e.g. in your secrets store) and never print it to output. The code is single-use and short-lived; if it fails, ask the user to approve again.
+
+## Using the API
+
+Attach the token on every request:
+
+```
+Authorization: Bearer <token>
+```
+
+### List tools
+
+```
+GET <%= base_url %>/bots/tools
+```
+
+Returns plain text, one line per available tool: `name: description`. The set of tools is already scoped to the workspace and what the owner has allowed — do not assume any specific tool is present.
+
+### Tool detail
+
+```
+GET <%= base_url %>/bots/tools/{tool}
+```
+
+Returns the tool name, description and its argument schema. For a tool not available it returns 404.
+
+### Execute a tool
+
+```
+POST <%= base_url %>/bots/tools/{tool}/execute
+Content-Type: application/json
+
+{ "arg1": "value1", "arg2": "value2" }
+```
+
+The body is JSON. Omitting it means no arguments. The response is plain text returned by the tool.
+
+Status codes:
+- `404` — tool not found / not allowed
+- `400` — malformed JSON body
+- `403` — the tool is not allowed in this workspace
+- `422` — the tool reported an error
+
+## Rules
+
+- Never mention, assume, or rely on any specific tool, service, or workflow. Discover what is available from `GET /bots/tools`.
+- Never echo or log the API token or share code.
+- Before making any call, check the tool's argument schema with `GET /bots/tools/{tool_name}`.

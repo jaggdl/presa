@@ -12,6 +12,20 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  test "GET /bots/SKILL.md is unauthenticated and returns the skill file" do
+    get bots_skill_path
+
+    assert_response :success
+    assert_includes response.content_type, "text/markdown"
+    assert_includes response.body, "name: presa-bot-api" # frontmatter
+    assert_includes response.body, "Authorization: Bearer"
+    assert_includes response.body, "/bots/tools/{tool}/execute"
+    assert_includes response.body, "http://www.example.com/bots/tools" # base_url interpolated
+    refute_includes response.body, "jellyfin"
+    refute_includes response.body, "search_workflows"
+    refute_includes response.body, "<your-presa-url>"
+  end
+
   test "GET /bots/tools lists the workspace's available tools as plain text" do
     join = workspace_services(:one_jellyfin)
     join.update!(allowed_tools: [ "resume_items" ])

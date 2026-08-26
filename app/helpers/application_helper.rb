@@ -1,9 +1,9 @@
 module ApplicationHelper
   # The public base URL of the instance, e.g. "https://presa.example.com".
-  # Resolves from the BASE_URL env var, else the origin of the referring page
-  # (which typically matches the public host), else a placeholder.
+  # Resolves from the BASE_URL env var, else the origin of the current request
+  # (the host/port the caller is actually using), else a placeholder.
   def base_url
-    ENV["BASE_URL"].presence || referer_origin.presence || "<your-presa-url>"
+    ENV["BASE_URL"].presence || request.base_url.presence || "<your-presa-url>"
   end
 
   # The stable identifier used to select an allowed tool: the remote tool name
@@ -13,18 +13,6 @@ module ApplicationHelper
   end
 
   private
-
-  def referer_origin
-    referer = request.referer
-    return if referer.blank?
-
-    uri = URI.parse(referer)
-    origin = "#{uri.scheme}://#{uri.host}"
-    origin = "#{origin}:#{uri.port}" if uri.host.match?(/\A\d{1,3}(\.\d{1,3}){3}\z/)
-    origin.presence
-  rescue URI::InvalidURIError, ArgumentError
-    nil
-  end
 
   # Render a service's brand icon, as declared on the model, padded and framed
   # with a subtle border so it reads as a tile. `size` sets the Tailwind

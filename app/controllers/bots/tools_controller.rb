@@ -9,7 +9,15 @@ module Bots
   class ToolsController < ApplicationController
     allow_unauthenticated_access
     skip_forgery_protection
-    before_action :authenticate_token!
+    before_action :authenticate_token!, except: :skill
+
+    # GET /bots/SKILL.md — the agent skills file describing how to authenticate
+    # and use the tools API. Served unauthenticated so agents can fetch it to
+    # learn the flow. Only describes the generic API surface, never any
+    # workspace-specific tools, services, or workflows.
+    def skill
+      render "bots/tools/skill", layout: nil, content_type: "text/markdown", formats: [ :md ]
+    end
 
     # GET /bots/tools
     def index
