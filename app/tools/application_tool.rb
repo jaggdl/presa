@@ -57,7 +57,7 @@ class ApplicationTool < ActionTool::Base
         name = remote_tool[:name] || remote_tool["name"]
         next if name.blank?
 
-        klass = Class.new(Tools::Mcp::Base)
+        klass = Class.new(Mcp::Base)
         klass.tool_name(remote_tool_name(service, name))
         klass.description(remote_tool[:description] || remote_tool["description"] || "")
         klass.remote_tool_name = name

@@ -4,8 +4,8 @@ class ApplicationToolTest < ActiveSupport::TestCase
   test "handlers_for returns concrete handlers for a service kind" do
     handlers = ApplicationTool.handlers_for("github")
 
-    assert_includes handlers, Tools::Github::ListIssues
-    refute_includes handlers, Tools::Github::Base
+    assert_includes handlers, Github::ListIssuesTool
+    refute_includes handlers, Github::Base
   end
 
   test "expose_for binds one class per handler to the service" do
@@ -17,7 +17,7 @@ class ApplicationToolTest < ActiveSupport::TestCase
 
     assert_equal services(:github_prod).id, klass.service_id
     assert_equal "github_list_issues", klass.tool_name
-    assert klass < Tools::Github::ListIssues
+    assert klass < Github::ListIssuesTool
   end
 
   test "appends the service slug when a workspace has more than one service of the same kind" do
@@ -41,12 +41,12 @@ class ApplicationToolTest < ActiveSupport::TestCase
   end
 
   test "bound class does not mutate the shared handler" do
-    original_name = Tools::Github::ListIssues.tool_name
+    original_name = Github::ListIssuesTool.tool_name
 
     ApplicationTool.expose_for(services(:github_prod))
 
-    assert_equal original_name, Tools::Github::ListIssues.tool_name
-    assert_not Tools::Github::ListIssues.respond_to?(:service_id)
+    assert_equal original_name, Github::ListIssuesTool.tool_name
+    assert_not Github::ListIssuesTool.respond_to?(:service_id)
   end
 
   test "expose_for an mcp service builds one class per remote tool" do
@@ -70,7 +70,7 @@ class ApplicationToolTest < ActiveSupport::TestCase
 
     assert_equal "web_search", klass.tool_name
     assert_equal "web_search", klass.remote_tool_name
-    assert klass < Tools::Mcp::Base
+    assert klass < Mcp::Base
 
     assert_equal "web_fetch", klass2.tool_name
     schema = klass.input_schema_to_json
