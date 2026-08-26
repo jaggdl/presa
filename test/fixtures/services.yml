@@ -15,3 +15,9 @@ other_user_service:
   type: Services::Github
   name: Prod
   config: <%= { api_token: "ghp_other_token" }.to_json %>
+
+search_mcp:
+  user: one
+  type: Services::Mcp
+  name: Search
+  config: <%= { url: "https://search.parallel.ai/mcp", headers: "{}" }.to_json %>

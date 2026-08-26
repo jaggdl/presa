@@ -37,4 +37,33 @@ class ApplicationToolTest < ActiveSupport::TestCase
     assert_equal original_name, Tools::Github::ListIssues.tool_name
     assert_not Tools::Github::ListIssues.respond_to?(:service_id)
   end
+
+  test "expose_for an mcp service builds one class per remote tool" do
+    service = Services::Mcp.new(name: "Search")
+    service.config = { url: "https://example.com/mcp", headers: "{}" }
+
+    fake = Object.new
+    def fake.list_tools
+      {
+        "tools" => [
+          { "name" => "web_search", "description" => "Search the web",
+            "inputSchema" => { "type" => "object", "properties" => { "q" => { "type" => "string" } }, "required" => [ "q" ] } },
+          { "name" => "web_fetch", "description" => "Fetch a URL", "inputSchema" => {} }
+        ]
+      }
+    end
+    service.instance_variable_set(:@client, fake)
+    Rails.cache.delete([ "mcp_remote_tools", service.config[:url] ])
+
+    klass, klass2 = ApplicationTool.expose_for(service)
+
+    assert_equal "search_web_search", klass.tool_name
+    assert_equal "web_search", klass.remote_tool_name
+    assert klass < Tools::Mcp::Base
+
+    assert_equal "search_web_fetch", klass2.tool_name
+    schema = klass.input_schema_to_json
+    assert_equal "object", schema[:type]
+    assert_equal %w[q], schema[:required]
+  end
 end

@@ -36,13 +36,36 @@ class ApplicationTool < ActionTool::Base
 
     # Builds one MCP tool class per handler, bound to the given service instance.
     # Each bound class gets a unique MCP tool name and carries its service_id.
+    #
+    # For a remote-MCP service (Services::Mcp) there are no static handlers:
+    # one dynamic class is built per tool the remote endpoint advertises.
     def expose_for(service)
+      return expose_remote_mcp(service) if service.is_a?(Services::Mcp)
+
       handlers_for(service.kind).map do |handler|
         build_bound_handler(handler, service)
       end
     end
 
     private
+
+    # Remote MCP services proxy another server's tools. Build one dynamic class
+    # per advertised tool, named "<service slug>_<remote tool name>" (e.g.
+    # "search_web_search"), reusing the remote's name/description.
+    def expose_remote_mcp(service)
+      service.remote_tools.filter_map do |remote_tool|
+        name = remote_tool[:name] || remote_tool["name"]
+        next if name.blank?
+
+        klass = Class.new(Tools::Mcp::Base)
+        klass.tool_name("#{service.name.underscore}_#{name}")
+        klass.description(remote_tool[:description] || remote_tool["description"] || "")
+        klass.remote_tool_name = name
+        klass.remote_input_schema = remote_tool[:inputSchema] || remote_tool["inputSchema"] || {}
+        klass.class_attribute :service_id, default: service.id
+        klass
+      end
+    end
 
     # Copy the DSL state (schema, description, annotations, ...) that does not
     # survive Class.new, since those live in class-level ivars.

@@ -146,3 +146,32 @@ To add a new kind, `kind`:
 3. Create `app/tools/<kind>/<tool>.rb` handlers.
 4. (If needed) a data migration for default config on existing rows.
 5. Add tests under `test/models/` (service config/validation) and, where useful, controller coverage. `test/models/application_tool_test.rb` shows how to assert `handlers_for` / `expose_for` output.
+
+## Proxying a remote MCP server
+
+Not every integration is one you write handlers for. An **MCP service** (`Services::Mcp`, kind `mcp`) points at an *external* Model Context Protocol endpoint — e.g. Parallel's [Search MCP](https://search.parallel.ai/mcp) — and re-exposes the tools *that server* advertises. You get `web_search` / `web_fetch` (for Parallel) without writing a single handler.
+
+### Config
+
+| field | required | notes |
+| --- | --- | --- |
+| `url` | yes | the remote MCP endpoint, e.g. `https://search.parallel.ai/mcp` |
+| `headers` | no | optional JSON of extra headers, e.g. `{"Authorization":"Bearer <key>"}` |
+
+As with any service kind, these render in the new-service UI automatically from `config_field`.
+
+### How it works
+
+1. **Discovery** — `Services::Mcp#remote_tools` calls the outbound `Mcp::Client` (`app/services/mcp/client.rb`, Streamable HTTP JSON-RPC: `initialize` → `notifications/initialized` → `tools/list`), cached ~30s per URL.
+2. **Exposure** — `ApplicationTool.expose_for` detects a `Services::Mcp` and builds one dynamic tool class **per remote tool** (`app/tools/application_tool.rb`, `expose_remote_mcp`) instead of mapping static handlers.
+3. **Naming** — each proxied tool is named `<service_slug>_<remote_tool>`, e.g. a service named "Search" yields `search_web_search` and `search_web_fetch`. No collisions across services.
+4. **Schema** — the remote tool's advertised `inputSchema` is surfaced verbatim via the carrier's `input_schema_to_json` override (`Tools::Mcp::Base`); validation stays permissive (the remote owns it).
+5. **Call** — the bound class forwards `tools/call` to the remote for the original tool name and returns the result.
+
+The per-request `filter_tools` rebuild (see `fast_mcp_refresh.rb`) means adding/editing an MCP service's URL or a workspace link is reflected immediately.
+
+### Limitations
+
+- Streamable HTTP only (no legacy SSE, no local `stdio`/`npx` servers).
+- Tool argument validation is delegated to the remote server; Presa does not locally enforce the remote's schema.
+- Remote discovery is cached briefly; a server that changes its tool list within 30s may serve a stale listing momentarily.
