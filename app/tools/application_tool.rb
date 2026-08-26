@@ -87,11 +87,6 @@ class ApplicationTool < ActionTool::Base
     end
   end
 
-  # The service instance this tool was bound to, resolved per call.
-  def service
-    @service ||= Service.find(self.class.service_id)
-  end
-
   # Wrap the framework's actual execution in our invocation logging. We hook
   # here (rather than the subclass `call`) so success/error/status and timing
   # are captured for every tool, bound to the current API token's workspace.
@@ -120,6 +115,11 @@ class ApplicationTool < ActionTool::Base
     )
   rescue StandardError => e
     Rails.logger.error("Tool invocation logging failed: #{e.message}")
+  end
+
+  # The bound service; generic (service-less) tools return nil.
+  def service
+    @service ||= Service.find_by(id: self.class.service_id)
   end
 
   def elapsed_ms(started_at)
