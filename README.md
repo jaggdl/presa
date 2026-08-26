@@ -1,41 +1,35 @@
 # Presa
 
-Presa hosts [MCP](https://modelcontextprotocol.io) servers for your external AI clients. Each client authenticates with an API token, connects to a **workspace**, and gets a tailored set of **tools** that are dynamically backed by your configured **services**.
+Presa is a **configurable [MCP](https://modelcontextprotocol.io) proxy**. Your external AI clients connect to it like any MCP server, and Presa proxies each request to whichever backend tools you've configured under a **workspace** — backed by your **services**.
 
 ```
-                        ┌──────────────────────────────────────────────┐
-                        │                     Presa                   │
-                        │                                              │
-   external AI client   │   ┌──────────────┐   ┌───────────────┐      │
-  (Claude, Cursor, ...) │   │  Workspace   │   │   Service     │      │
-        │               │   │ ──────────── │   │ ───────────── │      │
-        │  Authorization│   │  API token   │   │  kind+config  │      │
-        │  Bearer mcp_  │   │  named scope │   │  (github,     │      │
-        ▼               │   │              │   │   jellyfin,   │      │
-  /mcp/sse ─────────────┼─▶ │       │      │   │   mcp, ...)   │      │
-  (MCP over SSE)        │   └───────┼──────┘   └──────▲────────┘      │
-        │               │           │  links        │                │
-        │  tools/call   │   ┌───────▼──────┐   ┌──────┴───────┐       │
-        ▼               │   │ workspace_   │   │ Tool (unit)  │       │
-   tool result ─────────┼── │ services     │──▶│ backed by a  │       │
-        ▲               │   │ (join)       │   │ service      │       │
-        │               │   └──────────────┘   └──────▲───────┘       │
-        │  tools/list   │                            │                │
-        │  (per-workspace)                            │ calls out to  │
-        └───────────────┼────────────────────────────┘  external API  │
-                        │                    (GitHub, Jellyfin, remote MCP)
-                        └──────────────────────────────────────────────┘
+     external AI client                     Presa (MCP proxy)
+    (Claude, Cursor, ...)                  ┌──────────────────────┐
+            │                              │                      │
+            │  Authorization               │  ▸ Workspace         │
+            │  Bearer mcp_                 │    API token         │
+            ▼                              │    named scope       │
+      /mcp/sse ──────────────────────────▶ │                      │
+      (MCP over SSE)                       │  ▸ Services          │
+            │                              │    github: <token>   │
+            │  tools/list, tools/call      │    jellyfin: <key>   │
+            ▼                              │    mcp: <remote>     │
+         result  ◀─────────────────────────│                      │
+   (MCP over SSE)                          └──────────────────────┘
+                                             │  proxied calls to backend APIs
+                                             ▼
+                                   (GitHub, Jellyfin, remote MCP, ...)
 ```
 
-Each tool invocation (timestamp, tool, arguments, response, status, duration) is logged to the workspace, and the web UI surfaces each service's available tools and their input parameters.
+Presa proxies each MCP request from the client to the backend service that backs the requested tool. Every invocation (timestamp, tool, arguments, response, status, duration) is logged to the workspace, and the web UI shows each service's available tools and their input parameters.
 
 ## How it works
 
-- **Workspace** — a named scope. MCP clients authenticate to a workspace with an opaque API token (`mcp_…`).
-- **Service** — a configured integration instance (e.g. a GitHub account/credential). Services belong to a user and are shared across that user's workspaces via a join.
+- **Workspace** — a named scope. MCP clients authenticate and are proxied against a workspace with an opaque API token (`mcp_…`).
+- **Service** — a configured backend integration (e.g. a GitHub account/credential) that provides tools. Services back the proxy's responses to a workspace.
 - **Tool** — an MCP capability built on top of a service. Each service kind registers its own set of tools.
 
-When an MCP client connects, Presa derives that workspace's tool list from its linked services. Config (API keys, base URLs) is read at call time and encrypted at rest, and changes are picked up on the next request — no restarts required.
+When an MCP client connects, Presa proxies the workspace's requests to the services configured for it. Config (API keys, base URLs) is read at call time and encrypted at rest, and changes are picked up on the next request — no restarts required.
 
 ## Connecting a client
 
