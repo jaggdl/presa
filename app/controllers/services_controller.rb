@@ -56,6 +56,8 @@ class ServicesController < ApplicationController
   def service_config_params
     return {} unless params[:service].key?(:config)
 
-    params.require(:service).require(:config).permit!
+    klass = @service&.class || service_klass
+    keys = klass.config_fields.keys.map(&:to_s)
+    params.require(:service).require(:config).permit(*keys)
   end
 end
