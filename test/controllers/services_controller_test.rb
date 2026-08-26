@@ -55,8 +55,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show renders no-argument tools without error" do
-    jellyfin = @user.services.create!(name: "Jellyfin", type: "Services::Jellyfin", config: { api_key: "key", base_url: "https://jellyfin.local" })
-    get service_path(jellyfin)
+    get service_path(services(:jellyfin))
     assert_response :success
     assert_select "code", text: "get_system_info_jellyfin_jellyfin"
     assert_select "p", text: "Accepts no arguments."
