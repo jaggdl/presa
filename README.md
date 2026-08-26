@@ -42,7 +42,7 @@ Example `.mcp.json`:
   "mcpServers": {
     "my-workspace": {
       "type": "sse",
-      "url": "http://localhost:56666/mcp/sse",
+      "url": "https://your-presa-instance.domain.com/mcp/sse",
       "headers": { "Authorization": "Bearer mcp_your_token" }
     }
   }
@@ -55,6 +55,83 @@ Example `.mcp.json`:
 2. The token is resolved to an active API token via its owning workspace.
 3. That workspace's context is set for the duration of the request.
 4. Only tools relevant to that workspace are exposed.
+
+## Self-hosting with Docker Compose
+
+Deploy Presa behind your own host using the bundled production `Dockerfile` and a
+`docker-compose.yml`. Below is the compose file used for a local/personal deployment.
+
+```yaml
+services:
+  web:
+    image: jaggdl/presa
+    restart: unless-stopped
+    ports:
+      - "7753:80"
+    environment:
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - BASE_URL=https://presa.jaggdl.com
+    volumes:
+      - presa-production:/rails/storage
+
+volumes:
+  presa-production:
+```
+
+### Run it
+
+```sh
+cd path/to/your/compose/dir
+docker compose up -d
+```
+
+### Connect a client
+
+Once the instance is up, create a **workspace** and an **API token** on the web UI as in the
+[Connecting a client](#connecting-a-client) section, then wire the token into your MCP client.
+On the host itself you can connect via `localhost`:
+
+```json
+{
+  "mcpServers": {
+    "my-workspace": {
+      "type": "sse",
+      "url": "http://localhost:7753/mcp/sse",
+      "headers": { "Authorization": "Bearer mcp_your_token" }
+    }
+  }
+}
+```
+
+> You can also connect via the public domain instead of `localhost`, e.g.
+> `https://presa.example.com/mcp/sse`, which is what you'd point remote clients at.
+
+### Configuration
+
+| Variable             | Purpose                                                            |
+| -------------------- | ------------------------------------------------------------------ |
+| `RAILS_MASTER_KEY`   | Rails master key used to decrypt `config/credentials.yml.enc`. Must match the app's `config/master.key`; you can copy the repo's `config/master.key` into your deployment if you hold the seed. |
+| `BASE_URL`           | Public URL of the instance (e.g. `https://presa.example.com`). Used to build absolute links and signing. |
+
+Persist the encrypted `storage/` (attachments and uploads) via the `presa-production`
+named volume, mounted at `/rails/storage`.
+
+A minimal `.env` next to the compose file:
+
+```
+RAILS_MASTER_KEY=<your key>
+BASE_URL=https://presa.example.com
+```
+
+### Updating
+
+Pull the latest image, then recreate the container:
+
+```sh
+docker compose pull
+docker compose down
+docker compose up -d
+```
 
 ## Development
 
