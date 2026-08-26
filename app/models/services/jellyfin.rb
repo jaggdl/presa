@@ -21,6 +21,27 @@ module Services
       { error: e.message }
     end
 
+    # Perform a POST against the server. `body` is sent as JSON when present.
+    def post(path, body: nil, headers: {}, auth: true)
+      conn.post(path) do |req|
+        req.headers["X-Emby-Token"] = config[:api_key] if auth
+        headers.each { |key, value| req.headers[key] = value }
+        req.body = JSON.generate(body) if body
+      end.body
+    rescue StandardError => e
+      { error: e.message }
+    end
+
+    # Perform a DELETE against the server.
+    def delete(path, headers: {}, auth: true)
+      conn.delete(path) do |req|
+        req.headers["X-Emby-Token"] = config[:api_key] if auth
+        headers.each { |key, value| req.headers[key] = value }
+      end.body
+    rescue StandardError => e
+      { error: e.message }
+    end
+
     private
 
     def conn
