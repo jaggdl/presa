@@ -16,8 +16,19 @@ class ApplicationToolTest < ActiveSupport::TestCase
     klass = bound.first
 
     assert_equal services(:github_prod).id, klass.service_id
-    assert_equal "list_issues_github_prod", klass.tool_name
+    assert_equal "list_issues_github", klass.tool_name
     assert klass < Tools::Github::ListIssues
+  end
+
+  test "appends the service slug when a workspace has more than one service of the same kind" do
+    Current.workspace = workspaces(:one)
+
+    bound = ApplicationTool.expose_for(services(:github_prod))
+    assert_equal "list_issues_github_prod", bound.first.tool_name
+
+    Current.workspace = nil
+  ensure
+    Current.workspace = nil
   end
 
   test "bound classes keep the handler's schema and description" do
@@ -57,11 +68,11 @@ class ApplicationToolTest < ActiveSupport::TestCase
 
     klass, klass2 = ApplicationTool.expose_for(service)
 
-    assert_equal "search_web_search", klass.tool_name
+    assert_equal "web_search", klass.tool_name
     assert_equal "web_search", klass.remote_tool_name
     assert klass < Tools::Mcp::Base
 
-    assert_equal "search_web_fetch", klass2.tool_name
+    assert_equal "web_fetch", klass2.tool_name
     schema = klass.input_schema_to_json
     assert_equal "object", schema[:type]
     assert_equal %w[q], schema[:required]

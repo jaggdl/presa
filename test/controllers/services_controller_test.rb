@@ -50,14 +50,14 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     get service_path(services(:github_prod))
     assert_response :success
     assert_select "h2", text: "Tools"
-    assert_select "code", text: "list_issues_github_prod"
+    assert_select "code", text: "list_issues_github"
     assert_select "code", text: "repo"
   end
 
   test "show renders no-argument tools without error" do
     get service_path(services(:jellyfin))
     assert_response :success
-    assert_select "code", text: "get_system_info_jellyfin_jellyfin"
+    assert_select "code", text: "get_system_info_jellyfin"
     assert_select "p", text: "Accepts no arguments."
   end
 

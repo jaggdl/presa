@@ -116,7 +116,7 @@ This reads config at call time, so editing a service's credentials takes effect 
 
 ### MCP tool naming
 
-Exposed MCP tool names are built as `<kind>_<service_kind>_<service_name_slug>`. For a GitHub service named **"Personal"**, a tool `kind :list_issues` becomes `list_issues_github_personal`. Two GitHub services named "Prod" / "Staging" produce `list_issues_github_prod` and `list_issues_github_staging` — distinct tools, each bound to its own config.
+Exposed MCP tool names are built as `<kind>_<service_kind>`. For a GitHub service, a tool `kind :list_issues` becomes `list_issues_github`. The service name is only appended when the workspace has more than one service of that kind — two GitHub services named "Prod" / "Staging" produce `list_issues_github_prod` and `list_issues_github_staging` — keeping names short (and token-efficient) by default while still avoiding collisions.
 
 ## Wiring / refresh
 
@@ -164,7 +164,7 @@ As with any service kind, these render in the new-service UI automatically from 
 
 1. **Discovery** — `Services::Mcp#remote_tools` calls the outbound `Mcp::Client` (`app/services/mcp/client.rb`, Streamable HTTP JSON-RPC: `initialize` → `notifications/initialized` → `tools/list`), cached ~30s per URL.
 2. **Exposure** — `ApplicationTool.expose_for` detects a `Services::Mcp` and builds one dynamic tool class **per remote tool** (`app/tools/application_tool.rb`, `expose_remote_mcp`) instead of mapping static handlers.
-3. **Naming** — each proxied tool is named `<service_slug>_<remote_tool>`, e.g. a service named "Search" yields `search_web_search` and `search_web_fetch`. No collisions across services.
+3. **Naming** — each proxied tool is named after the remote tool itself, e.g. a service exposing `web_search` / `web_fetch` yields tools named `web_search` and `web_fetch`. The service slug is only prefixed (`search_web_search`) when the workspace has more than one MCP service, to avoid collisions.
 4. **Schema** — the remote tool's advertised `inputSchema` is surfaced verbatim via the carrier's `input_schema_to_json` override (`Tools::Mcp::Base`); validation stays permissive (the remote owns it).
 5. **Call** — the bound class forwards `tools/call` to the remote for the original tool name and returns the result.
 

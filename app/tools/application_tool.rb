@@ -58,7 +58,7 @@ class ApplicationTool < ActionTool::Base
         next if name.blank?
 
         klass = Class.new(Tools::Mcp::Base)
-        klass.tool_name("#{service.name.underscore}_#{name}")
+        klass.tool_name(remote_tool_name(service, name))
         klass.description(remote_tool[:description] || remote_tool["description"] || "")
         klass.remote_tool_name = name
         klass.remote_input_schema = remote_tool[:inputSchema] || remote_tool["inputSchema"] || {}
@@ -81,9 +81,35 @@ class ApplicationTool < ActionTool::Base
     def build_bound_handler(handler, service)
       klass = Class.new(handler)
       copy_dsl_state(handler, klass)
-      klass.tool_name("#{handler.kind}_#{service.class.name.demodulize.chomp("Service").underscore}_#{service.name.parameterize}")
+      klass.tool_name(bound_tool_name(handler, service))
       klass.class_attribute :service_id, default: service.id
       klass
+    end
+
+    # The MCP tool name for a static handler: "<kind>_<service kind>", e.g.
+    # "list_issues_github". The service name is only appended when it is needed
+    # to disambiguate — i.e. the workspace has more than one service of the same
+    # kind — keeping names short and token-efficient.
+    def bound_tool_name(handler, service)
+      base = "#{handler.kind}_#{service_kind_slug(service)}"
+      service_name_needed?(service) ? "#{base}_#{service.name.parameterize}" : base
+    end
+
+    # The MCP tool name for a remote-MCP service: just the remote tool's name
+    # (e.g. "web_search"). The service slug is appended only when the workspace
+    # has more than one MCP service, to keep remote tool names from colliding.
+    def remote_tool_name(service, remote_name)
+      service_name_needed?(service) ? "#{service.name.underscore}_#{remote_name}" : remote_name
+    end
+
+    def service_kind_slug(service)
+      service.class.name.demodulize.chomp("Service").underscore
+    end
+
+    def service_name_needed?(service)
+      return false unless Current.workspace
+
+      Current.workspace.services.count { |s| s.kind == service.kind } > 1
     end
   end
 
