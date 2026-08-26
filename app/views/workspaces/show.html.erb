@@ -54,13 +54,19 @@
     </div>
   <% end %>
 
-  <% if @api_tokens.any? %>
-    <table class="w-full text-left mt-2">
-      <tbody>
-        <% @api_tokens.each do |api_token| %>
-          <tr class="border-b border-zinc-800">
-            <td class="py-2">
-              <div class="flex items-center gap-3">
+<% if @api_tokens.any? %>
+    <div data-controller="clients" data-clients-show-revoked-value="false" class="group">
+      <button type="button" data-action="clients#toggle" title="Toggle revoked clients" class="mt-2 text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5" aria-label="Toggle revoked clients">
+        <span class="inline group-data-[clients-show-revoked-value=true]:hidden"><%= icon "eye", class: "size-5" %></span>
+        <span class="hidden group-data-[clients-show-revoked-value=true]:block"><%= icon "eye-off", class: "size-5" %></span>
+        <span class="text-sm">revoked</span>
+      </button>
+      <table class="w-full text-left mt-2">
+        <tbody>
+          <% @api_tokens.each do |api_token| %>
+            <tr class="border-b border-zinc-800 <%= api_token.revoked? ? "hidden group-data-[clients-show-revoked-value=true]:table-row" : "" %>">
+              <td class="py-2">
+                <div class="flex items-center gap-3">
                 <%= icon "monitor", class: "size-5 text-zinc-500" %>
                 <span class="font-medium"><%= api_token.name.presence || "Unnamed client" %></span>
                 <span class="inline-flex items-center gap-1.5 text-xs">
@@ -106,6 +112,7 @@
         <% end %>
       </tbody>
     </table>
+    </div>
   <% else %>
     <p class="text-zinc-500 mt-4">No clients connected yet.</p>
   <% end %>
