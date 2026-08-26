@@ -18,7 +18,7 @@ class Service < ApplicationRecord
   class << self
     def kind(value = nil)
       self.config_kind = value.to_s if value
-      config_kind || name.demodulize.chomp("Service").underscore
+      config_kind || (name || "").demodulize.chomp("Service").underscore.presence
     end
 
     # Declares the brand image for this service kind (filename under
@@ -36,13 +36,18 @@ class Service < ApplicationRecord
 
     # Concrete service subclasses available to instantiate (e.g. Services::Github).
     # Subclasses are loaded at boot/reload via config/application.rb to_prepare,
-    # so this sees them all.
+    # so this sees them all. Anonymous subclasses (e.g. a `Class.new(Service)`
+    # created in a test) have no name and are skipped.
+    def concrete_service_classes
+      Service.descendants.select { |klass| klass.name.present? }
+    end
+
     def kinds
-      Service.descendants.filter_map { |klass| klass.kind if klass.config_fields.present? }
+      concrete_service_classes.filter_map { |klass| klass.kind if klass.config_fields.present? }
     end
 
     def class_for_kind(kind)
-      Service.descendants.find { |klass| klass.kind == kind }
+      concrete_service_classes.find { |klass| klass.kind == kind }
     end
 
     def config_field(name, required: false, secret: false, default: nil, textarea: false)
