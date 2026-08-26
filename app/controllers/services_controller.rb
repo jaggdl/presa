@@ -2,7 +2,7 @@ class ServicesController < ApplicationController
   before_action :set_service, only: %i[ show edit update destroy ]
 
   def index
-    @services = Current.user.services.order(:type, :name)
+    @services = Service.with_invocation_counts(Current.user.services.order(:type, :name))
     # Available service kinds a user can add, MCP first then alphabetical.
     @kinds = Service.kinds.sort_by { |kind| [ kind == "mcp" ? 0 : 1, kind ] }
   end

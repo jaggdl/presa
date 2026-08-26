@@ -2,6 +2,7 @@ class Service < ApplicationRecord
   belongs_to :user
   has_many :workspace_services, dependent: :destroy
   has_many :workspaces, through: :workspace_services
+  has_many :tool_invocations
 
   encrypts :config
 
@@ -53,10 +54,39 @@ class Service < ApplicationRecord
     def config_field(name, required: false, secret: false, default: nil, textarea: false)
       self.config_fields = config_fields.merge(name.to_sym => { required: required, secret: secret, default: default, textarea: textarea })
     end
+
+    # Decorates each service in `relation` with its invocation count since
+    # `since`, using a single grouped query instead of one per service.
+    # `invocation_count` on the returned records then avoids further queries.
+    def with_invocation_counts(relation, since: 24.hours.ago)
+      services = relation.to_a
+      ids = services.map(&:id)
+      return services if ids.empty?
+
+      counts = ToolInvocation
+        .where(service_id: ids)
+        .where("tool_invocations.created_at >= ?", since)
+        .group(:service_id)
+        .count
+
+      services.each do |service|
+        service.instance_variable_set(:@invocation_count, counts.fetch(service.id, 0))
+      end
+      services
+    end
   end
 
   def kind
     self.class.kind
+  end
+
+  # Number of tool invocations recorded for this service since `since`.
+  # Uses the count batch-loaded via `with_invocation_counts` when present,
+  # otherwise issues a query for this service alone.
+  def invocation_count(since: 24.hours.ago)
+    return @invocation_count if @invocation_count
+
+    tool_invocations.where("tool_invocations.created_at >= ?", since).count
   end
 
   # The brand image filename for this service, or the generic placeholder when

@@ -14,26 +14,20 @@
   <% if @services.any? %>
     <h2 class="font-bold text-2xl mt-10">Your services</h2>
     <table class="w-full text-left mt-4">
-      <thead>
-        <tr class="border-b border-zinc-800 text-sm text-zinc-500">
-          <th class="py-2">Name</th>
-          <th class="py-2">Kind</th>
-          <th class="py-2">Workspaces</th>
-          <th class="py-2"></th>
-        </tr>
-      </thead>
       <tbody>
         <% @services.each do |service| %>
           <tr class="border-b border-zinc-800">
-            <td class="py-2"><%= link_to service.name, service_path(service), class: "text-blue-500 hover:underline" %></td>
             <td class="py-2">
-            <%= service_icon(service, size: "h-9 w-9") %>
-            <span class="ml-3"><%= service.kind %></span>
-          </td>
-            <td class="py-2"><%= service.workspaces.map(&:name).presence&.join(", ") || "–" %></td>
+              <div class="flex items-center gap-3">
+                <%= service_icon(service, size: "h-5 w-5") %>
+                <%= link_to service.name, service_path(service), class: "text-blue-500 hover:underline" %>
+                <span class="text-zinc-500"><%= service.kind %></span>
+              </div>
+            </td>
             <td class="py-2 text-right">
-              <%= link_to "Edit", edit_service_path(service), class: "text-zinc-400 underline hover:no-underline mr-3" %>
-              <%= button_to "Delete", service_path(service), method: :delete, class: "text-red-400 underline hover:no-underline", form: { data: { turbo_confirm: "Delete this service?" } } %>
+              <span class="text-xs text-zinc-500">
+                <span class="text-zinc-400">Used in <%= pluralize(service.workspaces.count, "workspace") %></span> · <%= pluralize(service.invocation_count, "invocation") %> in 24h
+              </span>
             </td>
           </tr>
         <% end %>

@@ -8,20 +8,23 @@
 
   <% if @linked_services.any? %>
     <table class="w-full text-left mt-4">
-      <thead>
-        <tr class="border-b border-zinc-800 text-sm text-zinc-500">
-          <th class="py-2">Name</th>
-          <th class="py-2">Kind</th>
-          <th class="py-2"></th>
-        </tr>
-      </thead>
       <tbody>
         <% @linked_services.each do |service| %>
           <tr class="border-b border-zinc-800">
-            <td class="py-2"><%= link_to service.name, service_path(service), class: "text-blue-500 hover:underline" %></td>
-            <td class="py-2"><%= service.kind %></td>
+            <td class="py-2">
+              <div class="flex items-center gap-3">
+                <%= service_icon(service, size: "h-5 w-5") %>
+                <%= link_to service.name, service_path(service), class: "text-blue-500 hover:underline" %>
+                <span class="text-zinc-500"><%= service.kind %></span>
+              </div>
+            </td>
             <td class="py-2 text-right">
-              <%= button_to "Remove", workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-red-500 underline hover:no-underline", form: { data: { turbo_confirm: "Remove this service from the workspace?" } } %>
+              <div class="flex items-center justify-end gap-3">
+                <span class="text-xs text-zinc-500"><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
+                <%= button_to workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Remove this service from the workspace?" } }, "aria-label": "Remove service" do %>
+                  <%= icon "unlink", class: "size-5" %>
+                <% end %>
+              </div>
             </td>
           </tr>
         <% end %>

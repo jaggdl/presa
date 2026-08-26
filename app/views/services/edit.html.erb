@@ -7,4 +7,8 @@
   <div class="my-6">
     <%= render "form", service: @service %>
   </div>
+
+  <div class="mt-10">
+    <%= button_to "Delete service", service_path(@service), method: :delete, class: "text-red-400 underline hover:no-underline", form: { data: { turbo_confirm: "Delete this service?" } } %>
+  </div>
 </div>
