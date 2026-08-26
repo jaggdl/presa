@@ -25,4 +25,12 @@ class WorkspaceTest < ActiveSupport::TestCase
     refute @workspace.valid_share_code?("bogus")
     refute @workspace.valid_share_code?(nil)
   end
+
+  test "find_by_share_code resolves the owning workspace from the raw code" do
+    code = @workspace.reset_share_code!
+
+    assert_equal @workspace, Workspace.find_by_share_code(code)
+    assert_nil Workspace.find_by_share_code("bogus")
+    assert_nil Workspace.find_by_share_code(nil)
+  end
 end

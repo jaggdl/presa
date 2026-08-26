@@ -16,7 +16,7 @@ class Bots::AuthorizationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "POST authorize creates a pending request and returns request_id + URL" do
-    post authorize_bots_workspace_path(@workspace), params: authorize_body, as: :json
+    post bots_authorize_path, params: authorize_body, as: :json
 
     assert_response :success
     body = json_body
@@ -26,12 +26,12 @@ class Bots::AuthorizationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "POST authorize rejects a bad or missing share code" do
-    post authorize_bots_workspace_path(@workspace), params: authorize_body(share_code: "wrong"), as: :json
+    post bots_authorize_path, params: authorize_body(share_code: "wrong"), as: :json
     assert_response :unauthorized
   end
 
   test "POST authorize requires a name" do
-    post authorize_bots_workspace_path(@workspace), params: { share_code: @share_code }, as: :json
+    post bots_authorize_path, params: { share_code: @share_code }, as: :json
     assert_response :unprocessable_entity
     refute BotAuthorization.any?
   end

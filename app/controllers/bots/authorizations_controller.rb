@@ -11,16 +11,17 @@ module Bots
     allow_unauthenticated_access only: [ :authorize, :token ]
     skip_forgery_protection only: %i[ authorize token ]
 
-    # POST /bots/workspaces/:workspace_id/authorize
+    # POST /bots/authorize
     # Body: { "share_code": ..., "name": ..., "justification": ... }
-    # Creates a pending authorization for the workspace if the share code is
-    # valid and returns { request_id, authorize_url }.
+    # Creates a pending authorization for the workspace identified by the share
+    # code and returns { request_id, authorize_url }.
     def authorize
-      return render plain: "Unauthorized.\n", status: :unauthorized unless valid_share?
+      @workspace = Workspace.find_by_share_code(body[:share_code])
+      return render plain: "Unauthorized.\n", status: :unauthorized unless @workspace
 
       return render plain: "Name required.\n", status: :unprocessable_entity if name.blank?
 
-      authorization = BotAuthorization.initiate!(workspace: workspace, name: name, justification: justification)
+      authorization = BotAuthorization.initiate!(workspace: @workspace, name: name, justification: justification)
       render json: {
         request_id: authorization.request_token,
         authorize_url: bots_authorization_url(authorization.request_token)
@@ -72,14 +73,6 @@ module Bots
     end
 
     private
-
-    def workspace
-      @workspace ||= Workspace.find(params[:id])
-    end
-
-    def valid_share?
-      workspace.valid_share_code?(body[:share_code])
-    end
 
     def name
       body[:name]

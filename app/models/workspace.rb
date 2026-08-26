@@ -36,4 +36,14 @@ class Workspace < ApplicationRecord
   def valid_share_code?(raw)
     share_code_digest.present? && !raw.blank? && ApiToken.digest(raw) == share_code_digest
   end
+
+  # Find the single workspace whose share code matches the given raw value. A
+  # share code maps 1:1 to a workspace (one digest per workspace), so we can
+  # identify the workspace from the code alone. Returns nil when no match.
+  def self.find_by_share_code(raw)
+    return nil if raw.blank?
+
+    digest = ApiToken.digest(raw)
+    where.not(share_code_digest: nil).find { |w| w.share_code_digest == digest }
+  end
 end

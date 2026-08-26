@@ -24,7 +24,7 @@ Presa does not hand out tokens directly to bots over the network. Instead, each 
 POST to the workspace's authorize endpoint with the share code, a name for the bot, and a justification:
 
 ```
-POST <%= base_url %>/bots/workspaces/{workspace_id}/authorize
+POST <%= base_url %>/bots/authorize
 Content-Type: application/json
 
 {

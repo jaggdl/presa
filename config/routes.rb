@@ -6,9 +6,7 @@ Rails.application.routes.draw do
 
   namespace :bots do
     get "SKILL.md", to: "tools#skill", as: :skill
-    resources :workspaces, only: [] do
-      post :authorize, on: :member, controller: "authorizations"
-    end
+    post :authorize, controller: "authorizations"
     resources :authorizations, only: :show, param: :request_token do
       member do
         post :approve
