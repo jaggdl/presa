@@ -1,10 +1,12 @@
 Rails.application.routes.draw do
   mount RailsIcons::Engine, at: "/rails_icons"
+  mount ActionCable.server => "/cable"
   resource :session
   resources :passwords, param: :token
   resources :workspaces do
     resources :api_tokens, only: %i[ create destroy ]
     resources :workspace_services, only: %i[ create destroy ]
+    get :invocations, on: :member
   end
   resources :services do
     get ":kind/new", action: "new", on: :collection, as: :new_kind_service

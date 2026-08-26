@@ -56,6 +56,23 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_select "li span", text: "github_list_issues_prod"
   end
 
+  test "invocations appends older rows via turbo stream" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+    token = ApiToken.create!(workspace: workspace, token_digest: "digest")
+    older = ToolInvocation.create!(api_token: token, tool_name: "old_tool", arguments: {})
+    newer = ToolInvocation.create!(api_token: token, tool_name: "new_tool", arguments: {})
+
+    get invocations_workspace_path(workspace, before_id: newer.id),
+        headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_match(/turbo-stream action="append"/, response.body)
+    assert_match(/target="tool-invocations"/, response.body)
+    assert_match(/old_tool/, response.body)
+    refute_match(/new_tool/, response.body)
+  end
+
   test "create renders errors on invalid input" do
     sign_in_as @user
 

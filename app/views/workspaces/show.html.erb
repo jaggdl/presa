@@ -102,22 +102,19 @@
 
   <h2 class="font-bold text-2xl mt-10">Tool invocations</h2>
 
-  <% if @tool_invocations.any? %>
-    <div class="mt-4 rounded-md border border-zinc-700 bg-black font-mono text-xs overflow-x-auto">
-      <ul class="divide-y divide-zinc-800/60">
-        <% @tool_invocations.each do |invocation| %>
-          <li class="flex items-center gap-3 px-4 py-2 whitespace-nowrap">
-            <span class="text-zinc-500"><%= invocation.created_at.strftime("%H:%M:%S") %></span>
-            <%= tag.span invocation.tool_name, class: (invocation.success? ? "text-green-400" : "text-red-500") %>
-            <span class="text-zinc-500"><%= invocation.duration_ms ? "#{invocation.duration_ms} ms" : "–" %></span>
-            <span class="text-zinc-300"><%= invocation.service&.name.presence || "–" %></span>
-            <code class="text-zinc-400 flex-1 min-w-0 truncate"><%= truncate(JSON.generate(invocation.arguments), length: 60) %></code>
-            <span class="ml-auto text-zinc-500"><%= invocation.api_token.name.presence || "–" %></span>
-          </li>
+  <%= turbo_stream_from "invocations_#{@workspace.id}" %>
+
+  <div class="mt-4 rounded-md border border-zinc-700 bg-black font-mono text-xs overflow-x-auto">
+    <ul id="tool-invocations" class="divide-y divide-zinc-800/60 max-h-80 overflow-y-auto">
+        <% if @tool_invocations.any? %>
+          <%= render partial: "tool_invocations/invocation", collection: @tool_invocations %>
+        <% else %>
+          <li id="tool-invocations-empty" class="px-4 py-3 text-zinc-500">No tool invocations yet.</li>
         <% end %>
       </ul>
-    </div>
-  <% else %>
-    <p class="text-zinc-500 mt-4">No tool invocations yet.</p>
-  <% end %>
+      <div id="invocations-more" class="border-t border-zinc-800">
+        <% if @tool_invocations.size >= 10 %>
+          <%= link_to "Load more", invocations_workspace_path(@workspace, before_id: @tool_invocations.last.id), class: "block px-4 py-2 text-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900" %>
+        <% end %>
+      </div>
 </div>

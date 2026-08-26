@@ -12,7 +12,7 @@ class ToolInvocation < ApplicationRecord
   def self.record!(api_token: nil, service: nil, tool_name:, arguments:, **attrs)
     return if api_token.nil?
 
-    create!(
+    invocation = create!(
       api_token: api_token,
       service: service,
       tool_name: tool_name,
@@ -22,6 +22,8 @@ class ToolInvocation < ApplicationRecord
       duration_ms: attrs[:duration_ms],
       response: truncate(attrs[:response])
     )
+    InvocationBroadcastJob.perform_later(invocation.id)
+    invocation
   rescue StandardError => e
     Rails.logger.error("Failed to record tool invocation: #{e.message}")
   end
