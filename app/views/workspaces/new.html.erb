@@ -1,8 +1,8 @@
 <div class="mx-auto md:w-3/4 w-full">
   <% if @workspace.errors.any? %>
-    <div class="py-2 px-3 bg-red-50 mb-5 rounded-lg">
-      <h2 class="text-red-500 font-medium"><%= pluralize(@workspace.errors.count, "error") %> prohibited this workspace from being saved:</h2>
-      <ul class="text-red-500 list-disc list-inside mt-2">
+    <div class="py-2 px-3 bg-red-950 mb-5 rounded-lg">
+      <h2 class="text-red-400 font-medium"><%= pluralize(@workspace.errors.count, "error") %> prohibited this workspace from being saved:</h2>
+      <ul class="text-red-400 list-disc list-inside mt-2">
         <% @workspace.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -10,14 +10,14 @@
     </div>
   <% end %>
 
-  <p class="text-sm text-gray-500 mb-2">
-    <%= link_to "Workspaces", workspaces_path, class: "text-blue-600 hover:underline" %>
+  <p class="text-sm text-zinc-500 mb-2">
+    <%= link_to "Workspaces", workspaces_path, class: "text-blue-500 hover:underline" %>
   </p>
   <h1 class="font-bold text-4xl">New workspace</h1>
 
   <%= form_with model: @workspace, url: workspaces_path, class: "contents" do |form| %>
     <div class="my-5">
-      <%= form.text_field :name, placeholder: "Workspace name", autofocus: true, class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+      <%= form.text_field :name, placeholder: "Workspace name", autofocus: true, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
     </div>
 
     <div class="inline">

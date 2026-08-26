@@ -1,7 +1,7 @@
 <% if service.errors.any? %>
-  <div class="py-2 px-3 bg-red-50 mb-5 rounded-lg">
-    <h2 class="text-red-500 font-medium"><%= pluralize(service.errors.count, "error") %> prohibited this service from being saved:</h2>
-    <ul class="text-red-500 list-disc list-inside mt-2">
+  <div class="py-2 px-3 bg-red-950 mb-5 rounded-lg">
+    <h2 class="text-red-400 font-medium"><%= pluralize(service.errors.count, "error") %> prohibited this service from being saved:</h2>
+    <ul class="text-red-400 list-disc list-inside mt-2">
       <% service.errors.each do |error| %>
         <li><%= error.full_message %></li>
       <% end %>
@@ -11,25 +11,25 @@
 
 <%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), class: "contents" do |form| %>
   <div class="my-5">
-    <%= form.label :name, "Name", class: "block text-sm text-gray-600" %>
-    <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+    <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
+    <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
   </div>
 
   <% unless service.persisted? %>
     <div class="my-5">
-      <%= form.label :kind, "Kind", class: "block text-sm text-gray-600" %>
-      <%= form.select :kind, Service.kinds.map { |k| [k.humanize, k] }, {}, class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+      <%= form.label :kind, "Kind", class: "block text-sm text-zinc-400" %>
+      <%= form.select :kind, Service.kinds.map { |k| [k.humanize, k] }, {}, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
     </div>
   <% end %>
 
   <%= form.fields_for :config do |cf| %>
     <% service.config_schema.each do |field, opts| %>
       <div class="my-5">
-        <%= cf.label field, field.humanize, class: "block text-sm text-gray-600" %>
+        <%= cf.label field, field.humanize, class: "block text-sm text-zinc-400" %>
         <% if opts[:secret] %>
-          <%= cf.password_field field, value: service.config[field], placeholder: "••••••••", class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+          <%= cf.password_field field, value: service.config[field], placeholder: "••••••••", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
         <% else %>
-          <%= cf.text_field field, value: service.config[field], class: "block shadow-sm rounded-md border border-gray-400 focus:outline-blue-600 px-3 py-2 mt-2 w-full" %>
+          <%= cf.text_field field, value: service.config[field], class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
         <% end %>
       </div>
     <% end %>

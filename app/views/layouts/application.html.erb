@@ -23,7 +23,10 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="dark">
+    <%= render "layouts/navbar" if authenticated? %>
+    <%= render "layouts/flash" %>
+
     <main class="container mx-auto mt-28 px-5 flex">
       <%= yield %>
     </main>
