@@ -26,6 +26,19 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "<your-presa-url>"
   end
 
+  test "GET /bots/SKILL.md includes token storage guidance" do
+    get bots_skill_path
+
+    assert_response :success
+    assert_includes response.body, "## Storing the token"
+    assert_includes response.body, "Never echo, log, or display the API token or the share code"
+    assert_includes response.body, "TOOLS.md"
+    assert_includes response.body, "AGENTS.md"
+    assert_includes response.body, "OpenClaw"
+    assert_includes response.body, "Claude Code"
+    assert_includes response.body, "$PRESA_TOKEN"
+  end
+
   test "GET /bots/tools lists the workspace's available tools as plain text" do
     join = workspace_services(:one_jellyfin)
     join.update!(allowed_tools: [ "resume_items" ])

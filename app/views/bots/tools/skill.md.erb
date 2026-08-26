@@ -66,12 +66,70 @@ On success:
 
 Store this token securely (e.g. in your secrets store) and never print it to output. The code is single-use and short-lived; if it fails, ask the user to approve again.
 
-## Using the API
+## Storing the token
 
-Attach the token on every request:
+The token is a bearer credential for the workspace and must be treated as a secret. Two rules are absolute:
+
+- **Never echo, log, or display the API token or the share code** in any output, file, or chat message.
+- **The token must always live in a restricted secrets store**, never in `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, a committed config file, or any workspace file that could be read back to the user or committed to source control.
+
+Once the raw token is returned, write it only into the agent's native secret mechanism below (or an equivalent OS keychain / secret manager). Do not paste it into a file you can see.
+
+### Claude Code
+
+Inject it as an environment variable from a machine-local settings file, never from a committed one:
+
+- Open one of **`~/.claude/settings.json`** (user) or **`.claude/settings.local.json`** (project-local, git-excluded). Do NOT put secrets in the shared, committable `.claude/settings.json`.
+- Add it under the `env` key:
+
+```json
+{
+  "env": {
+    "PRESA_TOKEN": "mcp_..."
+  }
+}
+```
+
+Then reference `$PRESA_TOKEN` from the skill's curl calls. Claude Code also stores its own sign-in auth token in the OS keyring (macOS Keychain or the Linux Secret Service); prefer that same mechanism on your machine if you are not using a settings `env` block.
+
+### OpenClaw (OpenClaude CLI)
+
+OpenClaw has a dedicated, write-only secrets store — use it:
 
 ```
-Authorization: Bearer <token>
+openclaw secrets store set PRESA_TOKEN --kind secret --value-file token.txt
+```
+
+or pipe it on stdin to avoid shell-history and terminal exposure:
+
+```
+cat token.txt | openclaw secrets store set PRESA_TOKEN --kind secret
+```
+
+The secret is stored in the local agent state database and cannot be read back. Reference it in your tool calls as `$PRESA_TOKEN`. Never put it in `openclaw.json` or a credentials file.
+
+### Codex CLI
+
+Use Codex's native credential/account store or your OS keychain, and expose the token to the session as an environment variable rather than writing it into a script. Set `PRESA_TOKEN` in your shell profile (or via the system keychain) and reference `$PRESA_TOKEN` in requests.
+
+### Cursor
+
+Cursor keeps machine-local credentials in the OS keychain and `~/.cursor`. Set `PRESA_TOKEN` as an environment variable (e.g. via your shell profile or keychain resolver) and read it with `$PRESA_TOKEN` in requests. Do not store it inside a project's committed config.
+
+### Aider, Goose, OpenHands
+
+These read API credentials from environment variables or an OS keyring. Set `PRESA_TOKEN` in your shell environment or keychain and reference `$PRESA_TOKEN`; never hardcode it into a file that can be committed or read back.
+
+### Any agent without a native store
+
+Export the token as an environment variable from your OS keychain / secrets manager at shell start, or write it to a dedicated file **outside the workspace** (e.g. `~/.presa/presa_token` with `chmod 600`) and reference it as `$PRESA_TOKEN`. Ensure the path is gitignored and never included in context files.
+
+## Using the API
+
+Attach the token on every request, reading it from your secret store as `$PRESA_TOKEN`:
+
+```
+Authorization: Bearer $PRESA_TOKEN
 ```
 
 ### List tools
@@ -110,5 +168,6 @@ Status codes:
 ## Rules
 
 - Never mention, assume, or rely on any specific tool, service, or workflow. Discover what is available from `GET /bots/tools`.
-- Never echo or log the API token or share code.
+- Never echo, log, or display the API token or the share code in any output, file, or chat message.
+- Keep the token only in a restricted secrets store — never in `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, or any file readable back to the user or committable to source.
 - Before making any call, check the tool's argument schema with `GET /bots/tools/{tool_name}`.
