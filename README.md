@@ -56,4 +56,6 @@ Example `.mcp.json`:
 3. That workspace's context is set for the duration of the request.
 4. Only tools relevant to that workspace are exposed.
 
-See [docs/adding-services-and-tools.md](docs/adding-services-and-tools.md) to add new service kinds and their tools.
+## Development
+
+See [docs/development.md](docs/development.md) for setup, commands, and config.
