@@ -3,11 +3,13 @@ class ServicesController < ApplicationController
 
   def index
     @services = Current.user.services.order(:type, :name)
+    # Available service kinds a user can add, MCP first then alphabetical.
+    @kinds = Service.kinds.sort_by { |kind| [ kind == "mcp" ? 0 : 1, kind ] }
   end
 
   def new
-    klass = Service.class_for_kind(params[:kind] || Service.kinds.first)
-    @service = klass&.new || Service.class_for_kind(Service.kinds.first).new
+    klass = Service.class_for_kind(params[:kind]) || Service.class_for_kind(Service.kinds.first)
+    @service = klass.new
   end
 
   def create

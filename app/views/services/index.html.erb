@@ -1,12 +1,18 @@
 <div class="mx-auto md:w-3/4 w-full">
   <h1 class="font-bold text-4xl">Services</h1>
 
-  <div class="mt-6">
-    <%= link_to "New service", new_service_path, class: "text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium" %>
+  <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+    <% @kinds.each do |kind| %>
+      <%= link_to new_service_path(kind), class: "flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
+        <%= service_icon(Service.class_for_kind(kind).new, size: "h-9 w-9") %>
+        <span class="font-medium text-zinc-100"><%= kind.humanize %></span>
+      <% end %>
+    <% end %>
   </div>
 
   <% if @services.any? %>
-    <table class="w-full text-left mt-8">
+    <h2 class="font-bold text-2xl mt-10">Your services</h2>
+    <table class="w-full text-left mt-4">
       <thead>
         <tr class="border-b border-zinc-800 text-sm text-zinc-500">
           <th class="py-2">Name</th>

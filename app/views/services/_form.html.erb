@@ -16,10 +16,7 @@
   </div>
 
   <% unless service.persisted? %>
-    <div class="my-5">
-      <%= form.label :kind, "Kind", class: "block text-sm text-zinc-400" %>
-      <%= form.select :kind, Service.kinds.map { |k| [k.humanize, k] }, {}, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-    </div>
+    <%= form.hidden_field :kind, value: service.kind %>
   <% end %>
 
   <%= form.fields_for :config do |cf| %>
