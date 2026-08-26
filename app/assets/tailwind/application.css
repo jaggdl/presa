@@ -10,3 +10,7 @@ html.dark,
 html {
   @apply bg-zinc-950 text-zinc-100;
 }
+
+.btn-primary {
+  @apply inline-block text-center rounded-md px-3.5 py-2.5 bg-blue-950 hover:bg-blue-900 text-blue-100 border border-blue-800 font-medium cursor-pointer;
+}
