@@ -7,4 +7,32 @@ module ApplicationHelper
     content_tag :span, image,
                 class: "inline-flex items-center justify-center p-2.5 bg-zinc-900 rounded-lg border border-zinc-700"
   end
+
+  # A small deck of overlapping service icons, cascading right-and-down like
+  # a spread of cards (up to `max`). Each tile is offset from the previous one.
+  # If there are more services than `max`, a "+N" badge is appended.
+  def service_icon_stack(services, max: 3)
+    icons = services.first(max)
+    return if icons.blank?
+
+    tile = 52 # each tile is p-2.5 + h-8/w-8 img => 52px square
+    offset = 20
+    extra = services.count - icons.length
+    width = offset * (icons.length - 1) + tile
+    height = tile
+
+    content_tag :div, class: "service-icon-stack flex-shrink-0",
+                style: "width: #{width + 10}px; height: #{height}px; position: relative;" do
+      stack = icons.each_with_index.map do |service, i|
+        content_tag :div, service_icon(service, size: "h-8 w-8"),
+                    style: "position: absolute; top: 0; left: #{i * offset}px;"
+      end
+      if extra.positive?
+        stack << content_tag(:div, "+#{extra}",
+                             class: "inline-flex items-center justify-center h-5 rounded-full px-1.5 bg-zinc-700 border border-zinc-600 text-zinc-100 text-[10px]",
+                             style: "position: absolute; bottom: -4px; left: #{offset * (icons.length - 1) + tile - 20}px;")
+      end
+      safe_join(stack)
+    end
+  end
 end

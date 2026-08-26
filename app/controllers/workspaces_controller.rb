@@ -2,7 +2,7 @@ class WorkspacesController < ApplicationController
   before_action :set_workspace, only: %i[ show edit update ]
 
   def index
-    @workspaces = Current.user.workspaces.order(:created_at)
+    @workspaces = Current.user.workspaces.includes(:api_tokens, services: {}).order(:created_at)
   end
 
   def new

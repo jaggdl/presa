@@ -3,14 +3,18 @@
 
   <div class="mt-6 flex gap-3">
     <%= link_to "New workspace", new_workspace_path, class: "text-center rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium" %>
-    <%= link_to "Services", services_path, class: "text-center rounded-md px-3.5 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 inline-block font-medium" %>
   </div>
 
   <% if @workspaces.any? %>
     <ul class="mt-6">
       <% @workspaces.each do |workspace| %>
-        <li class="py-3 border-b border-zinc-800">
+        <li class="flex items-center gap-3 py-3 border-b border-zinc-800">
+          <%= service_icon_stack(workspace.services) %>
           <%= link_to workspace.name.presence || "Unnamed workspace", workspace, class: "text-blue-500 hover:underline" %>
+          <% stats = workspace %>
+          <span class="ml-auto text-xs text-zinc-500">
+            <%= pluralize(workspace.api_token_count, "client") %> · <%= pluralize(workspace.invocation_count, "invocation") %> in 24h
+          </span>
         </li>
       <% end %>
     </ul>
