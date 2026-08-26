@@ -5,12 +5,23 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
 
   namespace :bots do
+    resources :workspaces, only: [] do
+      post :authorize, on: :member, controller: "authorizations"
+    end
+    resources :authorizations, only: :show, param: :request_token do
+      member do
+        post :approve
+        post :reject
+        post :token
+      end
+    end
     resources :tools, only: %i[ index show ] do
       post :execute, on: :member
     end
   end
 
   resources :workspaces do
+    post :reset_bot_share_code, on: :member
     resources :api_tokens, only: %i[ create destroy ]
     resources :workspace_services, only: %i[ show create update destroy ]
     get :invocations, on: :member

@@ -1,0 +1,11 @@
+<div class="mx-auto max-w-md mt-16 p-6 rounded-lg bg-zinc-900 text-zinc-100 border border-zinc-700 text-center">
+  <h1 class="font-bold text-2xl mb-2">Approved</h1>
+  <p class="text-sm text-zinc-400 mb-6">
+    Give this code to the agent (<strong class="text-zinc-100"><%= @authorization.name %></strong>) so it can fetch its token.
+    It expires in 5 minutes and works once.
+  </p>
+
+  <pre class="text-3xl font-mono tracking-widest select-all bg-zinc-950 border border-zinc-700 rounded-md px-4 py-6 inline-block"><%= @code %></pre>
+
+  <p class="text-sm text-zinc-500 mt-6">The agent redeems the raw token itself — you never see it.</p>
+</div>

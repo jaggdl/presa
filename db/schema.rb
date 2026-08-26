@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_214500) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_223730) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -22,6 +22,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_214500) do
     t.integer "workspace_id", null: false
     t.index ["token_digest"], name: "index_api_tokens_on_token_digest", unique: true
     t.index ["workspace_id"], name: "index_api_tokens_on_workspace_id"
+  end
+
+  create_table "bot_authorizations", force: :cascade do |t|
+    t.datetime "approved_at"
+    t.string "code_digest"
+    t.datetime "code_expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "issued_at"
+    t.text "justification"
+    t.string "name", null: false
+    t.string "request_token", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["request_token"], name: "index_bot_authorizations_on_request_token", unique: true
+    t.index ["workspace_id", "name"], name: "index_bot_authorizations_on_workspace_id_and_name"
+    t.index ["workspace_id"], name: "index_bot_authorizations_on_workspace_id"
   end
 
   create_table "services", force: :cascade do |t|
@@ -81,12 +99,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_214500) do
   create_table "workspaces", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
+    t.string "share_code_digest"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["user_id"], name: "index_workspaces_on_user_id"
   end
 
   add_foreign_key "api_tokens", "workspaces"
+  add_foreign_key "bot_authorizations", "workspaces"
   add_foreign_key "services", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "tool_invocations", "api_tokens"

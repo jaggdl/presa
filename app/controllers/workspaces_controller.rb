@@ -1,5 +1,5 @@
 class WorkspacesController < ApplicationController
-  before_action :set_workspace, only: %i[ show edit update invocations ]
+  before_action :set_workspace, only: %i[ show edit update invocations reset_bot_share_code ]
 
   def index
     @workspaces = Workspace.with_invocation_counts(
@@ -39,6 +39,7 @@ class WorkspacesController < ApplicationController
     @ws_links = @workspace.workspace_services.includes(:service).index_by(&:service_id)
     @available_services = Current.user.services.where.not(id: @linked_services.pluck(:id)).order(:type, :name)
     @tool_invocations = ToolInvocation.for_workspace(@workspace).recent(50).includes(:service, :api_token)
+    @share_code = params[:share_code]
   end
 
   # Lazy-loads older invocations, appending them to the live log via turbo streams.
@@ -51,6 +52,12 @@ class WorkspacesController < ApplicationController
       format.turbo_stream
       format.html { redirect_to workspace_path(@workspace) }
     end
+  end
+
+  # Rotate the workspace's bot share code and show the new value once.
+  def reset_bot_share_code
+    @share_code = @workspace.reset_share_code!
+    redirect_to workspace_path(@workspace, share_code: @share_code), notice: "Bot share code reset. Copy it now."
   end
 
   private

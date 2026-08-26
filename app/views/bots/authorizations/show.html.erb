@@ -1,0 +1,32 @@
+<div class="mx-auto max-w-md mt-16 p-6 rounded-lg bg-zinc-900 text-zinc-100 border border-zinc-700">
+  <h1 class="font-bold text-2xl mb-1">Authorize an agent</h1>
+  <p class="text-sm text-zinc-400 mb-6">A bot is asking for access to <strong class="text-zinc-100"><%= @authorization.workspace.name %></strong>.</p>
+
+  <dl class="space-y-3 text-sm mb-6">
+    <div class="flex justify-between gap-3">
+      <dt class="text-zinc-400">Name</dt>
+      <dd class="text-zinc-100 text-right font-medium"><%= @authorization.name %></dd>
+    </div>
+    <% if @authorization.justification.presence %>
+      <div>
+        <dt class="text-zinc-400 mb-1">Why</dt>
+        <dd class="text-zinc-100"><%= @authorization.justification %></dd>
+      </div>
+    <% end %>
+    <div class="flex justify-between gap-3">
+      <dt class="text-zinc-400">Status</dt>
+      <dd class="text-zinc-100"><%= @authorization.status %></dd>
+    </div>
+  </dl>
+
+  <% if @authorization.pending? && Current.user == @authorization.workspace.user %>
+    <div class="flex gap-3">
+      <%= button_to "Approve", approve_bots_authorization_path(@authorization.request_token), method: :post, data: { turbo: false }, class: "btn-primary" %>
+      <%= button_to "Reject", reject_bots_authorization_path(@authorization.request_token), method: :post, data: { turbo: false }, class: "text-center rounded-md px-3.5 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 inline-block font-medium cursor-pointer" %>
+    </div>
+  <% elsif @authorization.pending? %>
+    <p class="text-sm text-red-400">Only the workspace owner can decide this request.</p>
+  <% else %>
+    <p class="text-sm text-zinc-400">This request has already been decided (<%= @authorization.status %>).</p>
+  <% end %>
+</div>
