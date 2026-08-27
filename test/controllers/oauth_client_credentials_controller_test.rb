@@ -11,18 +11,26 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "create saves a client credential for the current user" do
+  test "index lists the user's credentials" do
+    get oauth_client_credentials_path
+    assert_response :success
+    assert_select "td", text: "Prod Google app"
+  end
+
+  test "create saves a client credential with a name for the current user" do
     assert_difference -> { @user.oauth_client_credentials.count }, 1 do
       post oauth_client_credentials_path, params: {
         oauth_client_credential: {
           provider: "google",
+          name: "Prod app",
           client_id: "client_abc",
           client_secret: "secret_abc"
         }
       }
     end
-    assert_redirected_to services_path
+    assert_redirected_to oauth_client_credentials_path
     assert_equal "client_abc", @user.oauth_client_credentials.last.client_id
+    assert_equal "Prod app", @user.oauth_client_credentials.last.name
   end
 
   test "create renders errors on invalid input" do
@@ -35,10 +43,10 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "destroy removes a client credential" do
-    cred = @user.oauth_client_credentials.create!(provider: "google", client_id: "c", client_secret: "s")
+    cred = @user.oauth_client_credentials.create!(provider: "google", name: "X", client_id: "c", client_secret: "s")
     assert_difference -> { @user.oauth_client_credentials.count }, -1 do
       delete oauth_client_credential_path(cred)
     end
-    assert_redirected_to services_path
+    assert_redirected_to oauth_client_credentials_path
   end
 end
