@@ -18,8 +18,10 @@ This kind is an **API-key service** — no OAuth. Instead:
 ## Tools
 
 - **text_search** — free-text search for places (`places:searchText`), with optional page size/token, place-type bias, language/region, open-now, minimum rating, and rank preferences.
+- **nearby_search** — find places around a location (`places:searchNearby`), by center latitude/longitude + radius in meters, with optional included/excluded (primary) place types, max results, and POPULARITY/DISTANCE ranking.
 - **place_details** — full detail for a place ID (`places/{placeId}`), including address, website, phone, rating, opening hours, and photos.
 - **place_photos** — photo metadata and a usable `photoUri` for a photo resource name from the `photos[]` array. Photo names expire, so always fetch them fresh from a recent search/details response.
+- **place_autocomplete** — type-ahead place/query predictions (`places:autocomplete`), with optional primary-type and region filters, query predictions, an origin for distances, location bias/restriction, and a `session_token` to group calls into a session for billing.
 
 ## Notes
 
