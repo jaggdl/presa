@@ -101,7 +101,7 @@ class Service < ApplicationRecord
   end
 
   def config
-    (super || {}).with_indifferent_access
+    (super || {}).with_indifferent_access.transform_values { |v| v.is_a?(String) ? v.strip : v }
   end
 
   def config=(value)
