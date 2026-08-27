@@ -87,7 +87,7 @@
 
   <% if @available_services.any? %>
     <%= form_with url: workspace_workspace_services_path(@workspace), class: "contents mt-4" do |form| %>
-      <div class="my-4 flex items-center gap-3">
+      <div class="my-4 flex items-center justify-end gap-3">
         <%= form.select :service_id, @available_services.map { |s| ["#{s.name} (#{s.kind})", s.id] }, {}, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-900" %>
         <%= form.submit "Add service", class: "text-center rounded-md px-3.5 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 inline-block font-medium cursor-pointer" %>
       </div>
@@ -147,7 +147,9 @@
               <%= form.label :name, "Client name", class: "block text-sm text-zinc-400 mb-1" %>
               <%= form.text_field :name, placeholder: "e.g. Cursor", id: "client_modal_name", class: "block w-full shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-800" %>
             </div>
-            <%= form.submit "Create client", id: "client_modal_submit", class: "btn-primary" %>
+            <div class="flex justify-end">
+              <%= form.submit "Create client", id: "client_modal_submit", class: "btn-primary" %>
+            </div>
           <% end %>
         </div>
         <div id="client-modal-result" class="mt-4"></div>

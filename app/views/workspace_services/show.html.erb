@@ -11,7 +11,7 @@
 
   <% if @tools.any? %>
     <%= form_with model: @workspace_service, url: workspace_workspace_service_path(@workspace, @workspace_service), method: :patch, class: "contents", data: { controller: "allowed-tools" } do |form| %>
-      <div class="flex flex-wrap items-center gap-3 mt-4">
+      <div class="flex flex-wrap items-center justify-end gap-3 mt-4">
         <button type="button" data-action="allowed-tools#selectAll" class="text-center rounded-md px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 inline-block font-medium cursor-pointer">Select all</button>
         <button type="button" data-action="allowed-tools#deselectAll" class="text-center rounded-md px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 inline-block font-medium cursor-pointer">Deselect all</button>
         <%= form.submit "Save", class: "btn-primary" %>
@@ -34,7 +34,7 @@
         <% end %>
       </ul>
 
-      <div class="mt-6">
+      <div class="mt-6 flex justify-end">
         <%= form.submit "Save", class: "btn-primary" %>
       </div>
     <% end %>

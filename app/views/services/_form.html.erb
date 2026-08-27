@@ -41,7 +41,7 @@
 
           <p class="text-sm text-zinc-500 mt-4">After continuing you'll sign in with <span class="text-zinc-300"><%= provider_name %></span> to link this service.</p>
 
-          <div class="inline flex items-center gap-3 mt-2">
+          <div class="flex items-center justify-end gap-3 mt-2">
             <%= form.submit "Continue to sign in", class: "btn-primary" %>
           </div>
         </div>
@@ -86,7 +86,7 @@
         <% end %>
       <% end %>
 
-      <div class="inline flex items-center gap-3">
+      <div class="flex items-center justify-end gap-3">
         <%= form.submit "Save service", class: "btn-primary" %>
 
         <button type="submit" name="test_connection" formaction="<%= test_connection_services_path %>" formmethod="post"
