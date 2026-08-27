@@ -1,2 +1,9 @@
-<p class="text-xs text-zinc-400 mb-2">Add to <code class="text-zinc-300">claude_desktop_config.json</code>:</p>
-<pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all"><%= JSON.pretty_generate({ "mcpServers" => { client_name => { command: "npx", args: ["-y", "supergateway", "--sse", "#{base_url}/mcp/sse", "--header", "Authorization:Bearer #{raw_token}"] } } }) %></pre>
+<div>
+  <p class="text-xs text-zinc-400 mb-2">Add to <code class="text-zinc-300">claude_desktop_config.json</code>:</p>
+  <div class="relative" data-controller="copy">
+    <pre data-copy-target="source" class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all pr-16"><%= JSON.pretty_generate({ "mcpServers" => { client_name => { command: "npx", args: ["-y", "supergateway", "--sse", "#{base_url}/mcp/sse", "--header", "Authorization:Bearer #{raw_token}"] } } }) %></pre>
+    <button type="button"
+            class="absolute top-1.5 right-1.5 px-2 py-1 rounded text-xs text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 transition"
+            data-copy-target="label" data-action="click->copy#copy">Copy</button>
+  </div>
+</div>

@@ -1,18 +1,30 @@
 <div id="skill-share">
   <div class="mb-3">
     <label class="block text-xs text-zinc-400 mb-1">Install this skill:</label>
-    <pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2"><%= skill_url %></pre>
+    <div class="relative" data-controller="copy">
+      <pre data-copy-target="source" class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 pr-16"><%= skill_url %></pre>
+      <button type="button" data-copy-target="label" data-action="click->copy#copy"
+              class="absolute top-1.5 right-1.5 px-2 py-1 rounded text-xs text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 transition">Copy</button>
+    </div>
   </div>
 
   <div class="mb-3">
     <label class="block text-xs text-zinc-400 mb-1">Share code:</label>
-    <pre class="text-xs text-zinc-100 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2"><%= share_code %></pre>
+    <div class="relative" data-controller="copy">
+      <pre data-copy-target="source" class="text-xs text-zinc-100 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 pr-16"><%= share_code %></pre>
+      <button type="button" data-copy-target="label" data-action="click->copy#copy"
+              class="absolute top-1.5 right-1.5 px-2 py-1 rounded text-xs text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 transition">Copy</button>
+    </div>
   </div>
 
   <div class="mb-3">
     <label class="block text-xs text-zinc-400 mb-1">Prompt for your agent:</label>
-    <pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2">Install this skill: <%= skill_url %>
+    <div class="relative" data-controller="copy">
+      <pre data-copy-target="source" class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 pr-16">Install this skill: <%= skill_url %>
 Then authorize me with the share code: <%= share_code %></pre>
+      <button type="button" data-copy-target="label" data-action="click->copy#copy"
+              class="absolute top-1.5 right-1.5 px-2 py-1 rounded text-xs text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 transition">Copy</button>
+    </div>
   </div>
 
   <p class="text-xs text-zinc-500">

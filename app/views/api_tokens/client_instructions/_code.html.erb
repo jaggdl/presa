@@ -1,3 +1,10 @@
-<p class="text-xs text-zinc-400 mb-2">Add the server via CLI:</p>
-<pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all">claude mcp add --transport http <%= client_name %> <%= base_url %>/mcp/sse \
+<div>
+  <p class="text-xs text-zinc-400 mb-2">Add the server via CLI:</p>
+  <div class="relative" data-controller="copy">
+    <pre data-copy-target="source" class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all pr-16">claude mcp add --transport http <%= client_name %> <%= base_url %>/mcp/sse \
   --header "Authorization: Bearer <%= raw_token %>"</pre>
+    <button type="button"
+            class="absolute top-1.5 right-1.5 px-2 py-1 rounded text-xs text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 transition"
+            data-copy-target="label" data-action="click->copy#copy">Copy</button>
+  </div>
+</div>

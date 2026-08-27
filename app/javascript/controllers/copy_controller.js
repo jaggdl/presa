@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Copy-to-clipboard button. Reads the text from `value` on click and copies it.
+// Copy-to-clipboard button. Reads the text from `value` on click, or from a
+// `source` target element, and copies it.
 //
 // The primary mechanism is a synchronous copy of a real DOM selection
 // (`execCommand("copy")`), which performs an actual clipboard write in every
@@ -8,10 +9,11 @@ import { Controller } from "@hotwired/stimulus"
 // resolve without writing, and priming it can swallow a subsequent sync write,
 // so we only use it as a fallback when the sync path is blocked.
 export default class extends Controller {
+  static targets = ["source", "label"]
   static values = { value: String }
 
   async copy() {
-    const text = this.valueValue
+    const text = this.sourceTarget?.textContent?.trimEnd() ?? this.valueValue
 
     if (this.copySelection(text)) {
       this.flash("Copied")
@@ -58,7 +60,8 @@ export default class extends Controller {
   }
 
   flash(label) {
-    this.element.textContent = label
-    setTimeout(() => { if (this.element.isConnected) this.element.textContent = "Copy" }, 1500)
+    const el = this.hasLabelTarget ? this.labelTarget : this.element
+    el.textContent = label
+    setTimeout(() => { if (el.isConnected) el.textContent = "Copy" }, 1500)
   }
 }
