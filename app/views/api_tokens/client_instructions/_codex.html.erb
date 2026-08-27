@@ -1,9 +1,4 @@
 <div>
   <p class="text-xs text-zinc-400 mb-2">Add to <code class="text-zinc-300">~/.codex/config.toml</code>:</p>
-  <div class="relative" data-controller="copy">
-    <pre data-copy-target="source" class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all pr-16"><%= "features\nexperimental_use_rmcp_client = true\n\n[mcp_servers.#{client_name}]\nurl = \"#{base_url}/mcp/sse\"\nhttp_headers = { \"authorization\" = \"Bearer #{raw_token}\" }" %></pre>
-    <button type="button"
-            class="absolute top-1.5 right-1.5 px-2 py-1 rounded text-xs text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 transition"
-            data-copy-target="label" data-action="click->copy#copy">Copy</button>
-  </div>
+  <%= render "shared/copy_block", content: "features\nexperimental_use_rmcp_client = true\n\n[mcp_servers.#{client_name}]\nurl = \"#{base_url}/mcp/sse\"\nhttp_headers = { \"authorization\" = \"Bearer #{raw_token}\" }" %>
 </div>
