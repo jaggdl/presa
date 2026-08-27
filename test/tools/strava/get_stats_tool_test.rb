@@ -12,8 +12,8 @@ class StravaGetStatsToolTest < ActiveSupport::TestCase
 
   test "fetches stats for the athlete id from the profile" do
     tool = expose_strava_tool("get_stats") do |stub|
-      stub.get("/athlete") { strava_json_response({ id: 123 }) }
-      stub.get("/athletes/123/stats") do |env|
+      stub.get("/api/v3/athlete") { strava_json_response({ id: 123 }) }
+      stub.get("/api/v3/athletes/123/stats") do |env|
         assert_equal "Bearer test-access-token", env.request_headers["Authorization"]
         strava_json_response({ all_ride_totals: { count: 42, distance: 330_000.0 } })
       end

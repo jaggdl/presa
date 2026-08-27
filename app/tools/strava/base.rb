@@ -11,7 +11,7 @@ module Strava
     service_kind :strava
     abstract_tool true
 
-    STRAVA_API = "https://www.strava.com/api/v3"
+    STRAVA_API = "https://www.strava.com"
 
     # Overridable in tests to inject a fake Faraday connection.
     def conn

@@ -8,11 +8,11 @@ module Strava
     kind "get_stats"
 
     def call
-      athlete = strava_get("/athlete")
+      athlete = strava_get("/api/v3/athlete")
       id = athlete["id"]
       raise "Could not determine athlete id for stats" if id.blank?
 
-      strava_get("/athletes/#{id}/stats")
+      strava_get("/api/v3/athletes/#{id}/stats")
     end
   end
 end

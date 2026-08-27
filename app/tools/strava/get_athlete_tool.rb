@@ -8,7 +8,7 @@ module Strava
     kind "get_athlete"
 
     def call
-      strava_get("/athlete")
+      strava_get("/api/v3/athlete")
     end
   end
 end

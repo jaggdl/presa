@@ -12,7 +12,7 @@ class StravaGetActivityToolTest < ActiveSupport::TestCase
 
   test "fetches a single activity by id" do
     tool = expose_strava_tool("get_activity") do |stub|
-      stub.get("/activities/100") do |env|
+      stub.get("/api/v3/activities/100") do |env|
         assert_equal "Bearer test-access-token", env.request_headers["Authorization"]
         strava_json_response({ id: 100, name: "Evening Ride", distance: 40123.0 })
       end

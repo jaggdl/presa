@@ -12,7 +12,7 @@ class StravaGetAthleteToolTest < ActiveSupport::TestCase
 
   test "returns the athlete profile with an auth header" do
     tool = expose_strava_tool("get_athlete") do |stub|
-      stub.get("/athlete") do |env|
+      stub.get("/api/v3/athlete") do |env|
         assert_equal "Bearer test-access-token", env.request_headers["Authorization"]
         strava_json_response({ id: 123, firstname: "Jess", measurement_preference: "feet" })
       end
