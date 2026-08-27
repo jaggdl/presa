@@ -12,38 +12,36 @@ class Workspace < ApplicationRecord
   validates :name, presence: true
 
   # A resettable secret the owner shares with an agent so it can file bot
-  # authorization requests against this workspace. Stored only as a digest,
-  # exposed raw exactly once at creation.
+  # authorization requests against this workspace. The raw value is stored so
+  # the owner can view and copy it from the UI; a digest is also kept to compare
+  # cheaply and to guard the stored value.
   def share_code
-    return @share_code if defined?(@share_code)
-
-    if share_code_digest.blank?
-      @share_code = reset_share_code!
+    if read_attribute(:share_code).blank?
+      reset_share_code!
     else
-      @share_code = nil
+      read_attribute(:share_code)
     end
   end
 
   # Rotate the share code, invalidating any pending authorization requests.
-  # Returns the new raw code; the caller must show it to the user once.
+  # Returns the new raw code.
   def reset_share_code!
     raw = SecureRandom.base58(32)
-    update!(share_code_digest: ApiToken.digest(raw))
+    update!(share_code: raw, share_code_digest: ApiToken.digest(raw))
     bot_authorizations.pending.each(&:expire!)
-    @share_code = raw
+    raw
   end
 
   def valid_share_code?(raw)
-    share_code_digest.present? && !raw.blank? && ApiToken.digest(raw) == share_code_digest
+    share_code.present? && !raw.blank? && ActiveSupport::SecurityUtils.secure_compare(share_code, raw)
   end
 
   # Find the single workspace whose share code matches the given raw value. A
-  # share code maps 1:1 to a workspace (one digest per workspace), so we can
-  # identify the workspace from the code alone. Returns nil when no match.
+  # share code maps 1:1 to a workspace, so we can identify the workspace from
+  # the code alone. Returns nil when no match.
   def self.find_by_share_code(raw)
     return nil if raw.blank?
 
-    digest = ApiToken.digest(raw)
-    where.not(share_code_digest: nil).find { |w| w.share_code_digest == digest }
+    where.not(share_code: nil).find { |w| w.valid_share_code?(raw) }
   end
 end

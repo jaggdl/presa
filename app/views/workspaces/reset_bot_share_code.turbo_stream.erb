@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "skill-share" do %>
+  <%= render "skill_instructions", workspace: @workspace, skill_url: bots_skill_url, share_code: @share_code %>
+<% end %>

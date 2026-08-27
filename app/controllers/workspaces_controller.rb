@@ -39,7 +39,8 @@ class WorkspacesController < ApplicationController
     @ws_links = @workspace.workspace_services.includes(:service).index_by(&:service_id)
     @available_services = Current.user.services.where.not(id: @linked_services.pluck(:id)).order(:type, :name)
     @tool_invocations = ToolInvocation.for_workspace(@workspace).recent(50).includes(:service, :api_token)
-    @share_code = params[:share_code]
+    @share_code = @workspace.share_code
+    @skill_url = bots_skill_url
   end
 
   # Lazy-loads older invocations, appending them to the live log via turbo streams.
@@ -57,7 +58,11 @@ class WorkspacesController < ApplicationController
   # Rotate the workspace's bot share code and show the new value once.
   def reset_bot_share_code
     @share_code = @workspace.reset_share_code!
-    redirect_to workspace_path(@workspace, share_code: @share_code), notice: "Bot share code reset. Copy it now."
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to workspace_path(@workspace, share_code: @share_code), notice: "Bot share code reset. Copy it now." }
+    end
   end
 
   private

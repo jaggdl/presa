@@ -108,4 +108,30 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test "show offers connect via MCP and connect via skill" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+
+    get workspace_path(workspace)
+
+    assert_response :success
+    assert_select "button", text: "Connect via MCP"
+    assert_select "button", text: "Connect via skill"
+    assert_select "pre", text: /bots\/SKILL\.md/
+  end
+
+  test "reset_bot_share_code updates the skill modal via turbo stream" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+
+    post reset_bot_share_code_workspace_path(workspace),
+         headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_match(/turbo-stream action="replace"/, response.body)
+    assert_match(/target="skill-share"/, response.body)
+    assert_match(/Share code:/, response.body)
+    assert_match(/Install this skill:/, response.body)
+  end
 end

@@ -1,0 +1,28 @@
+<div id="skill-share">
+  <div class="mb-3">
+    <label class="block text-xs text-zinc-400 mb-1">Install this skill:</label>
+    <pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2"><%= skill_url %></pre>
+  </div>
+
+  <div class="mb-3">
+    <label class="block text-xs text-zinc-400 mb-1">Share code:</label>
+    <pre class="text-xs text-zinc-100 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2"><%= share_code %></pre>
+  </div>
+
+  <div class="mb-3">
+    <label class="block text-xs text-zinc-400 mb-1">Prompt for your agent:</label>
+    <pre class="text-xs text-zinc-200 overflow-x-auto select-all whitespace-pre-wrap break-all rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2">Install this skill: <%= skill_url %>
+Then authorize me with the share code: <%= share_code %></pre>
+  </div>
+
+  <p class="text-xs text-zinc-500">
+    The agent fetches the skill, reads the share code, and walks the approve-to-token flow with you.
+    If the code is ever exposed, rotate it:
+  </p>
+
+  <div class="mt-2">
+    <%= button_to "Rotate share code", reset_bot_share_code_workspace_path(workspace), method: :post,
+          form: { data: { turbo_stream: true } },
+          class: "text-xs rounded-md px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 inline-block font-medium cursor-pointer" %>
+  </div>
+</div>
