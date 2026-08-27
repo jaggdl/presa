@@ -28,7 +28,7 @@ class WorkspacesController < ApplicationController
     if @workspace.update(workspace_params)
       redirect_to workspace_path(@workspace), notice: "Workspace updated."
     else
-      render :edit, status: :unprocessable_entity
+      redirect_to workspace_path(@workspace), alert: @workspace.errors.full_messages.to_sentence
     end
   end
 
@@ -74,6 +74,6 @@ class WorkspacesController < ApplicationController
   end
 
   def workspace_params
-    params.require(:workspace).permit(:name)
+    params.require(:workspace).permit(:name, :description)
   end
 end

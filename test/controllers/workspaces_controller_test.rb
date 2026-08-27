@@ -99,6 +99,9 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Workspace One"
     assert_select "div span", text: "Cursor"
+    assert_select "button[aria-label='Edit name']"
+    assert_select "button[aria-label='Edit description']"
+    assert_select "textarea[name='workspace[description]']"
   end
 
   test "show does not expose another user's workspace" do
@@ -107,6 +110,29 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get workspace_path(workspaces(:two))
 
     assert_response :not_found
+  end
+
+  test "update persists name and description and redirects to show" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+
+    patch workspace_path(workspace), params: { workspace: { name: "Renamed", description: "A short blurb" } }
+
+    assert_redirected_to workspace_path(workspace)
+    assert_equal "Renamed", workspace.reload.name
+    assert_equal "A short blurb", workspace.reload.description
+    assert_equal "Workspace updated.", flash[:notice]
+  end
+
+  test "update redirects back with an alert on validation error" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+
+    patch workspace_path(workspace), params: { workspace: { name: "" } }
+
+    assert_redirected_to workspace_path(workspace)
+    assert flash[:alert].present?
+    assert_not_equal "", workspace.reload.name
   end
 
   test "show offers connect via MCP and connect via skill" do
