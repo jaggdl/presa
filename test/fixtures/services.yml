@@ -26,3 +26,8 @@ jellyfin:
   type: Services::Jellyfin
   name: Jellyfin
   config: <%= { api_key: "jellyfin_key", base_url: "https://jellyfin.example.com" }.to_json %>
+seerr:
+  user: one
+  type: Services::Seerr
+  name: Seerr
+  config: <%= { api_key: "seerr_key", base_url: "http://localhost:5055" }.to_json %>

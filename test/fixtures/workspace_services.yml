@@ -9,3 +9,6 @@ one_github_staging:
 one_jellyfin:
   workspace: one
   service: jellyfin
+one_seerr:
+  workspace: one
+  service: seerr
