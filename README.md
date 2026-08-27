@@ -92,7 +92,7 @@ services:
       - "7753:80"
     environment:
       - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
-      - BASE_URL=https://presa.jaggdl.com
+      - BASE_URL=https://your-presa.instance.com
     volumes:
       - presa-production:/rails/storage
 
