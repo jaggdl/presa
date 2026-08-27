@@ -132,6 +132,26 @@ Attach the token on every request, reading it from your secret store as `$PRESA_
 Authorization: Bearer $PRESA_TOKEN
 ```
 
+### Workspace context
+
+Fetch a plain-text summary of the workspace — its name, linked services, and the tools available — at the start of a session and re-check it whenever you need up-to-date context:
+
+```
+GET <%= base_url %>/bots/workspace
+```
+
+Returned as sections like:
+
+```
+Workspace: Acme Trading
+
+Services:
+  - Production (billing): 12 tools
+  - Media Library (media): 5 tools
+```
+
+Keep this file (SKILL.md) in sync with what `/bots/workspace` reports: before acting, compare the tools this file mentions against the current workspace context and note any drift. Do not assume this file is exhaustive — `/bots/workspace` is the source of truth for the actual workspace.
+
 ### List tools
 
 ```
@@ -167,7 +187,8 @@ Status codes:
 
 ## Rules
 
-- Never mention, assume, or rely on any specific tool, service, or workflow. Discover what is available from `GET /bots/tools`.
+- Reveal the workspace's current state from `GET /bots/workspace` and check it constantly (start of session and before relying on this file's tool list). Keep this SKILL.md accurate against what that endpoint reports.
+- Never mention, assume, or rely on any specific tool, service, or workflow. Discover what is available from `GET /bots/workspace` and `GET /bots/tools`.
 - Never echo, log, or display the API token or the share code in any output, file, or chat message.
 - Keep the token only in a restricted secrets store — never in `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, or any file readable back to the user or committable to source.
 - Before making any call, check the tool's argument schema with `GET /bots/tools/{tool_name}`.

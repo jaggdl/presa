@@ -20,6 +20,26 @@ module WorkspaceTools
     lines.any? ? "#{lines.join("\n")}\n" : "No tools available.\n"
   end
 
+  # High-level context about the workspace for a bot: name and linked services
+# (each with its kind and tool count). See GET /bots/workspace.
+def workspace_context_text
+  lines = []
+  lines << "Workspace: #{name}"
+
+  joins = workspace_services.includes(:service)
+  tools_by_service = allowed_tools.group_by(&:service_id)
+
+  lines << ""
+  lines << "Services:"
+  joins.each do |join|
+    count = tools_by_service.fetch(join.service_id, []).count
+    lines << "  - #{join.service.name} (#{join.service.kind}): #{count} #{'tool'.pluralize(count)}"
+  end
+  lines << "  (none)" if joins.empty?
+
+  "#{lines.join("\n")}\n"
+end
+
   # Full detail for one tool: name, description, and argument schema.
   def tool_detail_text(tool)
     lines = [ tool.tool_name ]

@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     resources :tools, only: %i[ index show ] do
       post :execute, on: :member
     end
+    get :workspace, controller: "tools"
   end
 
   resources :workspaces do

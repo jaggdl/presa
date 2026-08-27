@@ -19,6 +19,11 @@ module Bots
       render "bots/tools/skill", layout: nil, content_type: "text/markdown", formats: [ :md ]
     end
 
+    # GET /bots/workspace
+    def workspace
+      render plain: Current.workspace.workspace_context_text
+    end
+
     # GET /bots/tools
     def index
       render plain: Current.workspace.tools_list_text

@@ -85,6 +85,27 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  test "GET /bots/workspace returns workspace name, services and tools" do
+    join = workspace_services(:one_jellyfin)
+    join.update!(allowed_tools: [ "resume_items" ])
+    token = ApiToken.issue!(workspace: @workspace, name: "bot")
+
+    get bots_workspace_path, headers: { "Authorization" => "Bearer #{token}" }
+
+    assert_response :success
+    assert_includes response.content_type, "text/plain"
+    assert_includes response.body, "Workspace: #{@workspace.name}"
+    assert_includes response.body, "Services:"
+    assert_match(/\(\w+\):\s*\d+ tool[s]?/, response.body) # each service: kind + tool count
+    refute_includes response.body, "Tools:"
+  end
+
+  test "GET /bots/workspace requires a bearer token" do
+    get bots_workspace_path
+
+    assert_response :unauthorized
+  end
+
   test "GET /bots/tools returns no tools for an empty workspace" do
     empty = Workspace.create!(name: "Empty", user: @user)
     token = ApiToken.issue!(workspace: empty, name: "bot")
