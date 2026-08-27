@@ -31,3 +31,9 @@ seerr:
   type: Services::Seerr
   name: Seerr
   config: <%= { api_key: "seerr_key", base_url: "http://localhost:5055" }.to_json %>
+
+strava:
+  user: one
+  type: Services::Strava
+  name: Strava
+  config: <%= { client_id: "12345", client_secret: "strava_secret", refresh_token: "strava_refresh" }.to_json %>
