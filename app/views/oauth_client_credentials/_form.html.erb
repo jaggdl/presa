@@ -1,25 +1,28 @@
-<% provider_name = @credential.provider.humanize %>
-<% if @credential.errors.any? %>
+<% credential = local_assigns[:credential] || @credential %>
+<% provider_name = credential.provider.humanize %>
+<% modal = local_assigns[:modal] %>
+<% if credential.errors.any? %>
   <div class="py-2 px-3 bg-red-950 mb-5 rounded-lg">
-    <h2 class="text-red-400 font-medium"><%= pluralize(@credential.errors.count, "error") %>.</h2>
+    <h2 class="text-red-400 font-medium"><%= pluralize(credential.errors.count, "error") %>.</h2>
     <ul class="text-red-400 list-disc list-inside mt-2">
-      <% @credential.errors.each do |error| %>
+      <% credential.errors.each do |error| %>
         <li><%= error.full_message %></li>
       <% end %>
     </ul>
   </div>
 <% end %>
 
-<% read_only_secret = @credential.persisted? %>
-<%= form_with model: @credential, scope: :oauth_client_credential, url: (@credential.persisted? ? oauth_client_credential_path(@credential) : oauth_client_credentials_path), method: (@credential.persisted? ? :patch : :post), class: "contents" do |form| %>
+<% read_only_secret = credential.persisted? %>
+<%= form_with model: credential, scope: :oauth_client_credential, url: (credential.persisted? ? oauth_client_credential_path(credential) : oauth_client_credentials_path), method: (credential.persisted? ? :patch : :post), class: "contents" do |form| %>
   <%= hidden_field_tag :return_to, params[:return_to] %>
+  <%= hidden_field_tag :modal, "1" if modal %>
 
   <%= form.hidden_field :provider %>
 
   <div class="my-5">
     <span class="block text-sm text-zinc-400">Provider</span>
     <div class="mt-2 flex items-center gap-3">
-      <%= oauth_provider_icon(@credential.provider, size: "h-6 w-6") %>
+      <%= oauth_provider_icon(credential.provider, size: "h-6 w-6") %>
       <span class="text-zinc-200"><%= provider_name %></span>
     </div>
   </div>
@@ -49,7 +52,17 @@
   </div>
 
   <div class="inline flex items-center gap-3 mt-2">
-    <%= form.submit @credential.persisted? ? "Save changes" : "Save OAuth client", class: "btn-primary" %>
-    <%= link_to "Cancel", params[:return_to].presence || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
+    <%= form.submit(if modal
+          "Save client"
+        elsif credential.persisted?
+          "Save changes"
+        else
+          "Save OAuth client"
+        end, class: "btn-primary") %>
+    <% if modal %>
+      <button type="button" data-action="oauth-client#closeDialog" class="text-zinc-400 underline hover:no-underline">Cancel</button>
+    <% else %>
+      <%= link_to "Cancel", params[:return_to].presence || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
+    <% end %>
   </div>
 <% end %>
