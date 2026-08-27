@@ -12,7 +12,7 @@ module Seerr
     end
 
     def call(query:, page: 1)
-      service.get(query_path("/search", query: query, page: page))
+      seerr_get("/search", query: query, page: page)
     end
   end
 end

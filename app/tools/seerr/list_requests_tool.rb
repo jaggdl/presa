@@ -14,11 +14,7 @@ module Seerr
     end
 
     def call(take: 20, skip: 0, status: nil, sort: nil)
-      params = { take: take, skip: skip }
-      params[:status] = status if status.present?
-      params[:sort] = sort if sort.present?
-
-      service.get(query_path("/request", params))
+      seerr_get("/request", take: take, skip: skip, status: status, sort: sort)
     end
   end
 end
