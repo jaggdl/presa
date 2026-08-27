@@ -1,14 +1,39 @@
-<% if token = flash[:token] %>
-  <div class="py-2 px-3 bg-yellow-950 mb-3 text-yellow-300 font-medium rounded-lg" id="created-token-label">
-    API token created. Copy it now — it won't be shown again:
+<% toasts = [] %>
+<% toasts << { kind: :alert, color: :red } if flash[:alert] %>
+<% if flash[:token] %>
+  <% toasts << { kind: :token, color: :yellow, label: flash[:notice], code: flash[:token] } %>
+<% elsif flash[:notice] %>
+  <% toasts << { kind: :notice, color: :green } %>
+<% end %>
+
+<% unless toasts.empty? %>
+  <div class="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center">
+    <div class="flex w-full max-w-screen-2xl flex-col items-end gap-3 px-5 pointer-events-none">
+      <% toasts.each do |toast| %>
+      <div data-controller="flash"
+           data-flash-timeout-value="<%= toast[:kind] == :token ? 20000 : 6000 %>"
+           data-action="mouseenter->flash#pause mouseleave->flash#resume"
+           class="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] rounded-lg border shadow-xl backdrop-blur-md transition-all duration-300 ease-out <%= toast[:kind] == :alert ? "border-red-500/30 bg-red-950/40" : toast[:kind] == :token ? "border-yellow-500/30 bg-yellow-950/40" : "border-green-500/30 bg-green-950/40" %>">
+
+        <div class="flex items-start gap-3 p-4">
+          <p class="min-w-0 flex-1 text-sm font-medium <%= toast[:kind] == :alert ? "text-red-400" : toast[:kind] == :token ? "text-yellow-300" : "text-green-400" %>"
+             id="<%= toast[:kind] == :alert ? "alert" : toast[:kind] == :notice ? "notice" : "" %>">
+            <%= toast[:kind] == :token ? toast[:label] : (toast[:kind] == :alert ? flash[:alert] : flash[:notice]) %>
+          </p>
+          <button type="button" data-action="flash#close"
+                  class="shrink-0 rounded-md p-1 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800"
+                  aria-label="Dismiss">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <% if toast[:code] %>
+          <pre class="mx-4 mb-4 overflow-x-auto select-all rounded-md border border-yellow-900 bg-yellow-900/30 px-3 py-2 text-yellow-300" id="created-token"><%= toast[:code] %></pre>
+        <% end %>
+      </div>
+    <% end %>
+    </div>
   </div>
-  <pre class="py-2 px-3 bg-zinc-800 rounded-lg mb-5 overflow-x-auto select-all" id="created-token"><%= token %></pre>
-<% end %>
-
-<% if flash[:notice] %>
-  <p class="py-2 px-3 bg-green-950 mb-5 text-green-400 font-medium rounded-lg" id="notice"><%= flash[:notice] %></p>
-<% end %>
-
-<% if flash[:alert] %>
-  <p class="py-2 px-3 bg-red-950 mb-5 text-red-400 font-medium rounded-lg" id="alert"><%= flash[:alert] %></p>
 <% end %>
