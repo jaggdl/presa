@@ -2,11 +2,20 @@
   <h1 class="font-bold text-4xl">Services</h1>
 
   <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-    <% @kinds.each do |kind| %>
-      <%= link_to new_kind_service_services_path(kind), class: "flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
-        <%= service_icon(Service.class_for_kind(kind).new, size: "h-9 w-9") %>
-        <span class="font-medium text-zinc-100 mr-auto"><%= kind.humanize %></span>
-        <%= icon "plus", class: "size-6 text-zinc-500" %>
+    <% Service.categories.each_with_index do |(category, _), ci| %>
+      <% category_kinds = @kinds.select { |kind| Service.class_for_kind(kind).category == category } %>
+      <% next if category_kinds.empty? %>
+
+      <div class="col-span-full">
+        <h3 class="text-xs font-semibold uppercase tracking-widest text-zinc-500 <%= ci.zero? ? "" : "mt-8" %>"><%= category.humanize %></h3>
+      </div>
+
+      <% category_kinds.each do |kind| %>
+        <%= link_to new_kind_service_services_path(kind), class: "flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
+          <%= service_icon(Service.class_for_kind(kind).new, size: "h-9 w-9") %>
+          <span class="font-medium text-zinc-100 mr-auto"><%= kind.humanize %></span>
+          <%= icon "plus", class: "size-6 text-zinc-500" %>
+        <% end %>
       <% end %>
     <% end %>
   </div>
