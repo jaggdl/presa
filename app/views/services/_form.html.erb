@@ -9,78 +9,98 @@
   </div>
 <% end %>
 
-<% provider_name = service.provider.humanize if service.is_a?(Services::OauthService) %>
-<% turbo_disabled = service.is_a?(Services::OauthService) && !service.persisted? %>
-<%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), class: "contents", data: (turbo_disabled ? { turbo: false } : {}) do |form| %>
-  <div class="my-5">
-    <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
-    <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-  </div>
+<% if service.is_a?(Services::OauthService) %>
+  <% provider_name = service.provider.humanize %>
+  <% turbo_disabled = !service.persisted? %>
 
-  <%= form.hidden_field :kind, value: service.kind %>
-
-  <% if service.is_a?(Services::OauthService) && !service.persisted? %>
-    <div class="my-5" data-controller="oauth-client">
-      <label class="block text-sm text-zinc-400">OAuth client</label>
-      <%= select_tag :oauth_client_credential_id,
-            options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id]),
-            include_blank: "Choose a #{provider_name} OAuth client…",
-            class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",
-            data: { oauth_client_target: "choose", action: "oauth-client#onChange" } %>
-
-      <div class="my-5 hidden" data-oauth-client-target="new">
-        <div class="my-4">
-          <%= label_tag "oauth_client_credential[name]", "New client name", class: "block text-sm text-zinc-400" %>
-          <%= text_field_tag "oauth_client_credential[name]", nil, placeholder: "e.g. Prod #{provider_name} app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-        </div>
-        <div class="my-4">
-          <%= label_tag "oauth_client_credential[client_id]", "New client ID", class: "block text-sm text-zinc-400" %>
-          <%= text_field_tag "oauth_client_credential[client_id]", nil, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-        </div>
-        <div class="my-4">
-          <%= label_tag "oauth_client_credential[client_secret]", "New client secret", class: "block text-sm text-zinc-400" %>
-          <%= password_field_tag "oauth_client_credential[client_secret]", nil, autocomplete: "new-password", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-        </div>
-        <p class="text-xs text-zinc-500">Register this client's <em>Authorized redirect URI</em> as <code class="text-zinc-400"><%= oauth_callback_url %></code>.</p>
+  <div data-controller="oauth-client">
+    <%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), method: (service.persisted? ? :patch : :post), class: "contents", data: (turbo_disabled ? { turbo: false } : {}) do |form| %>
+      <div class="my-5">
+        <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
+        <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
       </div>
 
-      <p class="text-sm text-zinc-500 mt-2">After continuing you'll sign in with <span class="text-zinc-300"><%= provider_name %></span> to link this service.</p>
+      <%= form.hidden_field :kind, value: service.kind %>
 
-      <div class="inline flex items-center gap-3">
-        <%= form.submit "Continue to sign in", class: "btn-primary" %>
-      </div>
-    </div>
-  <% elsif service.is_a?(Services::OauthService) %>
-    <div class="my-5">
-      <p class="text-sm text-zinc-500">This service's connection is managed on its page.</p>
-      <%= form.submit "Save service", class: "btn-primary" %>
-    </div>
-  <% else %>
-    <%= form.fields_for :config do |cf| %>
-      <% service.config_schema.each do |field, opts| %>
+      <% if service.persisted? %>
         <div class="my-5">
-          <%= cf.label field, field.humanize, class: "block text-sm text-zinc-400" %>
-  <% field_value = !service.persisted? && service.config[field].blank? ? opts[:default] : service.config[field] %>
-          <% if opts[:textarea] %>
-            <%= cf.text_area field, value: field_value, rows: 4, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900 font-mono text-xs" %>
-          <% elsif opts[:secret] %>
-            <%= cf.password_field field, value: field_value, placeholder: "••••••••", autocomplete: "new-password", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-          <% else %>
-            <%= cf.text_field field, value: field_value, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-          <% end %>
+          <p class="text-sm text-zinc-500">This service's connection is managed on its page.</p>
+          <%= form.submit "Save service", class: "btn-primary" %>
+        </div>
+      <% else %>
+        <div class="my-5">
+          <label class="block text-sm text-zinc-400">OAuth client</label>
+          <%= select_tag :oauth_client_credential_id,
+                options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id]),
+                id: "oauth_client_credential_select",
+                include_blank: "Choose a #{provider_name} OAuth client…",
+                class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",
+                data: { oauth_client_target: "choose", action: "oauth-client#onChange" } %>
+
+          <div id="new-oauth-client-success" class="mt-1"></div>
+
+          <p class="text-sm text-zinc-500 mt-4">After continuing you'll sign in with <span class="text-zinc-300"><%= provider_name %></span> to link this service.</p>
+
+          <div class="inline flex items-center gap-3 mt-2">
+            <%= form.submit "Continue to sign in", class: "btn-primary" %>
+          </div>
         </div>
       <% end %>
     <% end %>
 
-    <div class="inline flex items-center gap-3">
-      <%= form.submit "Save service", class: "btn-primary" %>
+    <dialog id="new-oauth-client-dialog"
+            data-oauth-client-target="dialog"
+            data-action="click->oauth-client#backdrop"
+            class="m-auto p-0 rounded-lg bg-transparent border-0 backdrop:bg-black/60 data-[open]:backdrop:bg-black/60 open:backdrop:bg-black/60">
+      <div class="p-6 rounded-lg bg-zinc-900 text-zinc-100 border border-zinc-700 w-[26rem] max-w-[92vw]">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-lg">Add a <%= provider_name %> OAuth client</h3>
+          <button type="button" data-action="oauth-client#closeDialog" class="text-zinc-400 hover:text-zinc-200 transition" aria-label="Close">
+            <%= icon "x", class: "size-5" %>
+          </button>
+        </div>
+        <div id="new-oauth-client-form">
+          <%= render "oauth_client_credentials/modal_form", credential: OauthClientCredential.new(provider: service.provider) %>
+        </div>
+      </div>
+    </dialog>
+  </div>
+<% else %>
+  <div class="my-5">
+    <%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), method: (service.persisted? ? :patch : :post), class: "contents" do |form| %>
+      <div class="my-5">
+        <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
+        <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+      </div>
 
-      <button type="submit" name="test_connection" formaction="<%= test_connection_services_path %>" formmethod="post"
-              class="inline-block rounded-md border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-zinc-300 hover:bg-zinc-700">
-        Test connection
-      </button>
-    </div>
+      <%= form.hidden_field :kind, value: service.kind %>
 
-    <div id="service-test-status"></div>
-  <% end %>
+      <%= form.fields_for :config do |cf| %>
+        <% service.config_schema.each do |field, opts| %>
+          <div class="my-5">
+            <%= cf.label field, field.humanize, class: "block text-sm text-zinc-400" %>
+  <% field_value = !service.persisted? && service.config[field].blank? ? opts[:default] : service.config[field] %>
+            <% if opts[:textarea] %>
+              <%= cf.text_area field, value: field_value, rows: 4, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900 font-mono text-xs" %>
+            <% elsif opts[:secret] %>
+              <%= cf.password_field field, value: field_value, placeholder: "••••••••", autocomplete: "new-password", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+            <% else %>
+              <%= cf.text_field field, value: field_value, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <div class="inline flex items-center gap-3">
+        <%= form.submit "Save service", class: "btn-primary" %>
+
+        <button type="submit" name="test_connection" formaction="<%= test_connection_services_path %>" formmethod="post"
+                class="inline-block rounded-md border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-zinc-300 hover:bg-zinc-700">
+          Test connection
+        </button>
+      </div>
+
+      <div id="service-test-status"></div>
+    <% end %>
+  </div>
 <% end %>

@@ -106,4 +106,32 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
     }
     assert_response :unprocessable_entity
   end
+
+  test "modal create streams the new credential into the selector" do
+    assert_difference -> { @user.oauth_client_credentials.count }, 1 do
+      post oauth_client_credentials_path, params: {
+        modal: "1",
+        oauth_client_credential: { provider: "google", name: "New app", client_id: "cid_modal", client_secret: "secret_modal" }
+      }
+    end
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+
+    created = @user.oauth_client_credentials.order(:id).last
+    assert_match %r{turbo-stream action="remove"}, response.body
+    assert_match %r{turbo-stream action="replace"}, response.body
+    assert_includes response.body, created.id.to_s
+    assert_includes response.body, "New app"
+  end
+
+  test "modal create re-renders the form with errors on invalid input" do
+    post oauth_client_credentials_path, params: {
+      modal: "1",
+      oauth_client_credential: { provider: "google", name: "", client_id: "", client_secret: "" }
+    }
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_match %r{turbo-stream action="update"}, response.body
+    assert_match "Name can&#39;t be blank", response.body
+  end
 end

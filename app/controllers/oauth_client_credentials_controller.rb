@@ -15,7 +15,15 @@ class OauthClientCredentialsController < ApplicationController
     @credential = Current.user.oauth_client_credentials.new(credential_params)
 
     if @credential.save
-      redirect_to params[:return_to].presence || oauth_client_credentials_path, notice: "OAuth app added."
+      if params[:modal] == "1"
+        @clients = clients_for(@credential.provider)
+        render :create, formats: [ :turbo_stream ]
+      else
+        redirect_to params[:return_to].presence || oauth_client_credentials_path, notice: "OAuth app added."
+      end
+    elsif params[:modal] == "1"
+      @clients = clients_for(@credential.provider)
+      render :create, formats: [ :turbo_stream ]
     else
       render :new, status: :unprocessable_entity
     end
@@ -48,6 +56,10 @@ class OauthClientCredentialsController < ApplicationController
   end
 
 private
+
+  def clients_for(provider)
+    Current.user.oauth_client_credentials.where(provider: provider).order(:name)
+  end
 
   # Distinct OAuth providers among the offerable OAuth service leaves, for the
   # credentials index tiles. Scopes are deliberately not surfaced here: each
