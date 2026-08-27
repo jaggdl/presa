@@ -66,7 +66,7 @@ class ApplicationToolTest < ActiveSupport::TestCase
 
   test "call blocks a tool the workspace does not allow" do
     join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: ["resume_items"])
+    join.update!(allowed_tools: [ "resume_items" ])
     Current.workspace = join.workspace
 
     tool = ApplicationTool.expose_for(join.service).find { |t| t.kind == "get_episodes" }.new
@@ -78,7 +78,7 @@ class ApplicationToolTest < ActiveSupport::TestCase
 
   test "authorize allows a permitted tool" do
     join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: ["resume_items"])
+    join.update!(allowed_tools: [ "resume_items" ])
     Current.workspace = join.workspace
 
     tool = ApplicationTool.expose_for(join.service).find { |t| t.kind == "resume_items" }.new

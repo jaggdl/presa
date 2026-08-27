@@ -13,12 +13,12 @@ class WorkspaceService < ApplicationRecord
   # `["*"]`; an explicit empty array means no tools are allowed.
   def allowed_tools
     value = read_attribute(:allowed_tools)
-    value.nil? ? [ALLOW_ALL] : Array(value).map(&:to_s)
+    value.nil? ? [ ALLOW_ALL ] : Array(value).map(&:to_s)
   end
 
   def allowed_tools=(value)
     arr = Array(value).map(&:to_s).reject(&:blank?)
-    super(arr.include?(ALLOW_ALL) ? [ALLOW_ALL] : arr)
+    super(arr.include?(ALLOW_ALL) ? [ ALLOW_ALL ] : arr)
   end
 
   def all_tools_allowed?

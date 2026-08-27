@@ -69,6 +69,6 @@ class WorkspaceServicesControllerTest < ActionDispatch::IntegrationTest
       workspace_service: { allowed_tools: available }
     }
 
-    assert_equal [WorkspaceService::ALLOW_ALL], join.reload.allowed_tools
+    assert_equal [ WorkspaceService::ALLOW_ALL ], join.reload.allowed_tools
   end
 end

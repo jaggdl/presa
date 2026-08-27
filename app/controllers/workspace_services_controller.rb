@@ -22,7 +22,7 @@ class WorkspaceServicesController < ApplicationController
     # Normalize "everything selected" into the "*" sentinel so tools added to
     # the service later remain allowed by default.
     available = @tools_for_update ||= ApplicationTool.expose_for(@workspace_service.service).map { |t| tool_key(t) }
-    selected = [WorkspaceService::ALLOW_ALL] if available.present? && (selected - available).empty? && selected.length == available.length
+    selected = [ WorkspaceService::ALLOW_ALL ] if available.present? && (selected - available).empty? && selected.length == available.length
 
     @workspace_service.allowed_tools = selected
 

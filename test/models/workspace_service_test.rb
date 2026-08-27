@@ -18,16 +18,16 @@ class WorkspaceServiceTest < ActiveSupport::TestCase
   test "unset allowed_tools reads as everything allowed" do
     join = workspace_services(:one_github_prod)
 
-    assert_equal [WorkspaceService::ALLOW_ALL], join.allowed_tools
+    assert_equal [ WorkspaceService::ALLOW_ALL ], join.allowed_tools
     assert join.all_tools_allowed?
     assert join.tool_allowed?("list_issues")
   end
 
   test "allowed_tools can be restricted to a subset" do
     join = workspace_services(:one_github_prod)
-    join.allowed_tools = ["list_issues"]
+    join.allowed_tools = [ "list_issues" ]
 
-    assert_equal ["list_issues"], join.allowed_tools
+    assert_equal [ "list_issues" ], join.allowed_tools
     assert_not join.all_tools_allowed?
     assert join.tool_allowed?("list_issues")
     assert_not join.tool_allowed?("other")
@@ -44,17 +44,17 @@ class WorkspaceServiceTest < ActiveSupport::TestCase
 
   test "explicit star sentinel means everything allowed" do
     join = workspace_services(:one_github_prod)
-    join.allowed_tools = [WorkspaceService::ALLOW_ALL]
+    join.allowed_tools = [ WorkspaceService::ALLOW_ALL ]
 
-    assert_equal [WorkspaceService::ALLOW_ALL], join.allowed_tools
+    assert_equal [ WorkspaceService::ALLOW_ALL ], join.allowed_tools
     assert join.all_tools_allowed?
   end
 
   test "allowed_tools round-trips through the database" do
     join = workspace_services(:one_github_prod)
-    join.allowed_tools = ["list_issues", "create_comment"]
+    join.allowed_tools = [ "list_issues", "create_comment" ]
     join.save!
 
-    assert_equal ["list_issues", "create_comment"], join.reload.allowed_tools
+    assert_equal [ "list_issues", "create_comment" ], join.reload.allowed_tools
   end
 end

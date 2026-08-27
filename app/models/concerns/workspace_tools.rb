@@ -20,7 +20,7 @@ module WorkspaceTools
     lines.any? ? "#{lines.join("\n")}\n" : "No tools available.\n"
   end
 
-  # High-level context about the workspace for a bot: name and linked services
+# High-level context about the workspace for a bot: name and linked services
 # (each with its kind and tool count). See GET /bots/workspace.
 def workspace_context_text
   lines = []
