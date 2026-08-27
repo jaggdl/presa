@@ -12,6 +12,12 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=hidden][name='oauth_client_credential[provider]'][value=google]"
   end
 
+  test "new shows the callback redirect URI with a copy button" do
+    get new_oauth_client_credential_path(provider: "google")
+    assert_select "code", text: oauth_callback_url
+    assert_select "button[data-controller=copy][data-action='click->copy#copy']", text: "Copy"
+  end
+
   test "index shows provider tiles for every OAuth provider" do
     get oauth_client_credentials_path
     assert_response :success
