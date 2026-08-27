@@ -6,13 +6,13 @@ Pull curated place data into a workspace with [Google Places API (New)](https://
 
 This kind is an **API-key service** — no OAuth. Instead:
 
-1. Create a Google Cloud project and enable the **Places API (New)**, then set up billing ([get an API key](https://developers.google.com/maps/documentation/places/web-service/get-api-key)).
+1. Create a Google Cloud project and enable the **Places API (New)** service (make sure you enable the current **(New)** version, not the legacy Places API), then set up billing ([get an API key](https://developers.google.com/maps/documentation/places/web-service/get-api-key)).
 2. Restrict the key to the Places API and, if possible, to your server's IP/HTTP referrers.
 3. In Presa: add a **Places** service and paste the API key into the `api_key` field.
 
 ## Prerequisites
 
-- A Google Cloud project with the Places API (New) enabled and billing attached.
+- A Google Cloud project with the **Places API (New)** service enabled and billing attached (enable the current New version, not the legacy Places API).
 - A Google Maps Platform **API key** (kept server-side; it is sent as the `X-Goog-Api-Key` header, never exposed to clients).
 
 ## Tools
@@ -23,6 +23,7 @@ This kind is an **API-key service** — no OAuth. Instead:
 
 ## Notes
 
+- The tools call the current **Places API (New)** endpoints (`places:searchText`, `places/{placeId}`, `places/{placeId}/photos/.../media`). Make sure the service enabled on your project is **Places API (New)** — the legacy Places API uses different endpoints and auth and will not work.
 - Every request sends an `X-Goog-FieldMask` header, which controls the exact place fields returned (and billed). Each tool exposes an optional `fields` argument to tailor the mask; defaults request a sensible core set. There is no default mask in the API — omitting it is an error, so the tools always send one.
 - Results are IP-biased when no explicit location is given. Include a location in the query text (e.g. "coffee in San Francisco") for best results.
 - 429 rate-limit responses are retried with exponential backoff, honoring Google's `Retry-After` header.
