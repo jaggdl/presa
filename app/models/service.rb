@@ -2,7 +2,7 @@ class Service < ApplicationRecord
   belongs_to :user
   has_many :workspace_services, dependent: :destroy
   has_many :workspaces, through: :workspace_services
-  has_many :tool_invocations
+  has_many :tool_invocations, dependent: :destroy
 
   encrypts :config
 

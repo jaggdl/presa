@@ -68,12 +68,24 @@ module Mcp
     end
 
     def handle_body(response)
+      unless response.success?
+        raise Error, "MCP request failed (#{response.status}): #{sanitize(response.body)}"
+      end
+
       json = parse_body(response.body)
       raise Error, json["error"].inspect if json["error"]
 
       json
     rescue JSON::ParserError => e
       raise Error, "Invalid JSON-RPC response: #{e.message}"
+    end
+
+    # Returns a short, safe error prefix for a non-2xx body, never the raw
+    # value of a header or an Authorization-bearing body.
+    def sanitize(body)
+      text = body.is_a?(String) ? body.strip : body.to_s
+      text = text[0, 300]
+      text.empty? ? "no response body" : text
     end
 
     # Streamable HTTP endpoints may reply with Server-Sent Events framing

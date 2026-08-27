@@ -18,6 +18,16 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "Prod"
   end
 
+  test "index does not crash when a service's MCP endpoint is unreachable" do
+    service = @user.services.create!(name: "Broken", type: "Services::Mcp",
+                                     config: { url: "https://example.com/broken", headers: "{}" })
+    service.define_singleton_method(:remote_tools) { |*| [] }
+
+    get services_path
+    assert_response :success
+    assert_select "a", text: "Broken"
+  end
+
   test "new renders the form" do
     get new_service_path
     assert_response :success
@@ -49,15 +59,15 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   test "show renders the service kind's markdown description" do
     get service_path(services(:github_prod))
     assert_response :success
-    assert_select ".prose", text: /GitHub Enterprise Server/
+    assert_select ".prose", text: /GitHub Copilot/
   end
 
   test "show lists the service's available tools" do
-    get service_path(services(:github_prod))
+    get service_path(services(:jellyfin))
     assert_response :success
     assert_select "h2", text: "Tools"
-    assert_select "code", text: "github_list_issues"
-    assert_select "code", text: "repo"
+    assert_select "code", text: "jellyfin_next_up"
+    assert_select "code", text: "user_id"
   end
 
   test "show renders no-argument tools without error" do

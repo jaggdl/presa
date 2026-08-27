@@ -64,7 +64,7 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, name
     assert_includes response.body, "Arguments:"
-    assert_includes response.body, "repo (string | required)"
+    assert_includes response.body, "q (string | required)"
   ensure
     Current.workspace = nil
   end

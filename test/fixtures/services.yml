@@ -2,13 +2,13 @@ github_prod:
   user: one
   type: Services::Github
   name: Prod
-  config: <%= { api_token: "ghp_secret_token", base_url: "https://api.github.com" }.to_json %>
+  config: <%= { api_token: "ghp_secret_token" }.to_json %>
 
 github_staging:
   user: one
   type: Services::Github
   name: Staging
-  config: <%= { api_token: "ghp_staging_token", base_url: "https://api.github.com" }.to_json %>
+  config: <%= { api_token: "ghp_staging_token" }.to_json %>
 
 other_user_service:
   user: two

@@ -203,6 +203,33 @@ Not every integration is one you write handlers for. An **MCP service** (`Servic
 
 As with any service kind, these render in the new-service UI automatically from `config_field`.
 
+### Preset MCP services
+
+For endpoints whose URL and auth shape are well-known, subclass `Services::Mcp` and preconfigure them so the user only supplies a secret:
+
+```ruby
+module Services
+  class Github < Mcp
+    kind :github
+    icon "github.png"
+    invert_icon
+
+    preset                                        # drop inherited url/headers fields
+    config_field :api_token, required: true, secret: true
+
+    mcp_url "https://api.githubcopilot.com/mcp/"   # fixed endpoint
+    mcp_header "Authorization", "Bearer ${api_token}"  # header template resolved from config
+  end
+end
+```
+
+- `preset` starts the subclass: it clears the inherited `url`/`headers` config fields so only the secrets you declare appear in the form.
+- `mcp_url "<url>"` fixes the endpoint; without it, the generic `url` config field is used.
+- `mcp_header "Name", "template"` builds the auth header. Templates support `${field}` / `${input:field}` placeholders resolved against the instance's `config` at call time (e.g. `Bearer ${api_token}`).
+- `Tools::Mcp::Base` and `ApplicationTool.expose_for` work unchanged, since a preset is still a `Services::Mcp`.
+
+See `Services::Github` (fixed URL), `Services::Parallel` (fixed URL + API key), and `Services::N8n` (user-supplied **instance** URL via a `base_url` config override) for worked examples.
+
 ### How it works
 
 1. **Discovery** — `Services::Mcp#remote_tools` calls the outbound `Mcp::Client` (`app/services/mcp/client.rb`, Streamable HTTP JSON-RPC: `initialize` → `notifications/initialized` → `tools/list`), cached ~30s per URL.

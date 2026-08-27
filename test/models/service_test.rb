@@ -32,4 +32,15 @@ class ServiceTest < ActiveSupport::TestCase
       assert klass.description.present?, "#{klass.kind} should declare a description"
     end
   end
+
+  test "destroy removes linked tool invocations" do
+    service = services(:seerr)
+    token = workspaces(:one).api_tokens.create!(name: "Test", token_digest: "digest")
+
+    service.tool_invocations.create!(api_token: token, tool_name: "seerr_other", arguments: {})
+
+    assert_difference -> { ToolInvocation.where(service_id: service.id).count }, -1 do
+      service.destroy!
+    end
+  end
 end

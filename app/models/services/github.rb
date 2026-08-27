@@ -1,36 +1,18 @@
 # frozen_string_literal: true
 
-require "faraday"
-require "json"
-
 module Services
-  class Github < Service
+  # GitHub's own MCP endpoint, preconfigured as a preset `Services::Mcp`
+  # subclass. Exposes GitHub Copilot's toolset to the workspace. The only thing
+  # the user must fill in is a GitHub Personal Access Token.
+  class Github < Mcp
     kind :github
     icon "github.png"
     invert_icon
 
+    preset
     config_field :api_token, required: true, secret: true
-    config_field :base_url, default: "https://api.github.com"
 
-    # Perform a GET against the Github API.
-    def get(path, headers: {})
-      conn.get(path) do |req|
-        req.headers["Accept"] = "application/vnd.github+json"
-        req.headers["Authorization"] = "Bearer #{config[:api_token]}"
-        headers.each { |key, value| req.headers[key] = value }
-      end.body
-    rescue StandardError => e
-      { error: e.message }
-    end
-
-    private
-
-    def conn
-      @conn ||= Faraday.new(url: config[:base_url]) do |faraday|
-        faraday.request :json
-        faraday.response :json, content_type: /\bjson$/
-        faraday.adapter Faraday.default_adapter
-      end
-    end
+    mcp_url "https://api.githubcopilot.com/mcp/"
+    mcp_header "Authorization", "Bearer ${api_token}"
   end
 end

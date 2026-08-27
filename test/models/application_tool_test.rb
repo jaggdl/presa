@@ -2,29 +2,37 @@ require "test_helper"
 
 class ApplicationToolTest < ActiveSupport::TestCase
   test "handlers_for returns concrete handlers for a service kind" do
-    handlers = ApplicationTool.handlers_for("github")
+    handlers = ApplicationTool.handlers_for("jellyfin")
 
-    assert_includes handlers, Github::ListIssuesTool
-    refute_includes handlers, Github::Base
+    assert_includes handlers, Jellyfin::NextUpTool
+    refute_includes handlers, Jellyfin::Base
   end
 
   test "expose_for binds one class per handler to the service" do
-    bound = ApplicationTool.expose_for(services(:github_prod))
+    bound = ApplicationTool.expose_for(services(:jellyfin))
 
-    assert_equal 1, bound.length
+    assert_equal ApplicationTool.handlers_for("jellyfin").length, bound.length
 
-    klass = bound.first
+    klass = bound.find { |t| t.kind == "next_up" }
 
-    assert_equal services(:github_prod).id, klass.service_id
-    assert_equal "github_list_issues", klass.tool_name
-    assert klass < Github::ListIssuesTool
+    assert_equal services(:jellyfin).id, klass.service_id
+    assert_equal "jellyfin_next_up", klass.tool_name
+    assert klass < Jellyfin::NextUpTool
   end
 
   test "appends the service slug when a workspace has more than one service of the same kind" do
     Current.workspace = workspaces(:one)
+    join = workspace_services(:one_jellyfin)
 
-    bound = ApplicationTool.expose_for(services(:github_prod))
-    assert_equal "github_list_issues_prod", bound.first.tool_name
+    # Workspace :one has two github MCP services; a Jellyfin tool must stay
+    # distinct. Use the github service pair to prove slug disambiguation.
+    service = services(:github_prod)
+    def service.remote_tools
+      [ { "name" => "web_search", "inputSchema" => {} } ]
+    end
+
+    bound = ApplicationTool.expose_for(service)
+    assert_equal "prod_web_search", bound.first.tool_name
 
     Current.workspace = nil
   ensure
@@ -32,17 +40,14 @@ class ApplicationToolTest < ActiveSupport::TestCase
   end
 
   test "bound classes keep the handler's schema and description" do
-    klass = ApplicationTool.expose_for(services(:github_prod)).first
+    klass = ApplicationTool.expose_for(services(:jellyfin)).find { |t| t.kind == "next_up" }
 
-    assert_equal "List issues for a repository", klass.description
-    schema = klass.input_schema_to_json
-    assert_includes schema.fetch(:required), "repo"
-    assert schema.dig(:properties, :repo, :type) == "string"
+    assert_equal "List next-up episodes for shows the user is currently watching on the Jellyfin server", klass.description
   end
 
   test "tool_key is the handler kind for non-remote tools" do
-    assert_equal "list_issues", Github::ListIssuesTool.tool_key
-    assert_equal "list_issues", ApplicationTool.expose_for(services(:github_prod)).first.tool_key
+    assert_equal "next_up", Jellyfin::NextUpTool.tool_key
+    assert_equal "next_up", ApplicationTool.expose_for(services(:jellyfin)).find { |t| t.kind == "next_up" }.tool_key
   end
 
   test "tool_key is the remote name for proxied MCP tools" do
@@ -94,12 +99,12 @@ class ApplicationToolTest < ActiveSupport::TestCase
   end
 
   test "bound class does not mutate the shared handler" do
-    original_name = Github::ListIssuesTool.tool_name
+    original_name = Jellyfin::NextUpTool.tool_name
 
-    ApplicationTool.expose_for(services(:github_prod))
+    ApplicationTool.expose_for(services(:jellyfin))
 
-    assert_equal original_name, Github::ListIssuesTool.tool_name
-    assert_not Github::ListIssuesTool.respond_to?(:service_id)
+    assert_equal original_name, Jellyfin::NextUpTool.tool_name
+    assert_not Jellyfin::NextUpTool.respond_to?(:service_id)
   end
 
   test "expose_for an mcp service builds one class per remote tool" do

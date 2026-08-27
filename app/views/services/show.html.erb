@@ -32,6 +32,12 @@
 
   <h2 class="font-bold text-2xl mt-10">Tools</h2>
 
+  <% if @service.respond_to?(:remote_tools_error) && @service.remote_tools_error.present? %>
+    <div class="mt-4 py-3 px-4 rounded-lg border border-red-500/30 bg-red-950/40 text-red-400 text-sm">
+      Couldn't reach this service's MCP endpoint: <%= h @service.remote_tools_error.message %>
+    </div>
+  <% end %>
+
   <% if @tools.any? %>
     <ul class="mt-4">
       <% @tools.each do |tool| %>

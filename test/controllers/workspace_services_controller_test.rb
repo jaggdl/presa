@@ -49,7 +49,7 @@ class WorkspaceServicesControllerTest < ActionDispatch::IntegrationTest
 
   test "update persists the allowed tool subset" do
     join = workspace_services(:one_jellyfin)
-    available = ApplicationTool.expose_for(join.service).map { |t| t.kind.to_s }
+    available = ApplicationTool.expose_for(join.service).map { |t| t.tool_key.to_s }
     subset = available.first(1)
 
     assert_operator available.length, :>, 1, "expected a multi-tool fixture service"
@@ -63,7 +63,7 @@ class WorkspaceServicesControllerTest < ActionDispatch::IntegrationTest
 
   test "update selecting every tool stores the star sentinel" do
     join = workspace_services(:one_github_prod)
-    available = ApplicationTool.expose_for(join.service).map { |t| t.kind.to_s }
+    available = ApplicationTool.expose_for(join.service).map { |t| t.tool_key.to_s }
 
     patch workspace_workspace_service_path(@workspace, join), params: {
       workspace_service: { allowed_tools: available }
