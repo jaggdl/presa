@@ -1,6 +1,13 @@
 require "commonmarker"
 
 module ApplicationHelper
+  # Brand image per OAuth provider, used in the credentials index tiles and
+  # credential forms. Unknown providers fall back to the generic placeholder.
+  OAUTH_PROVIDER_ICONS = {
+    "google" => "google.png",
+    "strava" => "strava.png"
+  }.freeze
+
   # The public base URL of the instance, e.g. "https://presa.example.com".
   # Resolves from the BASE_URL env var, else the origin of the current request
   # (the host/port the caller is actually using), else a placeholder.
@@ -25,6 +32,15 @@ module ApplicationHelper
   end
 
   private
+
+  # Render an OAuth provider's brand icon in the same framed tile style as a
+  # service icon, so the credentials index reads like the services index.
+  def oauth_provider_icon(provider, size: "h-7 w-7")
+    filename = OAUTH_PROVIDER_ICONS.fetch(provider.to_s, "placeholder.png")
+    image = image_tag filename, class: size, "aria-hidden": true
+    content_tag :span, image,
+                class: "inline-flex items-center justify-center p-2.5 bg-zinc-900 rounded-lg border border-zinc-700"
+  end
 
   # Render a service's brand icon, as declared on the model, padded and framed
   # with a subtle border so it reads as a tile. `size` sets the Tailwind

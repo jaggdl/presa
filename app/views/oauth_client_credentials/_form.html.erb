@@ -14,14 +14,14 @@
 <%= form_with model: @credential, scope: :oauth_client_credential, url: (@credential.persisted? ? oauth_client_credential_path(@credential) : oauth_client_credentials_path), method: (@credential.persisted? ? :patch : :post), class: "contents" do |form| %>
   <%= hidden_field_tag :return_to, params[:return_to] %>
 
-  <div class="my-5" data-controller="credential-provider">
-    <%= form.label :provider, "Provider", class: "block text-sm text-zinc-400" %>
-    <%= form.select :provider,
-          @oauth_providers.map { |p| [ p[:provider].to_s.humanize, p[:provider].to_s, data: { scope: p[:scope] } ] },
-          {},
-          class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",
-          data: { credential_provider_target: "select", action: "change->credential-provider#syncScope" } %>
-    <p class="text-xs text-zinc-500 mt-1">The OAuth provider this client belongs to.</p>
+  <%= form.hidden_field :provider %>
+
+  <div class="my-5">
+    <span class="block text-sm text-zinc-400">Provider</span>
+    <div class="mt-2 flex items-center gap-3">
+      <%= oauth_provider_icon(@credential.provider, size: "h-6 w-6") %>
+      <span class="text-zinc-200"><%= provider_name %></span>
+    </div>
   </div>
 
   <div class="my-5">
@@ -45,7 +45,7 @@
 
   <div class="my-5">
     <span class="block text-sm text-zinc-400">Scopes</span>
-    <code class="mt-1 inline-block text-xs bg-zinc-800 px-2 py-1 rounded break-all" data-credential-provider-target="scopeNote"><%= @service_scope %></code>
+    <code class="mt-1 inline-block text-xs bg-zinc-800 px-2 py-1 rounded break-all"><%= @service_scope %></code>
     <p class="text-xs text-zinc-500 mt-1">The permissions your service will request in the OAuth consent; defined by the service, not the client.</p>
   </div>
 

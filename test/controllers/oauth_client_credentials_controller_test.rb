@@ -9,26 +9,23 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
   test "new renders the form" do
     get new_oauth_client_credential_path(provider: "google")
     assert_response :success
+    assert_select "input[type=hidden][name='oauth_client_credential[provider]'][value=google]"
   end
 
-  test "offers a provider select with every OAuth provider and its scope" do
-    get new_oauth_client_credential_path
-    assert_select "select#oauth_client_credential_provider option", count: 2
-    assert_select "option[value=google]", text: "Google"
-    assert_select "option[value=strava]", text: "Strava"
-    assert_select "[data-credential-provider-target=scopeNote]", text: Services::Gmail.oauth_scope
-  end
-
-  test "preselects the requested provider and its scope" do
-    get new_oauth_client_credential_path(provider: "strava")
-    assert_select "option[value=strava][selected=selected]"
-    assert_select "[data-credential-provider-target=scopeNote]", text: Services::Strava.oauth_scope
+  test "index shows provider tiles for every OAuth provider" do
+    get oauth_client_credentials_path
+    assert_response :success
+    assert_select "a[href='/oauth_client_credentials/new?provider=google']"
+    assert_select "a[href='/oauth_client_credentials/new?provider=strava']"
+    assert_select "span", text: "Google"
+    assert_select "span", text: "Strava"
   end
 
   test "index lists the user's credentials" do
     get oauth_client_credentials_path
     assert_response :success
-    assert_select "td", text: "Prod Google app"
+    assert_select "a", text: "Prod Google app"
+    assert_select "span", text: "google"
   end
 
   test "create saves a client credential with a name for the current user" do

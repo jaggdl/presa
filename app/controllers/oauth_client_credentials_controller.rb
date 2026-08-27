@@ -2,6 +2,7 @@ class OauthClientCredentialsController < ApplicationController
   # GET /oauth_client_credentials
   def index
     @credentials = Current.user.oauth_client_credentials.order(:provider, :name)
+    @providers = oauth_providers
   end
 
   # GET /oauth_client_credentials/new?provider=google&return_to=...
@@ -53,9 +54,7 @@ class OauthClientCredentialsController < ApplicationController
 private
 
   def load_provider_form
-    @oauth_providers = oauth_providers
-    selected = @oauth_providers.find { |p| p[:provider].to_s == @credential.provider.to_s }
-    @service_scope = selected&.fetch(:scope)
+    @service_scope = oauth_providers.find { |p| p[:provider].to_s == @credential.provider.to_s }&.fetch(:scope)
   end
 
   # Distinct OAuth providers among the offerable OAuth service leaves, each
