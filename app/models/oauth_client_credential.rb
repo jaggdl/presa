@@ -11,6 +11,7 @@ class OauthClientCredential < ApplicationRecord
   has_many :grants, class_name: "OauthGrant", dependent: :destroy
 
   validates :provider, presence: true
+  validates :name, presence: true
   validates :client_id, presence: true, uniqueness: { scope: :provider }
   validates :client_secret, presence: true
 

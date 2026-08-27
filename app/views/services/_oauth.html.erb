@@ -25,8 +25,8 @@
       <% credentials.each do |cred| %>
         <li class="flex items-center justify-between rounded-md border border-zinc-800 px-3 py-2">
           <div>
-            <div class="text-sm text-zinc-200"><%= cred.client_id %></div>
-            <div class="text-xs text-zinc-500"><%= cred.masked_secret %> · <%= cred.scopes %></div>
+            <div class="text-sm text-zinc-200"><%= cred.name %></div>
+            <div class="text-xs text-zinc-500"><code class="text-zinc-400"><%= cred.client_id %></code> · <%= cred.masked_secret %></div>
           </div>
           <div class="flex items-center gap-2">
             <% if @service.connected? && @service.oauth_grant.oauth_client_credential_id == cred.id %>

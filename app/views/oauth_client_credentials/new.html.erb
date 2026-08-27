@@ -24,6 +24,12 @@
     <%= hidden_field_tag :return_to, params[:return_to] %>
 
     <div class="my-5">
+      <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
+      <%= form.text_field :name, placeholder: "e.g. Prod Google app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+      <p class="text-xs text-zinc-500 mt-1">A label to identify this OAuth client (optional).</p>
+    </div>
+
+    <div class="my-5">
       <%= form.label :client_id, "Client ID", class: "block text-sm text-zinc-400" %>
       <%= form.text_field :client_id, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900", autocomplete: "off" %>
     </div>
@@ -41,7 +47,7 @@
     <%= form.hidden_field :provider %>
     <div class="inline flex items-center gap-3 mt-2">
       <%= form.submit "Save OAuth client", class: "btn-primary" %>
-      <%= link_to "Cancel", params[:return_to].presence || services_path, class: "text-zinc-400 underline hover:no-underline" %>
+      <%= link_to "Cancel", params[:return_to].presence || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
     </div>
   <% end %>
 </div>

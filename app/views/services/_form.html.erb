@@ -22,12 +22,16 @@
     <div class="my-5" data-controller="oauth-client">
       <label class="block text-sm text-zinc-400">OAuth client</label>
       <%= select_tag :oauth_client_credential_id,
-            options_for_select(@clients.map { |c| [ c.client_id, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id]),
+            options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id]),
             include_blank: "Choose a Google OAuth client…",
             class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",
             data: { oauth_client_target: "choose", action: "oauth-client#onChange" } %>
 
       <div class="my-5 hidden" data-oauth-client-target="new">
+        <div class="my-4">
+          <%= label_tag "oauth_client_credential[name]", "New client name", class: "block text-sm text-zinc-400" %>
+          <%= text_field_tag "oauth_client_credential[name]", nil, placeholder: "e.g. Prod Google app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+        </div>
         <div class="my-4">
           <%= label_tag "oauth_client_credential[client_id]", "New client ID", class: "block text-sm text-zinc-400" %>
           <%= text_field_tag "oauth_client_credential[client_id]", nil, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>

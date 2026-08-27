@@ -6,10 +6,11 @@ class OauthClientCredentialTest < ActiveSupport::TestCase
     assert_equal users(:one), credential.created_by
   end
 
-  test "requires provider, client_id, and client_secret" do
+  test "requires provider, name, client_id, and client_secret" do
     credential = OauthClientCredential.new
     assert_not credential.valid?
     assert credential.errors[:provider].any?
+    assert credential.errors[:name].any?
     assert credential.errors[:client_id].any?
     assert credential.errors[:client_secret].any?
   end
@@ -17,6 +18,7 @@ class OauthClientCredentialTest < ActiveSupport::TestCase
   test "client_id is unique within a provider" do
     dup = OauthClientCredential.new(
       provider: "google",
+      name: "Prod Google app",
       client_id: "google_client_1",
       client_secret: "x",
       created_by: users(:one)

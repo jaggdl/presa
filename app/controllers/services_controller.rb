@@ -94,8 +94,8 @@ class ServicesController < ApplicationController
     if params[:oauth_client_credential_id].present? && params[:oauth_client_credential_id] != "new"
       Current.user.oauth_client_credentials.find_by(id: params[:oauth_client_credential_id])
     elsif params[:oauth_client_credential].present?
-      cred_params = params.require(:oauth_client_credential).permit(:client_id, :client_secret, :scopes)
-      return nil if cred_params[:client_id].blank? || cred_params[:client_secret].blank?
+      cred_params = params.require(:oauth_client_credential).permit(:name, :client_id, :client_secret, :scopes)
+      return nil if cred_params[:name].blank? || cred_params[:client_id].blank? || cred_params[:client_secret].blank?
 
       provider = service_klass.respond_to?(:oauth_provider) ? service_klass.oauth_provider.to_s : "google"
       Current.user.oauth_client_credentials.create!(cred_params.merge(provider: provider))
