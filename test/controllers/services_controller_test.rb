@@ -56,6 +56,22 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Prod"
   end
 
+  test "show hides the redirect URL and add-client prompts for a connected OAuth service" do
+    get service_path(services(:gmail))
+    assert_response :success
+    assert_select "a", text: "Add an OAuth client", count: 0
+    assert_match(/● Connected/, response.body)
+    assert_select "dt", text: "OAuth Redirect URL", count: 0
+  end
+
+  test "show shows the redirect URL and add-client prompts for an unconnected OAuth service" do
+    get service_path(services(:strava))
+    assert_response :success
+    assert_select "a", text: "Add an OAuth client"
+    assert_select "dt", text: "OAuth Redirect URL"
+    refute_match(/● Connected/, response.body)
+  end
+
   test "show renders the service kind's markdown description" do
     get service_path(services(:github_prod))
     assert_response :success
