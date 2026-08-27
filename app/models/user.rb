@@ -3,6 +3,7 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
   has_many :workspaces, dependent: :destroy
   has_many :services, dependent: :destroy
+  has_many :oauth_client_credentials, dependent: :destroy, inverse_of: :created_by
 
   def can_use_tool?(_tool)
     true

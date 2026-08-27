@@ -10,9 +10,14 @@ class ServicesController < ApplicationController
   def new
     klass = Service.class_for_kind(params[:kind]) || Service.class_for_kind(Service.kinds.first)
     @service = klass.new
+    load_oauth_clients
   end
 
   def create
+    if service_klass <= Services::OauthService
+      return create_oauth_service
+    end
+
     @service = service_klass.new(user: Current.user, name: service_params[:name], config: service_config_params)
 
     if @service.save
@@ -59,6 +64,50 @@ class ServicesController < ApplicationController
   end
 
   private
+
+  # OAuth services aren't created up-front. The form carries a name and an
+  # OAuth client choice; we create the client credential (if a new one was
+  # entered) and hand off to the OAuth dance. The service row is only created
+  # in the OAuth callback after a successful exchange.
+  def create_oauth_service
+    klass = service_klass
+    @service = klass.new(name: service_params[:name])
+    load_oauth_clients
+
+    unless @service.name.presence
+      @service.errors.add(:name, "can't be blank")
+      return render(:new, status: :unprocessable_entity)
+    end
+
+    credential = resolve_oauth_client_credential
+    unless credential
+      @service.errors.add(:base, "Choose an OAuth client or add new client credentials")
+      return render(:new, status: :unprocessable_entity)
+    end
+
+    redirect_to oauth_start_path(kind: klass.kind, name: @service.name, oauth_client_credential_id: credential.id)
+  end
+
+  # Resolves the client credential the form selected: an existing one (owned by
+  # the user) or a freshly created (and saved) one from the nested fields.
+  def resolve_oauth_client_credential
+    if params[:oauth_client_credential_id].present? && params[:oauth_client_credential_id] != "new"
+      Current.user.oauth_client_credentials.find_by(id: params[:oauth_client_credential_id])
+    elsif params[:oauth_client_credential].present?
+      cred_params = params.require(:oauth_client_credential).permit(:client_id, :client_secret, :scopes)
+      return nil if cred_params[:client_id].blank? || cred_params[:client_secret].blank?
+
+      provider = service_klass.respond_to?(:oauth_provider) ? service_klass.oauth_provider.to_s : "google"
+      Current.user.oauth_client_credentials.create!(cred_params.merge(provider: provider))
+    end
+  rescue ActiveRecord::RecordNotUnique
+    nil
+  end
+
+  def load_oauth_clients
+    provider = @service.respond_to?(:provider) ? @service.provider : nil
+    @clients = provider.present? ? Current.user.oauth_client_credentials.where(provider: provider) : []
+  end
 
   def set_service
     @service = Current.user.services.find(params[:id])

@@ -1,0 +1,54 @@
+<% credentials = Current.user.oauth_client_credentials.where(provider: @service.class.oauth_provider.to_s) %>
+<div class="mt-8 p-4 rounded-lg border border-zinc-700 bg-zinc-900/60">
+  <h2 class="font-bold text-xl text-zinc-100">Google OAuth connection</h2>
+
+  <div class="mt-3 text-sm text-zinc-400">
+    <dt class="text-zinc-500">OAuth Redirect URL</dt>
+    <dd class="mt-1">
+      <code class="text-xs bg-zinc-800 px-2 py-1 rounded break-all"><%= oauth_callback_url %></code>
+      <p class="text-xs text-zinc-500 mt-1">Register this exact URL in your Google OAuth client's <em>Authorized redirect URIs</em>.</p>
+    </dd>
+  </div>
+
+  <% if @service.connected? %>
+    <div class="mt-4 flex items-center gap-3">
+      <span class="text-sm text-emerald-400">● Connected</span>
+    </div>
+  <% else %>
+    <p class="text-sm text-amber-400 mt-4">Not connected yet.</p>
+  <% end %>
+
+  <h3 class="font-bold text-sm text-zinc-200 mt-6">OAuth client, bring-your-own</h3>
+
+  <% if credentials.any? %>
+    <ul class="mt-2 space-y-2">
+      <% credentials.each do |cred| %>
+        <li class="flex items-center justify-between rounded-md border border-zinc-800 px-3 py-2">
+          <div>
+            <div class="text-sm text-zinc-200"><%= cred.client_id %></div>
+            <div class="text-xs text-zinc-500"><%= cred.masked_secret %> · <%= cred.scopes %></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <% if @service.connected? && @service.oauth_grant.oauth_client_credential_id == cred.id %>
+              <span class="text-xs text-zinc-500">in use</span>
+            <% else %>
+              <%= button_to "Connect",
+                    oauth_start_path(service_id: @service.id, oauth_client_credential_id: cred.id),
+                    class: "btn-primary text-sm", data: { turbo: false } %>
+            <% end %>
+            <%= button_to "Remove", oauth_client_credential_path(cred, return_to: service_path(@service)),
+              method: :delete, class: "text-red-400 text-xs underline hover:no-underline",
+              form: { data: { turbo_confirm: "Remove this OAuth client?" } } %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-sm text-zinc-500 mt-2">No OAuth client added yet.</p>
+  <% end %>
+
+  <div class="mt-4">
+    <%= link_to "Add an OAuth client", new_oauth_client_credential_path(provider: @service.provider, return_to: service_path(@service)),
+                class: "text-sm text-blue-500 underline hover:no-underline" %>
+  </div>
+</div>

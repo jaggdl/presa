@@ -31,3 +31,8 @@ seerr:
   type: Services::Seerr
   name: Seerr
   config: <%= { api_key: "seerr_key", base_url: "http://localhost:5055" }.to_json %>
+gmail:
+  user: one
+  type: Services::Gmail
+  name: Gmail
+  config: {}

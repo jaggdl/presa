@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_030427) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_055523) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -42,10 +42,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_030427) do
     t.index ["workspace_id"], name: "index_bot_authorizations_on_workspace_id"
   end
 
+  create_table "oauth_client_credentials", force: :cascade do |t|
+    t.string "client_id", null: false
+    t.string "client_secret", null: false
+    t.datetime "created_at", null: false
+    t.integer "created_by_user_id", null: false
+    t.string "provider", null: false
+    t.string "scopes"
+    t.datetime "updated_at", null: false
+    t.index ["created_by_user_id"], name: "index_oauth_client_credentials_on_created_by_user_id"
+    t.index ["provider", "client_id"], name: "index_oauth_client_credentials_on_provider_and_client_id", unique: true
+  end
+
+  create_table "oauth_grants", force: :cascade do |t|
+    t.string "access_token", null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.integer "oauth_client_credential_id", null: false
+    t.string "provider", null: false
+    t.string "refresh_token"
+    t.string "remote_user_key"
+    t.string "scope"
+    t.integer "service_id", null: false
+    t.string "token_type"
+    t.datetime "updated_at", null: false
+    t.index ["oauth_client_credential_id"], name: "index_oauth_grants_on_oauth_client_credential_id"
+    t.index ["service_id"], name: "index_oauth_grants_on_service_id", unique: true
+  end
+
   create_table "services", force: :cascade do |t|
     t.json "config"
     t.datetime "created_at", null: false
     t.string "name", null: false
+    t.json "oauth"
     t.string "type", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
@@ -109,6 +138,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_030427) do
 
   add_foreign_key "api_tokens", "workspaces"
   add_foreign_key "bot_authorizations", "workspaces"
+  add_foreign_key "oauth_client_credentials", "users", column: "created_by_user_id"
+  add_foreign_key "oauth_grants", "oauth_client_credentials"
+  add_foreign_key "oauth_grants", "services"
   add_foreign_key "services", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "tool_invocations", "api_tokens"

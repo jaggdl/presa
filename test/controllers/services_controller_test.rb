@@ -118,4 +118,50 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   ensure
     Services::Github.remove_method(:test_connection)
   end
+
+  test "new loads existing OAuth clients for an OAuth service" do
+    get new_kind_service_services_path("gmail")
+    assert_response :success
+    assert_select "select[name=oauth_client_credential_id]"
+    assert_select "option", text: @user.oauth_client_credentials.first.client_id
+  end
+
+  test "new does not crash for a non-OAuth service" do
+    get new_kind_service_services_path("github")
+    assert_response :success
+  end
+
+  test "create for an OAuth service redirects to the provider with an existing client" do
+    assert_no_difference -> { @user.services.count } do
+      post services_path, params: {
+        service: { name: "My Gmail", kind: "gmail" },
+        oauth_client_credential_id: oauth_client_credentials(:google_credential).id
+      }
+    end
+
+    assert_redirected_to %r{/oauth/start}
+  end
+
+  test "create for an OAuth service creates a new client and redirects to the provider" do
+    assert_difference -> { @user.oauth_client_credentials.count }, 1 do
+      assert_no_difference -> { @user.services.count } do
+        post services_path, params: {
+          service: { name: "My Gmail", kind: "gmail" },
+          oauth_client_credential_id: "new",
+          oauth_client_credential: { client_id: "new_cid", client_secret: "new_secret" }
+        }
+      end
+    end
+
+    assert_redirected_to %r{/oauth/start}
+    assert_equal "google", @user.oauth_client_credentials.order(:id).last.provider
+  end
+
+  test "create for an OAuth service renders the form when no client is chosen" do
+    assert_no_difference -> { @user.services.count } do
+      post services_path, params: { service: { name: "My Gmail", kind: "gmail" } }
+    end
+
+    assert_response :unprocessable_entity
+  end
 end

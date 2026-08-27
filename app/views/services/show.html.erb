@@ -24,6 +24,10 @@
     </div>
   </dl>
 
+  <% if @service.is_a?(Services::OauthService) %>
+    <%= render "services/oauth", service: @service %>
+  <% end %>
+
   <% if @service.description.present? %>
     <div class="mt-8">
       <%= render_markdown(@service.description) %>

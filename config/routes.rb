@@ -30,6 +30,15 @@ Rails.application.routes.draw do
     get ":kind/new", action: "new", on: :collection, as: :new_kind_service
     post "test_connection", action: "test_connection", on: :collection
   end
+
+  # OAuth browser dance. `start` bounces the user to the provider; `callback`
+  # receives the authorization code. A single global callback keeps the
+  # registered provider redirect_uri constant; the target service + client
+  # travel in a signed `state`.
+  get "oauth/start", to: "oauth#start", as: :oauth_start
+  get "oauth/callback", to: "oauth#callback", as: :oauth_callback
+  resources :oauth_client_credentials, only: %i[ new create destroy ]
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
