@@ -86,9 +86,9 @@ class ApplicationToolTest < ActiveSupport::TestCase
   test "call is always allowed for generic tools" do
     Current.workspace = workspaces(:one)
 
-    tool = SampleTool.new
+    generic = Class.new(ApplicationTool)
 
-    assert_nothing_raised { tool.send(:authorize_call!) }
+    assert_nothing_raised { generic.new.send(:authorize_call!) }
   ensure
     Current.workspace = nil
   end
