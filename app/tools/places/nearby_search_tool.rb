@@ -13,9 +13,9 @@ module Places
     RANK_PREFERENCES = %w[POPULARITY DISTANCE].freeze
 
     arguments do
-      required(:latitude).filled(:float).description("Center latitude of the search circle (e.g. 37.7937)")
-      required(:longitude).filled(:float).description("Center longitude of the search circle (e.g. -122.3965)")
-      required(:radius).filled(:float, gt?: 0.0, lteq?: 50_000).description("Radius of the search circle in meters (0 < radius <= 50000)")
+      required(:latitude).filled(Dry::Types["coercible.float"]).description("Center latitude of the search circle (e.g. 37.7937)")
+      required(:longitude).filled(Dry::Types["coercible.float"]).description("Center longitude of the search circle (e.g. -122.3965)")
+      required(:radius).filled(Dry::Types["coercible.float"], gt?: 0.0, lteq?: 50_000).description("Radius of the search circle in meters (0 < radius <= 50000)")
       optional(:included_types).filled(:string).description("Place types (from Table A) to include, comma-separated or a JSON array, e.g. 'restaurant, cafe'")
       optional(:excluded_types).filled(:string).description("Place types (from Table A) to exclude, comma-separated or a JSON array")
       optional(:included_primary_types).filled(:string).description("Primary place types (from Table A) to include, comma-separated or a JSON array")
