@@ -6,6 +6,11 @@ class Services::McpTest < ActiveSupport::TestCase
     assert_includes Service.kinds, "mcp"
   end
 
+  test "is categorized as general" do
+    assert_equal "general", Services::Mcp.category
+    assert Services::Mcp.new(name: "Search").general?
+  end
+
   test "requires url" do
     service = Services::Mcp.new(name: "Search")
     assert_not service.valid?

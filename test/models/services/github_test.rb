@@ -7,6 +7,10 @@ class Services::GithubTest < ActiveSupport::TestCase
     assert_equal [ "api_token" ], Services::Github.config_fields.keys.map(&:to_s)
   end
 
+  test "is categorized as development" do
+    assert_equal "development", Services::Github.category
+  end
+
   test "uses the preset url" do
     assert_equal "https://api.githubcopilot.com/mcp/", Services::Github.new.base_url
   end

@@ -10,10 +10,27 @@ class Service < ApplicationRecord
   class_attribute :config_fields, default: {}
   class_attribute :config_icon, default: nil
   class_attribute :config_icon_invert, default: false
+  class_attribute :config_category, default: nil
+
+  # Domain categories, declared per service implementation. A virtual attribute
+  # (no column): each subclass's class-level `category` DSL sets the default,
+  # applied to new instances on initialize.
+  attribute :category, :string
+  enum :category, {
+    development: "development",
+    productivity: "productivity",
+    knowledge: "knowledge",
+    social: "social",
+    media: "media",
+    automation: "automation",
+    fitness: "fitness",
+    general: "general"
+  }
 
   validates :name, presence: true, uniqueness: { scope: %i[user_id type] }
 
   before_validation :apply_config_defaults
+  after_initialize :apply_category_default
   validate :config_fields_present
 
   class << self
@@ -33,6 +50,14 @@ class Service < ApplicationRecord
     # light-on-dark (e.g. a black logo on a dark theme).
     def invert_icon(value = true)
       self.config_icon_invert = value
+    end
+
+    # The domain category for this service kind (e.g. `:development`,
+    # `:productivity`, `:media`). Declaring it sets the default category
+    # applied to instances of this kind; unset kinds fall back to `:general`.
+    def category(value = nil)
+      self.config_category = value.to_s if value
+      config_category || "general"
     end
 
     # The Markdown description for this service kind, read from
@@ -173,6 +198,19 @@ class Service < ApplicationRecord
   def apply_config_defaults
     merged = self.class.config_fields.transform_values { |opts| opts[:default] }.compact
     self.config = merged.stringify_keys.merge(config)
+  end
+
+  # Persists the class-declared category on new records so the enum column
+  # always holds a value, even when bulk-loaded (fixtures).
+  def apply_category_default
+    self.category = self.class.category if category.blank?
+  end
+
+  # Persists the class-declared category onto new instances so the virtual
+  # enum attribute always holds a value (the reader, predicates, and scopes
+  # work uniformly), defaulting to `general` for undeclared kinds.
+  def apply_category_default
+    self.category = self.class.category if category.blank?
   end
 
   def config_fields_present

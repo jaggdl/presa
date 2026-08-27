@@ -8,6 +8,7 @@ module Services
   class N8n < Mcp
     kind :n8n
     icon "n8n.png"
+    category :automation
 
     preset
     config_field :base_url, required: true

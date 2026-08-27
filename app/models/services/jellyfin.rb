@@ -7,6 +7,7 @@ module Services
   class Jellyfin < Service
     kind :jellyfin
     icon "jellyfin.png"
+    category :media
 
     config_field :api_key, required: true, secret: true
     config_field :base_url, default: "http://localhost:8096"

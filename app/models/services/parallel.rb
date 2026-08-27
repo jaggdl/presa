@@ -7,6 +7,7 @@ module Services
   class Parallel < Mcp
     kind :parallel_search
     icon "parallel.png"
+    category :knowledge
 
     preset
 

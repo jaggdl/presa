@@ -9,6 +9,7 @@ module Services
   class Strava < OauthService
     kind :strava
     icon "strava.png"
+    category :fitness
 
     self.oauth_provider = :strava
     self.oauth_authorize_uri = "https://www.strava.com/oauth/authorize"

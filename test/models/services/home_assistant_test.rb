@@ -9,6 +9,10 @@ class Services::HomeAssistantTest < ActiveSupport::TestCase
     assert_equal [ "base_url", "access_token" ], Services::HomeAssistant.config_fields.keys.map(&:to_s)
   end
 
+  test "is categorized as automation" do
+    assert_equal "automation", Services::HomeAssistant.category
+  end
+
   test "resolves the mcp endpoint from the base_url" do
     service = Services::HomeAssistant.new(name: "Home Assistant")
     service.config = { base_url: "http://homeassistant.local:8123", access_token: "ha_123" }

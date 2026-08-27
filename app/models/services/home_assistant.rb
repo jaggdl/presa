@@ -10,6 +10,7 @@ module Services
   class HomeAssistant < Mcp
     kind :home_assistant
     icon "home_assistant.png"
+    category :automation
 
     preset
     config_field :base_url, required: true

@@ -19,6 +19,11 @@ class Services::GmailTest < ActiveSupport::TestCase
     assert_not_includes Service.kinds, "oauth_service"
   end
 
+  test "is categorized as productivity" do
+    assert_equal "productivity", Services::Gmail.category
+    assert Services::Gmail.new(name: "Gmail3").productivity?
+  end
+
   test "is valid as an OAuth service" do
     assert services(:gmail).valid?
   end

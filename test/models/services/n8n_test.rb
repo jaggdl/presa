@@ -9,6 +9,10 @@ class Services::N8nTest < ActiveSupport::TestCase
     assert_equal [ "base_url", "api_key" ], Services::N8n.config_fields.keys.map(&:to_s)
   end
 
+  test "is categorized as automation" do
+    assert_equal "automation", Services::N8n.category
+  end
+
   test "reflects the base_url from the config" do
     service = Services::N8n.new(name: "n8n")
     service.config = { base_url: "https://n8n.example.com/mcp", api_key: "key_123" }

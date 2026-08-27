@@ -8,6 +8,7 @@ module Services
     kind :github
     icon "github.png"
     invert_icon
+    category :development
 
     preset
     config_field :api_token, required: true, secret: true

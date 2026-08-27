@@ -8,6 +8,7 @@ module Services
   class Gmail < GoogleOauth
     kind :gmail
     icon "gmail.png"
+    category :productivity
 
     self.oauth_scope = "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly"
   end

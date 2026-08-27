@@ -11,4 +11,8 @@ class Services::StravaTest < ActiveSupport::TestCase
     assert_equal "https://www.strava.com/oauth/token", Services::Strava.oauth_token_uri
     assert_includes Services::Strava.oauth_scope, "activity:read_all"
   end
+
+  test "is categorized as fitness" do
+    assert_equal "fitness", Services::Strava.category
+  end
 end

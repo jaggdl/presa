@@ -7,6 +7,10 @@ class Services::ParallelSearchTest < ActiveSupport::TestCase
     assert_empty Services::Parallel.config_fields
   end
 
+  test "is categorized as knowledge" do
+    assert_equal "knowledge", Services::Parallel.category
+  end
+
   test "uses the preset url" do
     assert_equal "https://search.parallel.ai/mcp", Services::Parallel.new.base_url
   end
