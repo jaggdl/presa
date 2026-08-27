@@ -1,11 +1,12 @@
 <div class="mx-auto md:w-3/4 w-full">
+  <% provider_name = @credential.provider.humanize %>
   <p class="text-sm text-zinc-500 mb-2">
     <%= link_to "Services", services_path, class: "text-blue-500 hover:underline" %> · OAuth client
   </p>
   <h1 class="font-bold text-4xl">Add OAuth client</h1>
 
   <p class="text-zinc-400 mt-2 text-sm">
-    Register a Google OAuth app with the application type <em>Web application</em> in the Google console and
+    Register an OAuth app with <em><%= provider_name %></em> and
     paste its credentials here. You'll connect your service through this client.
   </p>
 
@@ -25,7 +26,7 @@
 
     <div class="my-5">
       <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
-      <%= form.text_field :name, placeholder: "e.g. Prod Google app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+      <%= form.text_field :name, placeholder: "e.g. Prod #{provider_name} app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
       <p class="text-xs text-zinc-500 mt-1">A label to identify this OAuth client (optional).</p>
     </div>
 

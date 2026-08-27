@@ -9,6 +9,7 @@
   </div>
 <% end %>
 
+<% provider_name = service.provider.humanize if service.is_a?(Services::OauthService) %>
 <% turbo_disabled = service.is_a?(Services::OauthService) && !service.persisted? %>
 <%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), class: "contents", data: (turbo_disabled ? { turbo: false } : {}) do |form| %>
   <div class="my-5">
@@ -23,14 +24,14 @@
       <label class="block text-sm text-zinc-400">OAuth client</label>
       <%= select_tag :oauth_client_credential_id,
             options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id]),
-            include_blank: "Choose a Google OAuth client…",
+            include_blank: "Choose a #{provider_name} OAuth client…",
             class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",
             data: { oauth_client_target: "choose", action: "oauth-client#onChange" } %>
 
       <div class="my-5 hidden" data-oauth-client-target="new">
         <div class="my-4">
           <%= label_tag "oauth_client_credential[name]", "New client name", class: "block text-sm text-zinc-400" %>
-          <%= text_field_tag "oauth_client_credential[name]", nil, placeholder: "e.g. Prod Google app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+          <%= text_field_tag "oauth_client_credential[name]", nil, placeholder: "e.g. Prod #{provider_name} app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
         </div>
         <div class="my-4">
           <%= label_tag "oauth_client_credential[client_id]", "New client ID", class: "block text-sm text-zinc-400" %>
@@ -43,7 +44,7 @@
         <p class="text-xs text-zinc-500">Register this client's <em>Authorized redirect URI</em> as <code class="text-zinc-400"><%= oauth_callback_url %></code>.</p>
       </div>
 
-      <p class="text-sm text-zinc-500 mt-2">After continuing you'll sign in with Google to link this service.</p>
+      <p class="text-sm text-zinc-500 mt-2">After continuing you'll sign in with <span class="text-zinc-300"><%= provider_name %></span> to link this service.</p>
 
       <div class="inline flex items-center gap-3">
         <%= form.submit "Continue to sign in", class: "btn-primary" %>

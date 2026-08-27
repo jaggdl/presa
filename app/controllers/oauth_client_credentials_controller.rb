@@ -7,7 +7,7 @@ class OauthClientCredentialsController < ApplicationController
   # GET /oauth_client_credentials/new?provider=google&return_to=...
   def new
     @credential = OauthClientCredential.new(provider: params[:provider] || "google")
-    @service_scope = Services::Gmail.oauth_scope
+    @service_scope = oauth_service_for_provider(&:oauth_scope)
   end
 
   # POST /oauth_client_credentials
@@ -28,6 +28,14 @@ class OauthClientCredentialsController < ApplicationController
   end
 
   private
+
+  # Maps a provider (e.g. "google", "strava") to its offerable OAuth service
+  # leaf so the new-credential form can prefill a default scope. Nil when the
+  # provider has no backing service yet.
+  def oauth_service_for_provider
+    Service.kinds.filter_map { |kind| Service.class_for_kind(kind) }
+      .find { |klass| klass.respond_to?(:oauth_provider) && klass.oauth_provider.to_s == @credential.provider }
+  end
 
   def credential_params
     params.require(:oauth_client_credential).permit(:provider, :name, :client_id, :client_secret, :scopes)

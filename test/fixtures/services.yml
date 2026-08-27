@@ -36,3 +36,9 @@ gmail:
   type: Services::Gmail
   name: Gmail
   config: {}
+
+strava:
+  user: one
+  type: Services::Strava
+  name: Strava
+  config: {}
