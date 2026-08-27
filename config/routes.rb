@@ -37,7 +37,7 @@ Rails.application.routes.draw do
   # travel in a signed `state`.
   get "oauth/start", to: "oauth#start", as: :oauth_start
   get "oauth/callback", to: "oauth#callback", as: :oauth_callback
-  resources :oauth_client_credentials, only: %i[ index new create destroy ]
+  resources :oauth_client_credentials, only: %i[ index new create edit update destroy ]
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

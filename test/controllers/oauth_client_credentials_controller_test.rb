@@ -63,4 +63,44 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to oauth_client_credentials_path
   end
+
+  test "edit renders the form with the stored name and client id" do
+    cred = oauth_client_credentials(:google_credential)
+    get edit_oauth_client_credential_path(cred)
+    assert_response :success
+    assert_select "h1", text: "Edit OAuth client"
+    assert_select "input[name='oauth_client_credential[name]'][value='Prod Google app']"
+    assert_select "input[name='oauth_client_credential[client_id]'][value='google_client_1']"
+  end
+
+  test "update changes editable fields and honours return_to" do
+    cred = oauth_client_credentials(:google_credential)
+    patch oauth_client_credential_path(cred), params: {
+      oauth_client_credential: { name: "Renamed", client_id: "new_cid" },
+      return_to: "/services/1"
+    }
+    assert_redirected_to "/services/1"
+    cred.reload
+    assert_equal "Renamed", cred.name
+    assert_equal "new_cid", cred.client_id
+  end
+
+  test "update keeps the stored secret when the secret field is blank" do
+    cred = oauth_client_credentials(:google_credential)
+    patch oauth_client_credential_path(cred), params: {
+      oauth_client_credential: { name: "Renamed", client_secret: "" }
+    }
+    assert_redirected_to oauth_client_credentials_path
+    cred.reload
+    assert_equal "Renamed", cred.name
+    assert_equal "secret_google_1", cred.client_secret
+  end
+
+  test "update renders errors on invalid input" do
+    cred = oauth_client_credentials(:google_credential)
+    patch oauth_client_credential_path(cred), params: {
+      oauth_client_credential: { name: "", client_id: "" }
+    }
+    assert_response :unprocessable_entity
+  end
 end

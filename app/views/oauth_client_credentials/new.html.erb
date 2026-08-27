@@ -1,66 +1,13 @@
 <div class="mx-auto md:w-3/4 w-full">
-  <% provider_name = @credential.provider.humanize %>
   <p class="text-sm text-zinc-500 mb-2">
     <%= link_to "Services", services_path, class: "text-blue-500 hover:underline" %> · OAuth client
   </p>
   <h1 class="font-bold text-4xl">Add OAuth client</h1>
 
   <p class="text-zinc-400 mt-2 text-sm">
-    Register an OAuth app with <em><%= provider_name %></em> and
+    Register an OAuth app with <em><%= @credential.provider.humanize %></em> and
     paste its credentials here. You'll connect your service through this client.
   </p>
 
-  <% if @credential.errors.any? %>
-    <div class="py-2 px-3 bg-red-950 mb-5 rounded-lg">
-      <h2 class="text-red-400 font-medium"><%= pluralize(@credential.errors.count, "error") %>.</h2>
-      <ul class="text-red-400 list-disc list-inside mt-2">
-        <% @credential.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <%= form_with model: @credential, scope: :oauth_client_credential, url: oauth_client_credentials_path, class: "contents" do |form| %>
-    <%= hidden_field_tag :return_to, params[:return_to] %>
-
-    <div class="my-5" data-controller="credential-provider">
-      <%= form.label :provider, "Provider", class: "block text-sm text-zinc-400" %>
-      <%= form.select :provider,
-            @oauth_providers.map { |p| [ p[:provider].to_s.humanize, p[:provider].to_s, data: { scope: p[:scope] } ] },
-            {},
-            class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",
-            data: { credential_provider_target: "select", action: "change->credential-provider#syncScope" } %>
-      <p class="text-xs text-zinc-500 mt-1">The OAuth provider this client belongs to.</p>
-    </div>
-
-    <div class="my-5">
-      <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
-      <%= form.text_field :name, placeholder: "e.g. Prod #{provider_name} app", autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
-      <p class="text-xs text-zinc-500 mt-1">A label to identify this OAuth client (optional).</p>
-    </div>
-
-    <div class="my-5">
-      <%= form.label :client_id, "Client ID", class: "block text-sm text-zinc-400" %>
-      <%= form.text_field :client_id, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900", autocomplete: "off" %>
-    </div>
-
-    <div class="my-5">
-      <%= form.label :client_secret, "Client secret", class: "block text-sm text-zinc-400" %>
-      <%= form.password_field :client_secret, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900", autocomplete: "new-password" %>
-    </div>
-
-    <div class="my-5">
-      <%= form.label :scopes, "Scopes, space-separated", class: "block text-sm text-zinc-400" %>
-      <%= form.text_field :scopes, value: @credential.scopes.presence || @service_scope,
-            class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900 font-mono text-xs",
-            autocomplete: "off",
-            data: { credential_provider_target: "scopes" } %>
-    </div>
-
-    <div class="inline flex items-center gap-3 mt-2">
-      <%= form.submit "Save OAuth client", class: "btn-primary" %>
-      <%= link_to "Cancel", params[:return_to].presence || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
-    </div>
-  <% end %>
+  <%= render "form", credential: @credential %>
 </div>

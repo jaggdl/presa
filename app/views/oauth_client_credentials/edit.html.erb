@@ -1,0 +1,13 @@
+<div class="mx-auto md:w-3/4 w-full">
+  <p class="text-sm text-zinc-500 mb-2">
+    <%= link_to "Services", services_path, class: "text-blue-500 hover:underline" %> ·
+    <%= link_to "Credentials", oauth_client_credentials_path, class: "text-blue-500 hover:underline" %> · OAuth client
+  </p>
+  <h1 class="font-bold text-4xl">Edit OAuth client</h1>
+
+  <p class="text-zinc-400 mt-2 text-sm">
+    Update the registered <em><%= @credential.provider.humanize %></em> client used by your services.
+  </p>
+
+  <%= render "form", credential: @credential %>
+</div>

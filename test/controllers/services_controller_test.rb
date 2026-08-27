@@ -62,6 +62,12 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "Add an OAuth client", count: 0
     assert_match(/● Connected/, response.body)
     assert_select "dt", text: "OAuth Redirect URL", count: 0
+    assert_select "div.flex.justify-between" do
+      assert_select "div.text-sm", text: "Prod Google app"
+      assert_select "span", text: "in use"
+      assert_select "a", text: "Edit"
+      assert_select "code", false
+    end
   end
 
   test "show shows the redirect URL and add-client prompts for an unconnected OAuth service" do

@@ -28,6 +28,28 @@ class OauthClientCredentialsController < ApplicationController
     redirect_to params[:return_to].presence || oauth_client_credentials_path, notice: "OAuth client removed."
   end
 
+  # GET /oauth_client_credentials/:id/edit
+  def edit
+    @credential = Current.user.oauth_client_credentials.find(params[:id])
+    load_provider_form
+  end
+
+  # PATCH /oauth_client_credentials/:id
+  def update
+    @credential = Current.user.oauth_client_credentials.find(params[:id])
+
+    # An empty client_secret field on update means "keep the stored secret".
+    updates = credential_params
+    updates = updates.except(:client_secret) if updates[:client_secret].blank?
+
+    if @credential.update(updates)
+      redirect_to params[:return_to].presence || oauth_client_credentials_path, notice: "OAuth client updated."
+    else
+      load_provider_form
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
 private
 
   def load_provider_form
