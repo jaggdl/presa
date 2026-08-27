@@ -25,9 +25,12 @@
               </div>
             </td>
             <td class="py-2 text-right">
-              <%= button_to "Remove", oauth_client_credential_path(cred),
-                method: :delete, class: "text-red-400 text-xs underline hover:no-underline",
-                form: { data: { turbo_confirm: "Remove this OAuth client?" } } %>
+              <%= button_to oauth_client_credential_path(cred), method: :delete,
+                    class: "p-2 rounded-md text-zinc-500 hover:text-red-400 hover:bg-zinc-800 transition",
+                    aria: { label: "Remove #{cred.name}" },
+                    form: { data: { turbo_confirm: "Remove this OAuth client?" } } do %>
+                <%= icon "trash", class: "h-4 w-4" %>
+              <% end %>
             </td>
           </tr>
         <% end %>
