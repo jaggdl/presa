@@ -1,5 +1,5 @@
 class BotAuthorization < ApplicationRecord
-  CODE_LENGTH = 6
+  CODE_LENGTH = 10
   REQUEST_TOKEN_LENGTH = 32
   PENDING_TTL = 30.minutes
   CODE_TTL = 5.minutes
@@ -80,17 +80,19 @@ class BotAuthorization < ApplicationRecord
   # Returns the raw API token on a valid, unexpired, single-use code; nil if
   # anything is wrong. The record moves to consumed and the code is cleared.
   def redeem!(code)
-    return nil unless redeemable?
-    return nil unless ApiToken.digest(code.to_s) == code_digest
+    with_lock do
+      return nil unless redeemable?
+      return nil unless ApiToken.digest(code.to_s) == code_digest
 
-    raw = ApiToken.issue!(workspace: workspace, name: "bot:#{name}")
-    update!(
-      status: :consumed,
-      issued_at: Time.current,
-      code_digest: nil,
-      code_expires_at: nil
-    )
-    raw
+      raw = ApiToken.issue!(workspace: workspace, name: "bot:#{name}")
+      update!(
+        status: :consumed,
+        issued_at: Time.current,
+        code_digest: nil,
+        code_expires_at: nil
+      )
+      raw
+    end
   end
 
   def pending_active?

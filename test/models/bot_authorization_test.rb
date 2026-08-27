@@ -22,11 +22,12 @@ class BotAuthorizationTest < ActiveSupport::TestCase
     refute_equal a.request_token, b.request_token
   end
 
-  test "approve! returns a 6-digit code and marks approved" do
+  test "approve! returns a 10-digit code and marks approved" do
     authorization = BotAuthorization.initiate!(workspace: @workspace, name: "x")
     code = authorization.approve!
 
-    assert_match(/\A\d{6}\z/, code)
+    assert_match(/\A\d{10}\z/, code)
+    assert_equal 10, code.length
     assert authorization.approved?
     assert authorization.code_digest.present?
     assert authorization.code_expires_at > Time.current

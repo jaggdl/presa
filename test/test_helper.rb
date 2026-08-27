@@ -13,6 +13,11 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # Reusable in-memory cache is shared across tests in a single process; clear
+    # it between tests so cache-based throttles (e.g. bot token-redeem rate
+    # limit) start from a clean slate every time.
+    teardown { Rails.cache.clear }
+
     # Add more helper methods to be used by all tests here...
   end
 end

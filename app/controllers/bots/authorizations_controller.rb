@@ -63,8 +63,11 @@ module Bots
     end
 
     # POST /bots/authorizations/:request_token/token — agent redeems its code
-    # for a raw API token (single-use).
+    # for a raw API token (single-use). Rate-limited per IP to blunt brute-force
+    # of the (now higher-entropy) code.
     def token
+      return render plain: "Rate limited.\n", status: :too_many_requests unless rate_limit_allowed?
+
       authorization = BotAuthorization.find_by(request_token: params[:request_token])
       raw = authorization&.redeem!(body[:code])
       return render plain: "Invalid or expired code.\n", status: :unauthorized unless raw
@@ -73,6 +76,18 @@ module Bots
     end
 
     private
+
+    TOKEN_REDEEM_LIMIT = 10
+    TOKEN_REDEEM_WINDOW = 5.minutes
+
+    # Fixed-window per-IP throttle for the token-redeem endpoint. Falls open
+    # (allows) if the cache store can't count, so availability is never
+    # sacrificed -- entropy is the primary defense, this is defense-in-depth.
+    def rate_limit_allowed?
+      key = "bots:token-redeem:#{request.remote_ip}"
+      count = Rails.cache.increment(key, 1, expires_in: TOKEN_REDEEM_WINDOW)
+      count.nil? || count <= TOKEN_REDEEM_LIMIT
+    end
 
     def name
       body[:name]

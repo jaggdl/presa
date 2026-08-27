@@ -58,10 +58,12 @@ class WorkspacesController < ApplicationController
   # Rotate the workspace's bot share code and show the new value once.
   def reset_bot_share_code
     @share_code = @workspace.reset_share_code!
-
+    # Note: the raw code is NOT put in the redirect URL. The show page reads
+    # @workspace.share_code, so it renders the new value from the record without
+    # leaking it into logs via the query string.
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to workspace_path(@workspace, share_code: @share_code), notice: "Bot share code reset. Copy it now." }
+      format.html { redirect_to workspace_path(@workspace), notice: "Bot share code reset. Copy it now." }
     end
   end
 

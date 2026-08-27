@@ -43,8 +43,8 @@ class Bots::AuthorizationsControllerTest < ActionDispatch::IntegrationTest
     post approve_bots_authorization_path(authorization.request_token)
 
     assert_response :success
-    code = response.body[%r{<pre[^>]*>(\d{6})</pre>}, 1]
-    assert_match(/\A\d{6}\z/, code)
+    code = response.body[%r{<pre[^>]*>(\d{10})</pre>}, 1]
+    assert_match(/\A\d{10}\z/, code)
 
     post token_bots_authorization_path(authorization.request_token), params: { code: code }, as: :json
 
@@ -57,7 +57,7 @@ class Bots::AuthorizationsControllerTest < ActionDispatch::IntegrationTest
     authorization = BotAuthorization.initiate!(workspace: @workspace, name: "coder")
     sign_in_as @user
     post approve_bots_authorization_path(authorization.request_token)
-    code = response.body[%r{<pre[^>]*>(\d{6})</pre>}, 1]
+    code = response.body[%r{<pre[^>]*>(\d{10})</pre>}, 1]
     refute_nil code
 
     post token_bots_authorization_path(authorization.request_token), params: { code: "000000" }, as: :json
@@ -82,18 +82,30 @@ class Bots::AuthorizationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
+  test "token endpoint is rate-limited per IP" do
+    authorization = BotAuthorization.initiate!(workspace: @workspace, name: "coder")
+    sign_in_as @user
+    post approve_bots_authorization_path(authorization.request_token)
+
+    11.times do
+      post token_bots_authorization_path(authorization.request_token), params: { code: "0000000000" }, as: :json
+    end
+
+    assert_response :too_many_requests
+  end
+
   test "approving an already-approved request reissues a fresh code" do
     authorization = BotAuthorization.initiate!(workspace: @workspace, name: "coder")
     sign_in_as @user
 
     post approve_bots_authorization_path(authorization.request_token)
-    first_code = response.body[%r{<pre[^>]*>(\d{6})</pre>}, 1]
+    first_code = response.body[%r{<pre[^>]*>(\d{10})</pre>}, 1]
 
     post approve_bots_authorization_path(authorization.request_token)
-    second_code = response.body[%r{<pre[^>]*>(\d{6})</pre>}, 1]
+    second_code = response.body[%r{<pre[^>]*>(\d{10})</pre>}, 1]
 
-    assert_match(/\A\d{6}\z/, first_code)
-    assert_match(/\A\d{6}\z/, second_code)
+    assert_match(/\A\d{10}\z/, first_code)
+    assert_match(/\A\d{10}\z/, second_code)
     assert authorization.reload.approved?
   end
 end
