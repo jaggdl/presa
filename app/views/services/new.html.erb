@@ -4,6 +4,11 @@
   </p>
   <h1 class="font-bold text-4xl">New service</h1>
 
+  <div class="mt-4 inline-flex items-center text-zinc-300">
+    <%= service_icon(@service, size: "h-8 w-8") %>
+    <span class="ml-2 capitalize"><%= @service.kind.humanize %></span>
+  </div>
+
   <div class="my-6">
     <%= render "form", service: @service %>
   </div>
