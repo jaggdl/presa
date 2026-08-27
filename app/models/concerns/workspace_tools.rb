@@ -25,6 +25,7 @@ module WorkspaceTools
 def workspace_context_text
   lines = []
   lines << "Workspace: #{name}"
+  lines << "Description: #{flatten(description)}" if description.presence
 
   joins = workspace_services.includes(:service)
   tools_by_service = allowed_tools.group_by(&:service_id)

@@ -88,6 +88,7 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   test "GET /bots/workspace returns workspace name, services and tools" do
     join = workspace_services(:one_jellyfin)
     join.update!(allowed_tools: [ "resume_items" ])
+    @workspace.update!(description: "A short blurb")
     token = ApiToken.issue!(workspace: @workspace, name: "bot")
 
     get bots_workspace_path, headers: { "Authorization" => "Bearer #{token}" }
@@ -95,6 +96,7 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.content_type, "text/plain"
     assert_includes response.body, "Workspace: #{@workspace.name}"
+    assert_includes response.body, "Description: A short blurb"
     assert_includes response.body, "Services:"
     assert_match(/\(\w+\):\s*\d+ tool[s]?/, response.body) # each service: kind + tool count
     refute_includes response.body, "Tools:"
