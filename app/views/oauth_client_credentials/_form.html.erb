@@ -43,12 +43,6 @@
           class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
   </div>
 
-  <div class="my-5">
-    <span class="block text-sm text-zinc-400">Scopes</span>
-    <code class="mt-1 inline-block text-xs bg-zinc-800 px-2 py-1 rounded break-all"><%= @service_scope %></code>
-    <p class="text-xs text-zinc-500 mt-1">The permissions your service will request in the OAuth consent; defined by the service, not the client.</p>
-  </div>
-
   <div class="inline flex items-center gap-3 mt-2">
     <%= form.submit @credential.persisted? ? "Save changes" : "Save OAuth client", class: "btn-primary" %>
     <%= link_to "Cancel", params[:return_to].presence || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
