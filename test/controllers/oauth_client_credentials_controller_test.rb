@@ -16,13 +16,13 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select#oauth_client_credential_provider option", count: 2
     assert_select "option[value=google]", text: "Google"
     assert_select "option[value=strava]", text: "Strava"
-    assert_select "#oauth_client_credential_scopes", value: Services::Gmail.oauth_scope
+    assert_select "[data-credential-provider-target=scopeNote]", text: Services::Gmail.oauth_scope
   end
 
   test "preselects the requested provider and its scope" do
     get new_oauth_client_credential_path(provider: "strava")
     assert_select "option[value=strava][selected=selected]"
-    assert_select "#oauth_client_credential_scopes", value: Services::Strava.oauth_scope
+    assert_select "[data-credential-provider-target=scopeNote]", text: Services::Strava.oauth_scope
   end
 
   test "index lists the user's credentials" do

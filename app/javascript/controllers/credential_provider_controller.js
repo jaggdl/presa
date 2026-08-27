@@ -1,15 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Syncs the scopes field in the new-credential form to the selected provider's
-// default scopes (embedded in each option's data-scope). Lets the user switch
-// between OAuth providers (e.g. Google, Strava) on a single form.
+// Updates the read-only scopes note in the credential form to the selected
+// provider's default scopes (embedded in each option's data-scope). Scopes are
+// defined by the service, not the client, so this is informational only.
 export default class extends Controller {
-  static targets = ["select", "scopes"]
+  static targets = ["select", "scopeNote"]
 
   syncScope() {
     const option = this.selectTarget.selectedOptions[0]
     if (option && option.dataset.scope) {
-      this.scopesTarget.value = option.dataset.scope
+      this.scopeNoteTarget.textContent = option.dataset.scope
     }
   }
 }

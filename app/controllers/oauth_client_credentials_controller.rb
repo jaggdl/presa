@@ -71,6 +71,6 @@ private
   end
 
   def credential_params
-    params.require(:oauth_client_credential).permit(:provider, :name, :client_id, :client_secret, :scopes)
+    params.require(:oauth_client_credential).permit(:provider, :name, :client_id, :client_secret)
   end
 end
