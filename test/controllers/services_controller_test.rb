@@ -46,6 +46,12 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Prod"
   end
 
+  test "show renders the service kind's markdown description" do
+    get service_path(services(:github_prod))
+    assert_response :success
+    assert_select ".prose", text: /GitHub Enterprise Server/
+  end
+
   test "show lists the service's available tools" do
     get service_path(services(:github_prod))
     assert_response :success

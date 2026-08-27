@@ -24,6 +24,12 @@
     </div>
   </dl>
 
+  <% if @service.description.present? %>
+    <div class="mt-8">
+      <%= render_markdown(@service.description) %>
+    </div>
+  <% end %>
+
   <h2 class="font-bold text-2xl mt-10">Tools</h2>
 
   <% if @tools.any? %>

@@ -24,4 +24,12 @@ class ServiceTest < ActiveSupport::TestCase
     assert_equal "token", service.config[:api_token]
     assert_equal "https://api.github.com", service.config[:base_url]
   end
+
+  test "each concrete service kind declares a markdown description" do
+    Service.concrete_service_classes.each do |klass|
+      next if klass.config_fields.blank?
+
+      assert klass.description.present?, "#{klass.kind} should declare a description"
+    end
+  end
 end

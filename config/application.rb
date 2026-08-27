@@ -27,6 +27,12 @@ module Presa
       Rails.root.glob("app/models/services/*.rb").each { |file| require file }
     end
 
+    # CommonMarker (and its native CommonMark parser) must be loaded before any
+    # autoloaded code calls it, since its constant is not auto-required.
+    config.to_prepare do
+      require "commonmarker"
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

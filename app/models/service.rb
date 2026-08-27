@@ -35,6 +35,16 @@ class Service < ApplicationRecord
       self.config_icon_invert = value
     end
 
+    # The Markdown description for this service kind, read from
+    # `docs/services/<kind>.md` when present. A leading top-level heading used
+    # as a doc title is dropped from the rendered description.
+    def description
+      path = Rails.root.join("docs/services/#{kind}.md")
+      return nil unless path.exist?
+
+      path.read.sub(/\A\s*#[^\n]*\n+/, "").strip
+    end
+
     # Concrete service subclasses available to instantiate (e.g. Services::Github).
     # Subclasses are loaded at boot/reload via config/application.rb to_prepare,
     # so this sees them all. Anonymous subclasses (e.g. a `Class.new(Service)`
@@ -78,6 +88,11 @@ class Service < ApplicationRecord
 
   def kind
     self.class.kind
+  end
+
+  # The Markdown description declared for this service kind.
+  def description
+    self.class.description
   end
 
   # Number of tool invocations recorded for this service since `since`.

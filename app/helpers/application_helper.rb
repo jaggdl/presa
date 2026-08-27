@@ -1,3 +1,5 @@
+require "commonmarker"
+
 module ApplicationHelper
   # The public base URL of the instance, e.g. "https://presa.example.com".
   # Resolves from the BASE_URL env var, else the origin of the current request
@@ -10,6 +12,16 @@ module ApplicationHelper
   # for proxied MCP tools, otherwise the tool's kind (e.g. "search_user_media").
   def tool_key(bound_tool)
     bound_tool.tool_key
+  end
+
+  # Renders a Markdown string to HTML via Commonmarker (matching the markdown
+  # handling used across the app) inside a Tailwind Typography `prose` container.
+  # The syntax_highlighter plugin emits server-side highlighted code blocks.
+  def render_markdown(source)
+    return "" if source.blank?
+
+    html = Commonmarker.to_html(source.to_s, plugins: { syntax_highlighter: { theme: "base16-ocean.dark" } })
+    content_tag(:div, raw(html), class: "prose prose-invert prose-zinc max-w-none")
   end
 
   private

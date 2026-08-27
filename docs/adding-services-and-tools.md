@@ -34,6 +34,24 @@ module Services
 end
 ```
 
+### The service description
+
+Each service kind should also have a human-readable description rendered on the
+service new/show pages. It lives as a Markdown file at `docs/services/<kind>.md`
+and is read from `Service.description` (`app/models/service.rb`):
+
+```markdown
+# Slack
+
+Post messages and listen for mentions across your Slack workspaces.
+```
+
+The file's leading `# <kind>` heading is treated as the doc title and is
+**stripped** from the rendered description, so write the file with a title but
+render it inside the app without that heading. Use the file for both the short
+prose summary and, under a `## Configuration` section, the instructions for each
+config field.
+
 ### The `config_field` DSL
 
 Defined on `ApplicationRecord`-derived `Service` (`app/models/service.rb`):
@@ -166,10 +184,11 @@ end
 To add a new kind, `kind`:
 
 1. Create `app/models/services/<kind>.rb` with `kind :kind` + `config_field`s.
-2. Create `app/tools/<kind>/base.rb` with `service_kind :kind; abstract_tool true`.
-3. Create `app/tools/<kind>/<tool>.rb` handlers.
-4. (If needed) a data migration for default config on existing rows.
-5. Add tests under `test/models/` (service config/validation) and, where useful, controller coverage. `test/models/application_tool_test.rb` shows how to assert `handlers_for` / `expose_for` output.
+2. Create `docs/services/<kind>.md` with the kind's description and config instructions (rendered on the service pages; see "The service description" above).
+3. Create `app/tools/<kind>/base.rb` with `service_kind :kind; abstract_tool true`.
+4. Create `app/tools/<kind>/<tool>.rb` handlers.
+5. (If needed) a data migration for default config on existing rows.
+6. Add tests under `test/models/` (service config/validation) and, where useful, controller coverage. `test/models/application_tool_test.rb` shows how to assert `handlers_for` / `expose_for` output.
 
 ## Proxying a remote MCP server
 
