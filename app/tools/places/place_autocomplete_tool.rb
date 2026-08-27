@@ -13,8 +13,8 @@ module Places
 
     arguments do
       required(:input).filled(:string).description("The text to search on (place names, addresses, plus codes), e.g. 'pizza in New York'")
-      optional(:included_primary_types).filled(:array).each(:string).description("Up to five primary place types from Table A to restrict to, e.g. ['restaurant']")
-      optional(:included_region_codes).filled(:array).each(:string).description("Up to 15 two-character ccTLD country codes to restrict results to, e.g. ['us']")
+      optional(:included_primary_types).filled(:string).description("Up to five primary place types from Table A to restrict to, comma-separated or a JSON array, e.g. 'restaurant'")
+      optional(:included_region_codes).filled(:string).description("Up to 15 two-character ccTLD country codes to restrict results to, comma-separated or a JSON array, e.g. 'us'")
       optional(:include_query_predictions).filled(:bool).description("When true, also return query predictions (default false)")
       optional(:input_offset).filled(:integer, gteq?: 0).description("Zero-based character offset of the cursor within input; influences predictions")
       optional(:origin_latitude).filled(:float).description("Origin latitude to calculate straight-line distance to predictions")
@@ -37,8 +37,8 @@ module Places
              restrict_latitude: nil, restrict_longitude: nil, restrict_radius: nil,
              language_code: nil, region_code: nil, session_token: nil, fields: nil)
       body = { input: input }
-      body[:includedPrimaryTypes] = included_primary_types if included_primary_types.present?
-      body[:includedRegionCodes] = included_region_codes if included_region_codes.present?
+      body[:includedPrimaryTypes] = parse_list(included_primary_types) if included_primary_types.present?
+      body[:includedRegionCodes] = parse_list(included_region_codes) if included_region_codes.present?
       body[:includeQueryPredictions] = include_query_predictions unless include_query_predictions.nil?
       body[:inputOffset] = input_offset if input_offset
       body[:origin] = { latitude: origin_latitude, longitude: origin_longitude } if origin_latitude && origin_longitude

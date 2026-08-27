@@ -73,5 +73,17 @@ module Places
     def api_key
       service.config[:api_key]
     end
+
+    # Parses a list argument, which may arrive as a comma-separated string
+    # ("restaurant, cafe"), a JSON array string ('["restaurant","cafe"]'), or an
+    # actual Array. Returns an Array of strings, or nil when blank.
+    def parse_list(value)
+      return nil if value.blank?
+
+      raw = value.is_a?(Array) ? value.join(",") : value.to_s
+      JSON.parse(raw)
+    rescue JSON::ParserError
+      raw.split(",").map(&:strip).reject(&:empty?)
+    end
   end
 end

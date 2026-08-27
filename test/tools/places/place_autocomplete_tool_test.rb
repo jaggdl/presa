@@ -44,7 +44,7 @@ class PlacesPlaceAutocompleteToolTest < ActiveSupport::TestCase
       end
     end
 
-    tool.call(input: "piz", included_primary_types: [ "restaurant" ], included_region_codes: [ "us" ],
+    tool.call(input: "piz", included_primary_types: "restaurant", included_region_codes: [ "us" ],
               include_query_predictions: true, input_offset: 5, origin_latitude: 37.7749, origin_longitude: -122.4194,
               bias_latitude: 37.7749, bias_longitude: -122.4194, bias_radius: 5000,
               language_code: "en", region_code: "us", session_token: "tok-123")
