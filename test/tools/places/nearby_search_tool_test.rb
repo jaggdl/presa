@@ -44,7 +44,7 @@ class PlacesNearbySearchToolTest < ActiveSupport::TestCase
     end
 
     tool.call(latitude: 37.7937, longitude: -122.3965, radius: 1000,
-              included_types: "restaurant,cafe", excluded_primary_types: [ "steak_house" ],
+              included_types: [ "restaurant", "cafe" ], excluded_primary_types: [ "steak_house" ],
               max_result_count: 10, rank_preference: "DISTANCE", language_code: "en", region_code: "US")
   end
 

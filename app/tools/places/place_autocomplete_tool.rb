@@ -13,18 +13,18 @@ module Places
 
     arguments do
       required(:input).filled(:string).description("The text to search on (place names, addresses, plus codes), e.g. 'pizza in New York'")
-      optional(:included_primary_types).filled(:string).description("Up to five primary place types from Table A to restrict to, comma-separated or a JSON array, e.g. 'restaurant'")
-      optional(:included_region_codes).filled(:string).description("Up to 15 two-character ccTLD country codes to restrict results to, comma-separated or a JSON array, e.g. 'us'")
+      optional(:included_primary_types).array(:string).description("Up to five primary place types from Table A to restrict to, e.g. ['restaurant']")
+      optional(:included_region_codes).array(:string).description("Up to 15 two-character ccTLD country codes to restrict results to, e.g. ['us']")
       optional(:include_query_predictions).filled(:bool).description("When true, also return query predictions (default false)")
       optional(:input_offset).filled(:integer, gteq?: 0).description("Zero-based character offset of the cursor within input; influences predictions")
-      optional(:origin_latitude).filled(Dry::Types["coercible.float"]).description("Origin latitude to calculate straight-line distance to predictions")
-      optional(:origin_longitude).filled(Dry::Types["coercible.float"]).description("Origin longitude to calculate straight-line distance to predictions")
-      optional(:bias_latitude).filled(Dry::Types["coercible.float"]).description("Center latitude of a circle to bias results toward")
-      optional(:bias_longitude).filled(Dry::Types["coercible.float"]).description("Center longitude of a circle to bias results toward")
-      optional(:bias_radius).filled(Dry::Types["coercible.float"], gteq?: 0.0, lteq?: 50_000).description("Radius in meters of the bias circle (0 < radius <= 50000)")
-      optional(:restrict_latitude).filled(Dry::Types["coercible.float"]).description("Center latitude of a circle to restrict results within")
-      optional(:restrict_longitude).filled(Dry::Types["coercible.float"]).description("Center longitude of a circle to restrict results within")
-      optional(:restrict_radius).filled(Dry::Types["coercible.float"], gt?: 0.0, lteq?: 50_000).description("Radius in meters of the restriction circle")
+      optional(:origin_latitude).filled(:float).description("Origin latitude to calculate straight-line distance to predictions")
+      optional(:origin_longitude).filled(:float).description("Origin longitude to calculate straight-line distance to predictions")
+      optional(:bias_latitude).filled(:float).description("Center latitude of a circle to bias results toward")
+      optional(:bias_longitude).filled(:float).description("Center longitude of a circle to bias results toward")
+      optional(:bias_radius).filled(:float, gteq?: 0.0, lteq?: 50_000).description("Radius in meters of the bias circle (0 < radius <= 50000)")
+      optional(:restrict_latitude).filled(:float).description("Center latitude of a circle to restrict results within")
+      optional(:restrict_longitude).filled(:float).description("Center longitude of a circle to restrict results within")
+      optional(:restrict_radius).filled(:float, gt?: 0.0, lteq?: 50_000).description("Radius in meters of the restriction circle")
       optional(:language_code).filled(:string).description("The preferred language (BCP-47), e.g. 'en' (default en)")
       optional(:region_code).filled(:string).description("Two-character ccTLD region code, e.g. 'us'")
       optional(:session_token).filled(:string).description("A user-generated string grouping this call into a session for billing")
@@ -37,8 +37,8 @@ module Places
              restrict_latitude: nil, restrict_longitude: nil, restrict_radius: nil,
              language_code: nil, region_code: nil, session_token: nil, fields: nil)
       body = { input: input }
-      body[:includedPrimaryTypes] = parse_list(included_primary_types) if included_primary_types.present?
-      body[:includedRegionCodes] = parse_list(included_region_codes) if included_region_codes.present?
+      body[:includedPrimaryTypes] = included_primary_types if included_primary_types.present?
+      body[:includedRegionCodes] = included_region_codes if included_region_codes.present?
       body[:includeQueryPredictions] = include_query_predictions unless include_query_predictions.nil?
       body[:inputOffset] = input_offset if input_offset
       body[:origin] = { latitude: origin_latitude, longitude: origin_longitude } if origin_latitude && origin_longitude

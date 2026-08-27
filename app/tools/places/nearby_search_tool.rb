@@ -13,13 +13,13 @@ module Places
     RANK_PREFERENCES = %w[POPULARITY DISTANCE].freeze
 
     arguments do
-      required(:latitude).filled(Dry::Types["coercible.float"]).description("Center latitude of the search circle (e.g. 37.7937)")
-      required(:longitude).filled(Dry::Types["coercible.float"]).description("Center longitude of the search circle (e.g. -122.3965)")
-      required(:radius).filled(Dry::Types["coercible.float"], gt?: 0.0, lteq?: 50_000).description("Radius of the search circle in meters (0 < radius <= 50000)")
-      optional(:included_types).filled(:string).description("Place types (from Table A) to include, comma-separated or a JSON array, e.g. 'restaurant, cafe'")
-      optional(:excluded_types).filled(:string).description("Place types (from Table A) to exclude, comma-separated or a JSON array")
-      optional(:included_primary_types).filled(:string).description("Primary place types (from Table A) to include, comma-separated or a JSON array")
-      optional(:excluded_primary_types).filled(:string).description("Primary place types (from Table A) to exclude, comma-separated or a JSON array")
+      required(:latitude).filled(:float).description("Center latitude of the search circle (e.g. 37.7937)")
+      required(:longitude).filled(:float).description("Center longitude of the search circle (e.g. -122.3965)")
+      required(:radius).filled(:float, gt?: 0.0, lteq?: 50_000).description("Radius of the search circle in meters (0 < radius <= 50000)")
+      optional(:included_types).array(:string).description("Place types (from Table A) to include, e.g. ['restaurant', 'cafe']")
+      optional(:excluded_types).array(:string).description("Place types (from Table A) to exclude")
+      optional(:included_primary_types).array(:string).description("Primary place types (from Table A) to include")
+      optional(:excluded_primary_types).array(:string).description("Primary place types (from Table A) to exclude")
       optional(:max_result_count).filled(:integer, gteq?: 1, lteq?: 20).description("Maximum number of results to return (default 20)")
       optional(:rank_preference).filled(:string, included_in?: RANK_PREFERENCES).description("Result ranking: POPULARITY (default) or DISTANCE")
       optional(:language_code).filled(:string).description("The language in which to return results, e.g. 'en'")
@@ -35,11 +35,6 @@ module Places
           circle: { center: { latitude: latitude, longitude: longitude }, radius: radius }
         }
       }
-      included_types = parse_list(included_types)
-      excluded_types = parse_list(excluded_types)
-      included_primary_types = parse_list(included_primary_types)
-      excluded_primary_types = parse_list(excluded_primary_types)
-
       body[:includedTypes] = included_types if included_types.present?
       body[:excludedTypes] = excluded_types if excluded_types.present?
       body[:includedPrimaryTypes] = included_primary_types if included_primary_types.present?
