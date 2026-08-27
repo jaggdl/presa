@@ -39,6 +39,21 @@ module Services
       { error: e.message }
     end
 
+    # Probes connectivity and auth by hitting an authenticated endpoint. Returns
+    # true on success, raises with a message on failure.
+    def test_connection(config = nil)
+      validate_required_config!(config)
+      cfg = normalize_config(config)
+      base_url = cfg[:base_url].to_s.presence || "http://localhost:5055"
+
+      res = Faraday.get("#{base_url}/api/v1/discover/trending") do |req|
+        req.headers["X-Api-Key"] = cfg[:api_key].to_s
+      end
+      raise "Seerr returned status #{res.status}" unless res.success?
+
+      true
+    end
+
     private
 
     def conn

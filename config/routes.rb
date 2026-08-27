@@ -28,6 +28,7 @@ Rails.application.routes.draw do
   end
   resources :services do
     get ":kind/new", action: "new", on: :collection, as: :new_kind_service
+    post "test_connection", action: "test_connection", on: :collection
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

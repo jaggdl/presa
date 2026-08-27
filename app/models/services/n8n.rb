@@ -15,8 +15,10 @@ module Services
 
     mcp_header "Authorization", "Bearer ${api_key}"
 
-    def base_url
-      config[:base_url]
+    # n8n has no preset URL; the user supplies the instance's MCP endpoint
+    # via the `base_url` config field.
+    def configured_url(cfg)
+      cfg[:base_url]
     end
   end
 end

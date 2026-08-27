@@ -95,4 +95,27 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to services_path
   end
+
+  test "test_connection returns a turbo stream with a green indicator on success" do
+    Services::Github.define_method(:test_connection) { |_config = nil| true }
+
+    post test_connection_services_path, params: { service: { name: "G", kind: "github", config: { api_token: "tok" } } }, headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_match(/text\/vnd\.turbo-stream/, response.content_type)
+    assert_match /bg-green-400/, response.body
+  ensure
+    Services::Github.remove_method(:test_connection)
+  end
+
+  test "test_connection reports the error on failure" do
+    Services::Github.define_method(:test_connection) { |_config = nil| raise "boom" }
+
+    post test_connection_services_path, params: { service: { name: "G", kind: "github", config: { api_token: "tok" } } }, headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_match /Connection failed: boom/, response.body
+  ensure
+    Services::Github.remove_method(:test_connection)
+  end
 end

@@ -15,9 +15,7 @@
     <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
   </div>
 
-  <% unless service.persisted? %>
-    <%= form.hidden_field :kind, value: service.kind %>
-  <% end %>
+  <%= form.hidden_field :kind, value: service.kind %>
 
   <%= form.fields_for :config do |cf| %>
     <% service.config_schema.each do |field, opts| %>
@@ -35,7 +33,14 @@
     <% end %>
   <% end %>
 
-  <div class="inline">
+  <div class="inline flex items-center gap-3">
     <%= form.submit "Save service", class: "btn-primary" %>
+
+    <button type="submit" name="test_connection" formaction="<%= test_connection_services_path %>" formmethod="post"
+            class="inline-block rounded-md border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-zinc-300 hover:bg-zinc-700">
+      Test connection
+    </button>
   </div>
+
+  <div id="service-test-status"></div>
 <% end %>

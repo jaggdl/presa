@@ -42,6 +42,22 @@ class ServicesController < ApplicationController
     redirect_to services_path, notice: "Service deleted."
   end
 
+  # POST /services/test_connection
+  # Probes a service's connectivity using the (unsaved) config from the form,
+  # responding with a turbo stream that updates the form's status indicator.
+  def test_connection
+    klass = service_klass
+    config = service_config_params
+
+    begin
+      klass.new(user: Current.user, name: service_params[:name], config: config).test_connection(config)
+      @connected = true
+    rescue StandardError => e
+      @connected = false
+      @message = e.message
+    end
+  end
+
   private
 
   def set_service

@@ -42,6 +42,21 @@ module Services
       { error: e.message }
     end
 
+    # Probes connectivity and auth by hitting the authenticated system info
+    # endpoint. Returns true on success, raises with a message on failure.
+    def test_connection(config = nil)
+      validate_required_config!(config)
+      cfg = normalize_config(config)
+      base_url = cfg[:base_url].to_s.presence || "http://localhost:8096"
+
+      res = Faraday.post("#{base_url}/System/Info") do |req|
+        req.headers["X-Emby-Token"] = cfg[:api_key].to_s
+      end
+      raise "Jellyfin returned status #{res.status}" unless res.success?
+
+      true
+    end
+
     private
 
     def conn

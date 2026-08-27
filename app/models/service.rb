@@ -54,7 +54,14 @@ class Service < ApplicationRecord
     end
 
     def kinds
-      concrete_service_classes.filter_map { |klass| klass.kind if klass.config_fields.present? }
+      concrete_service_classes.filter_map { |klass| klass.kind if includeable?(klass) }
+    end
+
+    # A kind is offerable when it declares config fields, or it is a preset MCP
+    # service (Services::Mcp subclass) that may declare no fields at all (e.g.
+    # a public endpoint like Parallel Search).
+    def includeable?(klass)
+      klass.config_fields.present? || (klass.respond_to?(:mcp_preset_url) && klass.kind != "mcp")
     end
 
     def class_for_kind(kind)
@@ -128,6 +135,27 @@ class Service < ApplicationRecord
   end
 
   private
+
+  # Coerce a config hash (possibly an ActionController::Parameters) into an
+  # indifferent-access Hash, falling back to the instance's stored config when
+  # none is given. Shared by the services' `test_connection` helpers.
+  def normalize_config(config = nil)
+    hash = (config || self.config)
+    hash = hash.to_unsafe_h if hash.respond_to?(:to_unsafe_h)
+    hash.with_indifferent_access
+  end
+
+  # Raises unless every required config field is present for the given config.
+  # Keeps `test_connection` from reporting success when a mandatory value (e.g.
+  # an API key) is missing.
+  def validate_required_config!(config = nil)
+    missing = self.class.config_fields.filter_map do |field, opts|
+      field.to_s if opts[:required] && normalize_config(config)[field.to_sym].blank?
+    end
+    return if missing.empty?
+
+    raise "#{missing.map { |f| f.humanize }.join(", ")} #{missing.one? ? "is" : "are"} required"
+  end
 
   def apply_config_defaults
     merged = self.class.config_fields.transform_values { |opts| opts[:default] }.compact

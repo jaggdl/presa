@@ -82,4 +82,30 @@ class JellyfinServiceTest < ActiveSupport::TestCase
     assert_includes fake.called, "/UserFavoriteItems/1"
     assert_equal "abc", fake.headers["X-Emby-Token"]
   end
+
+  test "test_connection returns true on a 2xx response" do
+    service = Services::Jellyfin.new(user: users(:one), name: "Test",
+                                     config: { "api_key" => "abc", "base_url" => "http://jf:8096" })
+    response = Object.new
+    response.define_singleton_method(:success?) { true }
+    Faraday.singleton_class.send(:define_method, :post) { |*_args, &_block| response }
+
+    assert_equal true, service.test_connection
+  ensure
+    Faraday.singleton_class.send(:undef_method, :post)
+  end
+
+  test "test_connection raises on a non-2xx response" do
+    fake = Services::Jellyfin.new(user: users(:one), name: "Test",
+                                  config: { "api_key" => "abc", "base_url" => "http://jf:8096" })
+    response = Object.new
+    response.define_singleton_method(:success?) { false }
+    response.define_singleton_method(:status) { 401 }
+    Faraday.singleton_class.send(:define_method, :post) { |*_args, &_block| response }
+
+    error = assert_raises(RuntimeError) { fake.test_connection }
+    assert_match(/401/, error.message)
+  ensure
+    Faraday.singleton_class.send(:undef_method, :post)
+  end
 end

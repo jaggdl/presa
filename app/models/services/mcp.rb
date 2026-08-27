@@ -79,7 +79,7 @@ module Services
     # The endpoint URL used for the outbound connection: the preset URL when a
     # preset declared one, else the `url` config field.
     def base_url
-      mcp_preset_url.presence || config[:url]
+      client_url(config)
     end
 
     # The extra HTTP header templates for a preset, empty otherwise.
@@ -91,13 +91,27 @@ module Services
     # declared header templates against `config`; generic MCPs parse the
     # `headers` JSON config field.
     def extra_headers
-      return build_preset_headers if header_templates.any?
-
-      parse_json_headers(config[:headers])
+      client_headers(config)
     end
 
     def client
       @client ||= ::Mcp::Client.new(url: base_url, headers: extra_headers)
+    end
+
+    # Probes connectivity by discovering the remote tool list. Returns true on
+    # success, raises with a message on failure. `config` may be an explicit
+    # hash (e.g. from a form) overriding the instance's stored config.
+    def test_connection(config = nil)
+      validate_required_config!(config)
+      cfg = normalize_config(config)
+      build_client(url: client_url(cfg), headers: client_headers(cfg)).list_tools
+      true
+    end
+
+    # Builds the outbound client for a given url/headers. Overridable to allow
+    # injecting fakes in tests.
+    def build_client(url:, headers:)
+      ::Mcp::Client.new(url: url, headers: headers)
     end
 
     # Remote tool definitions ([{name, description, inputSchema}, ...]).
@@ -119,19 +133,41 @@ module Services
 
     private
 
+    # The endpoint URL to connect to for a given config hash. Preset subclasses
+    # with a fixed `mcp_url` always use it; otherwise delegate to
+    # `configured_url`, which N8n overrides to read `base_url`.
+    def client_url(cfg)
+      return mcp_preset_url if mcp_preset_url.present?
+
+      configured_url(cfg)
+    end
+
+    # The URL a subclass lets the user configure (generic MCP uses `url`).
+    def configured_url(cfg)
+      cfg[:url]
+    end
+
+    # One-shot headers built from a config hash (templates resolved against it).
+    def client_headers(cfg)
+      return build_preset_headers(cfg) if header_templates.any?
+
+      parse_json_headers(cfg[:headers]) || {}
+    end
+
     # Resolve a preset header template against this service's config. Supports
     # `${input:name}`, `${name}`, and Ruby-style `#{name}` placeholders.
     # Unknown variables are left as-is.
-    def resolve_template(template)
+    def resolve_template(template, cfg = config)
+      cfg = cfg.with_indifferent_access
       template.to_s.gsub(/\$\{(?:input:)?([a-zA-Z0-9_]+)\}|#\{([a-zA-Z0-9_]+)\}/) do
         name = Regexp.last_match(1) || Regexp.last_match(2)
-        config[name].presence || Regexp.last_match(0)
+        cfg[name].presence || Regexp.last_match(0)
       end
     end
 
-    def build_preset_headers
+    def build_preset_headers(cfg = config)
       header_templates.each_with_object({}) do |(name, template), headers|
-        headers[name] = resolve_template(template)
+        headers[name] = resolve_template(template, cfg)
       end
     end
 
@@ -143,7 +179,8 @@ module Services
       {}
     end
 
-    # Validation runs only for generic MCPs; presets do not use the `headers` JSON.
+    # Validation runs only for generic MCPs; presets do not use the `headers`
+    # JSON.
     def headers_must_be_valid_json
       return true if header_templates.any? || config[:headers].is_a?(Hash)
 

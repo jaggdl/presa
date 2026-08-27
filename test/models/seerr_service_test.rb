@@ -76,4 +76,30 @@ class SeerrServiceTest < ActiveSupport::TestCase
     assert_equal({ "title" => "Dune" }, JSON.parse(fake.body))
     assert_equal "abc", fake.headers["X-Api-Key"]
   end
+
+  test "test_connection returns true on a 2xx response" do
+    service = Services::Seerr.new(user: users(:one), name: "Test",
+                                  config: { "api_key" => "abc", "base_url" => "http://localhost:5055" })
+    response = Object.new
+    response.define_singleton_method(:success?) { true }
+    Faraday.singleton_class.send(:define_method, :get) { |*_args, &_block| response }
+
+    assert_equal true, service.test_connection
+  ensure
+    Faraday.singleton_class.send(:undef_method, :get)
+  end
+
+  test "test_connection raises on a non-2xx response" do
+    service = Services::Seerr.new(user: users(:one), name: "Test",
+                                  config: { "api_key" => "abc", "base_url" => "http://localhost:5055" })
+    response = Object.new
+    response.define_singleton_method(:success?) { false }
+    response.define_singleton_method(:status) { 403 }
+    Faraday.singleton_class.send(:define_method, :get) { |*_args, &_block| response }
+
+    error = assert_raises(RuntimeError) { service.test_connection }
+    assert_match(/403/, error.message)
+  ensure
+    Faraday.singleton_class.send(:undef_method, :get)
+  end
 end
