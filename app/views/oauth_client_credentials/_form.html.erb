@@ -43,6 +43,18 @@
           class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
   </div>
 
+  <div class="my-6 p-4 rounded-lg border border-zinc-700 bg-zinc-900">
+    <span class="block text-sm text-zinc-400">Add this as the redirect URI in your <%= provider_name %> app</span>
+    <div class="mt-2 flex items-center gap-2">
+      <code class="text-xs bg-zinc-800 px-2 py-1 rounded break-all flex-1"><%= oauth_callback_url %></code>
+      <button type="button"
+              class="px-2 py-1 rounded text-xs text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 transition"
+              data-controller="copy"
+              data-copy-value="<%= oauth_callback_url %>"
+              data-action="click->copy#copy">Copy</button>
+    </div>
+  </div>
+
   <div class="inline flex items-center gap-3 mt-2">
     <%= form.submit @credential.persisted? ? "Save changes" : "Save OAuth client", class: "btn-primary" %>
     <%= link_to "Cancel", params[:return_to].presence || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
