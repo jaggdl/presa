@@ -42,3 +42,9 @@ strava:
   type: Services::Strava
   name: Strava
   config: {}
+
+spotify:
+  user: one
+  type: Services::Spotify
+  name: Spotify
+  config: {}

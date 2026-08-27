@@ -5,6 +5,7 @@ require_relative "test_helpers/session_test_helper"
 require_relative "test_helpers/jellyfin_tools_helper"
 require_relative "test_helpers/gmail_tools_helper"
 require_relative "test_helpers/strava_tools_helper"
+require_relative "test_helpers/spotify_tools_helper"
 
 module ActiveSupport
   class TestCase
