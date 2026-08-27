@@ -1,27 +1,27 @@
 # Presa
 
-Presa is a **configurable [MCP](https://modelcontextprotocol.io) proxy**. Your external AI clients connect to it like any MCP server, and Presa proxies each request to whichever backend tools you've configured under a **workspace** — backed by your **services**.
+Presa is a **configurable [MCP](https://modelcontextprotocol.io) proxy that also exposes an agent skill**. Your external AI clients connect to it like any MCP server, or follow the plain-HTTP bot skill, and Presa proxies each request to whichever backend tools you've configured under a **workspace** — backed by your **services**.
 
 ```
-     external AI client                     Presa (MCP proxy)
+     external AI client                     Presa (MCP proxy + agent skill)
     (Claude, Cursor, ...)                  ┌──────────────────────┐
-            │                              │                      │
-            │  Authorization               │  ▸ Workspace         │
-            │  Bearer mcp_                 │    API token         │
-            ▼                              │    named scope       │
-      /mcp/sse ──────────────────────────▶ │                      │
-      (MCP over SSE)                       │  ▸ Services          │
-            │                              │    github: <token>   │
-            │  tools/list, tools/call      │    jellyfin: <key>   │
-            ▼                              │    mcp: <remote>     │
-         result  ◀─────────────────────────│                      │
-   (MCP over SSE)                          └──────────────────────┘
-                                             │  proxied calls to backend APIs
-                                             ▼
-                                   (GitHub, Jellyfin, remote MCP, ...)
+            │  Authorization               │                      │
+            │  Bearer mcp_                 │  ▸ Workspace         │
+            │                              │    API token         │
+            │  ┌──────────────────────────▶│    named scope       │
+            │  │  /mcp/sse (MCP over SSE)  │                      │
+            │  │  tools/list, tools/call   │  ▸ Services          │
+            │  │                           │    github: <token>   │
+            │  │  /bots/SKILL.md (skill)   │    jellyfin: <key>   │
+            │  └──────────────────────────▶│    mcp: <remote>     │
+            │     /bots/tools, /execute    │                      │
+            ▼                              └──────────────────────┘
+         result  ◀─────────────────────────┘  proxied calls to backend APIs
+   (MCP over SSE / plain HTTP)                             ▼
+                                    (GitHub, Jellyfin, remote MCP, ...)
 ```
 
-Presa proxies each MCP request from the client to the backend service that backs the requested tool. Every invocation (timestamp, tool, arguments, response, status, duration) is logged to the workspace, and the web UI shows each service's available tools and their input parameters.
+Presa proxies each request — MCP or skill-driven HTTP — from the client to the backend service that backs the requested tool. Every invocation (timestamp, tool, arguments, response, status, duration) is logged to the workspace, and the web UI shows each service's available tools and their input parameters.
 
 ## How it works
 
@@ -55,6 +55,28 @@ Example `.mcp.json`:
 2. The token is resolved to an active API token via its owning workspace.
 3. That workspace's context is set for the duration of the request.
 4. Only tools relevant to that workspace are exposed.
+
+## Agent skill (not just MCP)
+
+Besides speaking MCP over SSE, Presa exposes a plain-HTTP bot API for agents that
+aren't MCP-native. The interface (auth + tool list + tool execution) is described
+as an [Agent Skill](https://agentskills.io) at:
+
+```
+GET /bots/SKILL.md
+```
+
+An agent fetches this file to learn how to authenticate — via the share-code
+device flow (the owner approves a request in the browser) — then how to obtain a
+token, list the workspace's tools, and execute them over HTTP. The skill only
+describes the generic API surface; it never references specific services, tools,
+or workflows.
+
+- **MCP clients** connect at `/mcp/sse` and consume tools as standard MCP.
+- **Agents following the skill** hit `/bots/tools` (list), `/bots/tools/{tool}`
+  (detail), and `/bots/tools/{tool}/execute` (run) with a bearer token.
+
+Both surfaces are scoped to the same per-workspace allowed tools.
 
 ## Self-hosting with Docker Compose
 
