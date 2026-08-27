@@ -19,7 +19,7 @@ class PlacesServiceTest < ActiveSupport::TestCase
 
   test "is categorized as knowledge with the google icon" do
     assert_equal "knowledge", Services::Places.category
-    assert_equal "google.png", Services::Places.icon
+    assert_equal "places.png", Services::Places.icon
   end
 
   test "requires an api_key" do

@@ -15,7 +15,7 @@ module Places
     arguments do
       required(:latitude).filled(:float).description("Center latitude of the search circle (e.g. 37.7937)")
       required(:longitude).filled(:float).description("Center longitude of the search circle (e.g. -122.3965)")
-      required(:radius).filled(:float, gt?: 0.0, lteq?: 50_000).description("Radius of the search circle in meters (0 < radius <= 50000)")
+      required(:radius).filled(:integer, gt?: 0, lteq?: 50_000).description("Radius of the search circle in meters (0 < radius <= 50000)")
       optional(:included_types).array(:string).description("Place types (from Table A) to include, e.g. ['restaurant', 'cafe']")
       optional(:excluded_types).array(:string).description("Place types (from Table A) to exclude")
       optional(:included_primary_types).array(:string).description("Primary place types (from Table A) to include")

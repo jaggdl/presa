@@ -11,7 +11,7 @@ module Services
   # (New) to be enabled and billed on the Google Cloud project's Maps service.
   class Places < Service
     kind :places
-    icon "google.png"
+    icon "places.png"
     category :knowledge
 
     config_field :api_key, required: true, secret: true
