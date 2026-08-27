@@ -48,3 +48,9 @@ spotify:
   type: Services::Spotify
   name: Spotify
   config: {}
+
+places:
+  user: one
+  type: Services::Places
+  name: Google Places
+  config: <%= { api_key: "places_test_key" }.to_json %>
