@@ -1,48 +1,60 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Copy-to-clipboard button. Reads the text from `value` on click, writes it to
-// the clipboard, and briefly swaps the label to "Copied". Falls back to a
-// hidden-textarea/execCommand approach when the async Clipboard API is
-// unavailable (e.g. non-secure contexts), and shows "Failed" only if both fail.
+// Copy-to-clipboard button. Reads the text from `value` on click and copies it.
+//
+// The primary mechanism is a synchronous copy of a real DOM selection
+// (`execCommand("copy")`), which performs an actual clipboard write in every
+// browser and context (including HTTP). The async Clipboard API can silently
+// resolve without writing, and priming it can swallow a subsequent sync write,
+// so we only use it as a fallback when the sync path is blocked.
 export default class extends Controller {
   static values = { value: String }
 
   async copy() {
-    let copied = false
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(this.valueValue)
-        copied = true
+    const text = this.valueValue
+
+    if (this.copySelection(text)) {
+      this.flash("Copied")
+      return
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text)
+        this.flash("Copied")
+        return
+      } catch {
+        // fall through to failure feedback
       }
-    } catch {
-      copied = false
     }
 
-    if (!copied) {
-      copied = this.fallback(this.valueValue)
-    }
-
-    this.flash(copied ? "Copied" : "Failed")
+    this.flash("Failed")
   }
 
-  // Legacy fallback: select a temporary hidden textarea holding the value and
-  // fire the browser's "copy" command.
-  fallback(text) {
+  // Selects a temporary hidden textarea holding the value and fires the
+  // browser's "copy" command on that real selection.
+  copySelection(text) {
+    const textarea = document.createElement("textarea")
+    textarea.value = text
+    textarea.setAttribute("readonly", "")
+    textarea.setAttribute("aria-hidden", "true")
+    textarea.style.position = "fixed"
+    textarea.style.top = "0"
+    textarea.style.left = "0"
+    textarea.style.opacity = "0"
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+    textarea.setSelectionRange(0, text.length)
+
+    let ok = false
     try {
-      const textarea = document.createElement("textarea")
-      textarea.value = text
-      textarea.setAttribute("readonly", "")
-      textarea.style.position = "fixed"
-      textarea.style.opacity = "0"
-      document.body.appendChild(textarea)
-      textarea.select()
-      textarea.setSelectionRange(0, textarea.value.length)
-      const copied = document.execCommand("copy")
-      textarea.remove()
-      return copied
+      ok = document.execCommand("copy")
     } catch {
-      return false
+      ok = false
     }
+    textarea.remove()
+    return ok
   }
 
   flash(label) {
