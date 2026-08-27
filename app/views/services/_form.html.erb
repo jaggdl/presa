@@ -48,22 +48,17 @@
       <% end %>
     <% end %>
 
-    <dialog id="new-oauth-client-dialog"
-            data-oauth-client-target="dialog"
-            data-action="click->oauth-client#backdrop"
-            class="m-auto p-0 rounded-lg bg-transparent border-0 backdrop:bg-black/60 data-[open]:backdrop:bg-black/60 open:backdrop:bg-black/60">
-      <div class="p-6 rounded-lg bg-zinc-900 text-zinc-100 border border-zinc-700 w-[26rem] max-w-[92vw]">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="font-bold text-lg">Add a <%= provider_name %> OAuth client</h3>
-          <button type="button" data-action="oauth-client#closeDialog" class="text-zinc-400 hover:text-zinc-200 transition" aria-label="Close">
-            <%= icon "x", class: "size-5" %>
-          </button>
-        </div>
-        <div id="new-oauth-client-form">
-          <%= render "oauth_client_credentials/modal_form", credential: OauthClientCredential.new(provider: service.provider) %>
-        </div>
+    <%= render "shared/dialog", controller: "oauth-client", id: "new-oauth-client-dialog", width_class: "w-[34rem]" do %>
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-bold text-lg">Add a <%= provider_name %> OAuth client</h3>
+        <button type="button" data-action="oauth-client#closeDialog" class="text-zinc-400 hover:text-zinc-200 transition" aria-label="Close">
+          <%= icon "x", class: "size-5" %>
+        </button>
       </div>
-    </dialog>
+      <div id="new-oauth-client-form">
+        <%= render "oauth_client_credentials/modal_form", credential: OauthClientCredential.new(provider: service.provider) %>
+      </div>
+    <% end %>
   </div>
 <% else %>
   <div class="my-5">
