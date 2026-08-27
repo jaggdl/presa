@@ -16,7 +16,7 @@ module StravaToolTestHelper
     tool = klass.new
     tool.instance_variable_set(:@service, fake_service)
     tool.define_singleton_method(:conn) do
-      Faraday.new("https://www.strava.com") do |f|
+      Faraday.new("https://www.strava.com/api/v3") do |f|
         f.request :json
         f.response :json, content_type: /\bjson$/
         f.adapter :test, &stub_block

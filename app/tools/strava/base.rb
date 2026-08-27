@@ -11,7 +11,7 @@ module Strava
     service_kind :strava
     abstract_tool true
 
-    STRAVA_API = "https://www.strava.com"
+    STRAVA_API = "https://www.strava.com/api/v3"
 
     # Overridable in tests to inject a fake Faraday connection.
     def conn
@@ -26,7 +26,9 @@ module Strava
 
     private
 
-    # GET against the Strava API, returning the parsed JSON body.
+    # GET against the Strava API, returning the parsed JSON body. `path` is
+    # relative to STRAVA_API's base (e.g. "athlete"); a leading slash would
+    # make Faraday drop the base path and hit the marketing site.
     def strava_get(path, params: {})
       conn.get(path) do |req|
         req.headers["Authorization"] = "Bearer #{authorized_token}"

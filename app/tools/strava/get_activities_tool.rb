@@ -20,7 +20,7 @@ module Strava
       params[:after] = after if after
       params[:page] = page if page
       params[:per_page] = per_page if per_page
-      strava_get("/api/v3/athlete/activities", params: params)
+      strava_get("athlete/activities", params: params)
     end
   end
 end

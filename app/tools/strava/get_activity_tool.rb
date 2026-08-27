@@ -12,7 +12,7 @@ module Strava
     end
 
     def call(id:)
-      strava_get("/api/v3/activities/#{id}")
+      strava_get("activities/#{id}")
     end
   end
 end
