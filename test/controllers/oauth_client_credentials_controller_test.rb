@@ -15,7 +15,7 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
   test "new shows the callback redirect URI with a copy button" do
     get new_oauth_client_credential_path(provider: "google")
     assert_select "pre", text: oauth_callback_url
-    assert_select "button[data-action='click->copy#copy']", text: "Copy"
+    assert_select "button[data-action='click->copy#copy'][aria-label='Copy to clipboard'] svg"
   end
 
   test "index shows provider tiles for every OAuth provider" do

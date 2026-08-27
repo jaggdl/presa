@@ -1,36 +1,30 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Copy-to-clipboard button. Reads the text from `value` on click, or from a
-// `source` target element, and copies it.
+// Copy-to-clipboard button. Reads the text from `value`, or from a `source`
+// target element, on click and copies it.
 //
-// The primary mechanism is a synchronous copy of a real DOM selection
-// (`execCommand("copy")`), which performs an actual clipboard write in every
-// browser and context (including HTTP). The async Clipboard API can silently
-// resolve without writing, and priming it can swallow a subsequent sync write,
-// so we only use it as a fallback when the sync path is blocked.
+// The async Clipboard API is preferred: it works on secure contexts (localhost
+// and https) including inside native `<dialog>` modals. The fallback performs a
+// synchronous copy of a real DOM selection via `execCommand("copy")`, which
+// still works on plain-HTTP pages where the Clipboard API is unavailable.
 export default class extends Controller {
-  static targets = ["source", "label"]
+  static targets = ["source", "idle", "done"]
   static values = { value: String }
 
   async copy() {
     const text = this.sourceTarget?.textContent?.trimEnd() ?? this.valueValue
 
-    if (this.copySelection(text)) {
-      this.flash("Copied")
-      return
-    }
-
     if (navigator.clipboard && window.isSecureContext) {
       try {
         await navigator.clipboard.writeText(text)
-        this.flash("Copied")
+        this.flash(true)
         return
       } catch {
-        // fall through to failure feedback
+        // fall through to the fallback below
       }
     }
 
-    this.flash("Failed")
+    this.flash(this.copySelection(text))
   }
 
   // Selects a temporary hidden textarea holding the value and fires the
@@ -59,9 +53,24 @@ export default class extends Controller {
     return ok
   }
 
-  flash(label) {
-    const el = this.hasLabelTarget ? this.labelTarget : this.element
-    el.textContent = label
-    setTimeout(() => { if (el.isConnected) el.textContent = "Copy" }, 1500)
+  // Swaps the copy icon for a check icon (a "done" target) or, in its absence,
+  // swaps the button label text to signal success/failure, resetting shortly
+  // after.
+  flash(copied) {
+    if (copied) clearTimeout(this._resetTimer)
+
+    if (copied && this.hasIdleTarget && this.hasDoneTarget) {
+      this.idleTarget.classList.add("hidden")
+      this.doneTarget.classList.remove("hidden")
+      this._resetTimer = setTimeout(() => {
+        this.idleTarget.classList.remove("hidden")
+        this.doneTarget.classList.add("hidden")
+      }, 1500)
+    } else {
+      this.element.textContent = copied ? "Copied" : "Failed"
+      if (copied) {
+        this._resetTimer = setTimeout(() => { this.element.textContent = "Copy" }, 1500)
+      }
+    }
   }
 }
