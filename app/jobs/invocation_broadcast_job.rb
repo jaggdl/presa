@@ -12,7 +12,7 @@ class InvocationBroadcastJob < ApplicationJob
 
     html = ApplicationController.render(
       partial: "tool_invocations/invocation",
-      locals: { invocation: invocation },
+      locals: { invocation: invocation, flash: true },
       formats: [ :html ]
     )
 

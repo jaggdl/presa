@@ -15,3 +15,14 @@ html {
 .btn-primary {
   @apply inline-block text-center rounded-md px-3.5 py-2.5 bg-blue-950 hover:bg-blue-900 text-blue-100 border border-blue-800 font-medium cursor-pointer;
 }
+
+/* Newly-streamed tool invocations hold a highlighted background, then fade
+   back to the list's background. */
+@keyframes inv-flash {
+  0%   { background-color: rgb(63 63 70 / 0.55); }
+  50%  { background-color: rgb(63 63 70 / 0.55); }
+  100% { background-color: transparent; }
+}
+.inv-flash {
+  animation: inv-flash 4s ease-out both;
+}

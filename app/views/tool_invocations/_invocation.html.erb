@@ -1,4 +1,4 @@
-<li class="flex items-center gap-3 px-4 py-2 whitespace-nowrap">
+<li class="flex items-center gap-3 px-4 py-2 whitespace-nowrap<%= ' inv-flash' if local_assigns[:flash] %>">
   <%= service_icon(invocation.service, size: :sm) %>
   <span class="text-zinc-500"><%= invocation.created_at.strftime("%H:%M:%S") %></span>
   <%= tag.span invocation.tool_name, class: (invocation.success? ? "text-green-400" : "text-red-500") %>
