@@ -37,6 +37,12 @@ gmail:
   name: Gmail
   config: {}
 
+google_analytics:
+  user: one
+  type: Services::GoogleAnalytics
+  name: Google Analytics
+  config: {}
+
 strava:
   user: one
   type: Services::Strava
