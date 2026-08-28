@@ -7,19 +7,29 @@ description: Authenticate an agent against a Presa workspace via the share-code 
 
 ## Installation
 
+Install the `presa` client **inside this skill's own directory** — the same
+folder that contains this `SKILL.md` file. Every agent installs its own copy
+into its own skills directory, and the client keeps its token in a
+`presa.token` file next to itself, so each agent ends up with its own private
+credential. Do **not** install into a workspace `scripts/` folder or anywhere
+shared: co-located agents would clobber each other's tokens.
+
+Run these from inside this skill's directory (the one holding `SKILL.md`):
+
 ```sh
 curl -sS -O <%= base_url %>/bots/client/install.sh
 chmod +x install.sh
-./install.sh ./scripts
+./install.sh .   # installs ./presa next to this SKILL.md
 ```
 
 Or fetch the client directly:
 
 ```sh
-mkdir -p ./scripts
-curl -sS -o ./scripts/presa <%= base_url %>/bots/client/presa
-chmod +x ./scripts/presa
+curl -sS -o presa <%= base_url %>/bots/client/presa
+chmod +x presa
 ```
+
+All examples below run from inside this skill's directory (`./presa ...`). When working from another directory, invoke the client by its full path instead.
 
 ## Authentication
 
@@ -32,7 +42,7 @@ chmod +x ./scripts/presa
 ### 2. File an authorization request
 
 ```
-./scripts/presa login "<share-code>" "<bot-name>" "<why this bot needs access>"
+./presa login "<share-code>" "<bot-name>" "<why this bot needs access>"
 ```
 
 Give the printed `authorize_url` to the user.
@@ -52,7 +62,7 @@ The client redeems the code and stores the token. The code is single-use and sho
 Check at the start of a session and re-check whenever you need up-to-date context:
 
 ```
-./scripts/presa workspace
+./presa workspace
 ```
 
 Keep this file (SKILL.md) in sync with what `workspace` reports; `workspace` is the source of truth for the actual workspace.
@@ -60,19 +70,19 @@ Keep this file (SKILL.md) in sync with what `workspace` reports; `workspace` is 
 ### List tools
 
 ```
-./scripts/presa tools
+./presa tools
 ```
 
 ### Tool detail
 
 ```
-./scripts/presa tool <tool>
+./presa tool <tool>
 ```
 
 ### Execute a tool
 
 ```
-./scripts/presa run <tool> --json '{"arg1": "value1", "arg2": "value2"}'
+./presa run <tool> --json '{"arg1": "value1", "arg2": "value2"}'
 ```
 
 Omitting `--json` means no arguments.
@@ -82,5 +92,5 @@ Omitting `--json` means no arguments.
 - Reveal the workspace's current state from `presa workspace` and check it constantly (start of session and before relying on this file's tool list). Keep this SKILL.md accurate against what that reports.
 - Never mention, assume, or rely on any specific tool, service, or workflow. Discover what is available from `presa workspace` and `presa tools`.
 - Never echo, log, or display the API token or the share code in any output, file, or chat message.
-- The token lives only in the `presa.token` file stored next to your copy of the client. It is chmod 600 and is never printed, committed, or read back to me. Never paste it into `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, or any file readable back to the user or committable to source.
+- The token lives only in the `presa.token` file stored next to your copy of the client in this skill's directory. It is chmod 600 and is never printed, committed, or read back to me. Never paste it into `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, or any file readable back to the user or committable to source.
 - Before running a tool, check its argument schema with `presa tool <tool_name>`.
