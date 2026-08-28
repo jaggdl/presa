@@ -23,6 +23,12 @@ FastMcp.mount_in_rails(
   path_prefix: "/mcp", # This is the default path prefix
   messages_route: "messages", # This is the default route for the messages endpoint
   sse_route: "sse", # This is the default route for the SSE endpoint
+  # FastMcp fires a debug/info line for every registered tool, resource, and
+  # request (rerun on each reload in development), which floods the console.
+  # Route its logging through a warn-level logger so only errors surface.
+  logger: (warn_logger = Rails.logger.dup
+           warn_logger.level = :warn
+           warn_logger),
 ) do |server|
   register = proc do
     Rails.root.glob("app/tools/**/*.rb").each { |file| require file }
