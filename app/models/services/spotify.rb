@@ -7,7 +7,7 @@ module Services
   # top items, saved tracks, playlists) carrying the acquired grant's token.
   # Endpoints and scope follow the Spotify Web API reference at
   # https://developer.spotify.com/documentation/web-api.
-  class Spotify < OauthService
+  class Spotify < ::OauthService
     kind :spotify
     icon "spotify.png"
     category :media

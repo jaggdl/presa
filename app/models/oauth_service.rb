@@ -1,18 +1,17 @@
 # frozen_string_literal: true
 
-module Services
-  # STI base for OAuth-backed services (e.g. Gmail). Unlike plain / MCP
-  # services, an OAuth service carries no user-typed config fields in the form:
-  # the OAuth *client* (client_id/secret) lives on an OauthClientCredential,
-  # and the acquired *grant* (access/refresh tokens) lives on an OauthGrant,
-  # both associated with the service.
-  #
-  # A service is "connected" once it has a grant. `authorized_token` is the
-  # call-time entry point tools use to obtain a valid access token, refreshing
-  # it (via the service's grant + client) when an expired one is held.
-  #
-  # Concrete providers subclass this and fill in the provider key. Provider
-  # endpoints/icon are composed from the matching Oauth::Base subclass.
+# STI base for OAuth-backed services (e.g. Gmail). Unlike plain / MCP
+# services, an OAuth service carries no user-typed config fields in the form:
+# the OAuth *client* (client_id/secret) lives on an OauthClientCredential,
+# and the acquired *grant* (access/refresh tokens) lives on an OauthGrant,
+# both associated with the service.
+#
+# A service is "connected" once it has a grant. `authorized_token` is the
+# call-time entry point tools use to obtain a valid access token, refreshing
+# it (via the service's grant + client) when an expired one is held.
+#
+# Concrete providers subclass this and fill in the provider key. Provider
+# endpoints/icon are composed from the matching Oauth::Base subclass.
   class OauthService < Service
     class_attribute :oauth_provider, default: nil
     class_attribute :oauth_scope, default: nil
@@ -196,4 +195,3 @@ module Services
       Time.current + expires_in.to_i
     end
   end
-end

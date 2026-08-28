@@ -11,7 +11,7 @@ class OauthController < ApplicationController
 
     if params[:service_id].present?
       service = Current.user.services.find(params[:service_id])
-      raise ActiveRecord::RecordNotFound unless service.is_a?(Services::OauthService)
+      raise ActiveRecord::RecordNotFound unless service.is_a?(OauthService)
 
       state = oauth_verifier.generate(
         { "service_id" => service.id, "oauth_client_credential_id" => credential.id },
@@ -64,7 +64,7 @@ end
 
   def reconnect_existing!(state, credential)
     service = Current.user.services.find(state["service_id"])
-    raise ActiveRecord::RecordNotFound unless service.is_a?(Services::OauthService)
+    raise ActiveRecord::RecordNotFound unless service.is_a?(OauthService)
 
     service.acquire_credentials!(code: params[:code], redirect_uri: oauth_callback_url, client_credential: credential)
     redirect_to service_path(service), notice: "Connected #{provider_label(service)}."
@@ -84,7 +84,7 @@ end
 
   def service_class_for_kind(kind)
     klass = Service.class_for_kind(kind)
-    raise ActiveRecord::RecordNotFound unless klass && klass <= Services::OauthService
+    raise ActiveRecord::RecordNotFound unless klass && klass <= OauthService
 
     klass
   end

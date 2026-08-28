@@ -6,7 +6,7 @@ module Services
   # service then exposes Strava tools (athlete profile, activities) carrying the
   # acquired grant's token. Provider endpoints and scope live here, matching
   # the reference at https://developers.strava.com/docs/reference/.
-  class Strava < OauthService
+  class Strava < ::OauthService
     kind :strava
     icon "strava.png"
     category :fitness

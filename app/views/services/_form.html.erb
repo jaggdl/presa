@@ -9,7 +9,7 @@
   </div>
 <% end %>
 
-<% if service.is_a?(Services::OauthService) %>
+<% if service.is_a?(OauthService) %>
   <% provider_name = service.provider.humanize %>
   <% turbo_disabled = !service.persisted? %>
 

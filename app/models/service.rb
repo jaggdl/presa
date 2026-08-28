@@ -85,7 +85,7 @@ class Service < ApplicationRecord
     # A kind is offerable when it declares config fields, or it is a preset MCP
     # service (Services::Mcp subclass) that may declare no fields at all (e.g.
     # a public endpoint like Parallel Search), or an OAuth *leaf* service
-    # (a Services::OauthService subclass that declares its own `kind`; e.g.
+    # (an OauthService subclass that declares its own `kind`; e.g.
     # Services::Gmail). The abstract OauthService base declares no kind and so
     # is never offerable.
     def includeable?(klass)
@@ -93,11 +93,11 @@ class Service < ApplicationRecord
         (klass.respond_to?(:mcp_preset_url) && klass.kind != "mcp")
     end
 
-    # An OAuth leaf is a concrete Services::OauthService subclass that declares
+    # An OAuth leaf is a concrete OauthService subclass that declares
     # its own machine kind, e.g. Services::Gmail. The abstract
-    # Services::OauthService base is excluded because it carries no kind.
+    # OauthService base is excluded because it carries no kind.
     def oauth_service_leaf?(klass)
-      klass <= Services::OauthService && klass.config_kind.present?
+      klass <= OauthService && klass.config_kind.present?
     rescue NameError
       false
     end

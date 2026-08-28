@@ -14,7 +14,7 @@ class ServicesController < ApplicationController
   end
 
   def create
-    if service_klass <= Services::OauthService
+    if service_klass <= OauthService
       return create_oauth_service
     end
 

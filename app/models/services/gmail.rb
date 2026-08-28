@@ -5,7 +5,7 @@ module Services
   # Google OAuth client credential and authorizes their account; the service
   # then exposes Gmail tools (send/read) carrying the acquired grant's token.
   # Google endpoints and icon come from the Oauth::Google provider class.
-  class Gmail < OauthService
+  class Gmail < ::OauthService
     kind :gmail
     icon "gmail.png"
     category :productivity

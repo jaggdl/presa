@@ -24,7 +24,7 @@
     </div>
   </dl>
 
-  <% if @service.is_a?(Services::OauthService) %>
+  <% if @service.is_a?(OauthService) %>
     <%= render "services/oauth", service: @service %>
   <% end %>
 
