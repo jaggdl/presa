@@ -15,6 +15,13 @@ class OauthClientCredential < ApplicationRecord
   validates :client_id, presence: true, uniqueness: { scope: :provider }
   validates :client_secret, presence: true
 
+  # The brand image filename for this credential's provider, resolved from the
+  # provider class (Oauth::Google, Oauth::Spotify, ...), or the generic
+  # placeholder when the provider is unknown.
+  def self.icon_for(provider)
+    Oauth::Base.for_provider(provider)&.icon || "placeholder.png"
+  end
+
   # A safe, fixed-length placeholder in place of the real secret for display.
   def masked_secret
     "••••••••"

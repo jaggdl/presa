@@ -18,12 +18,10 @@ module Services
   class OauthService < Service
     class_attribute :oauth_provider, default: nil
     class_attribute :oauth_scope, default: nil
-    class_attribute :oauth_authorize_uri, default: nil
-    class_attribute :oauth_token_uri, default: nil
 
     has_one :oauth_grant, foreign_key: :service_id, dependent: :destroy
 
-    validate :provider_endpoints_present
+    validate :provider_configured
 
     # The client credential backing this service's grant, or nil.
     def oauth_client_credential
@@ -39,6 +37,30 @@ module Services
       oauth_grant.present?
     end
 
+    # The provider authorization endpoint for this service kind, resolved from
+    # its OAuth provider class.
+    def authorize_uri
+      provider_class.authorize_uri
+    end
+
+    # The provider token endpoint for this service kind, resolved from its
+    # OAuth provider class.
+    def token_uri
+      provider_class.token_uri
+    end
+
+    # The OAuth provider definition (Oauth::Google, Oauth::Spotify, ...) for
+    # this service kind.
+    def provider_class
+      self.class.provider_class
+    end
+
+    # The OAuth provider definition for this service's kind, resolved from its
+    # declared provider key. Raises if a provider cannot be resolved.
+    def self.provider_class
+      Oauth::Base.for_provider(oauth_provider)
+    end
+
     # The provider authorize URL that bounces the user to consent for this
     # service, using the client credential already linked to its grant.
     def authorize_url(redirect_uri:, state:)
@@ -52,8 +74,11 @@ module Services
     # both for reconnecting an existing service (via `authorize_url`) and for
     # the new-service flow, where no service exists yet.
     def self.authorize_url_for(client:, redirect_uri:, state:)
+      provider = Oauth::Base.for_provider(oauth_provider)
+      raise "OAuth provider not configured" unless provider
+
       Oauth::Exchange.new.authorize_url(
-        uri: oauth_authorize_uri,
+        uri: provider.authorize_uri,
         client_id: client.client_id,
         redirect_uri: redirect_uri,
         scope: oauth_scope,
@@ -66,7 +91,7 @@ module Services
     # only after a successful exchange.
     def exchange_tokens(code:, redirect_uri:, client_credential:)
       exchange.exchange_code(
-        token_uri: self.class.oauth_token_uri,
+        token_uri: token_uri,
         code: code,
         client_id: client_credential.client_id,
         client_secret: client_credential.client_secret,
@@ -126,8 +151,8 @@ module Services
 
     private
 
-    def provider_endpoints_present
-      return if self.class.oauth_authorize_uri.present? && self.class.oauth_token_uri.present?
+    def provider_configured
+      return if provider_class&.authorize_uri.present? && provider_class&.token_uri.present?
 
       errors.add(:config, "OAuth provider endpoints are not configured")
     end
@@ -137,7 +162,7 @@ module Services
       raise Oauth::Error, "Grant cannot be refreshed; reconnect the service" unless client&.present? && grant.refreshable?
 
       tokens = exchange.refresh(
-        token_uri: self.class.oauth_token_uri,
+        token_uri: token_uri,
         refresh_token: grant.refresh_token,
         client_id: client.client_id,
         client_secret: client.client_secret

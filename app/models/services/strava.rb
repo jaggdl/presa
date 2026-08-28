@@ -12,8 +12,6 @@ module Services
     category :fitness
 
     self.oauth_provider = :strava
-    self.oauth_authorize_uri = "https://www.strava.com/oauth/authorize"
-    self.oauth_token_uri = "https://www.strava.com/oauth/token"
     self.oauth_scope = "activity:read_all,profile:read_all"
   end
 end

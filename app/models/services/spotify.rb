@@ -15,8 +15,6 @@ module Services
     # The minimum scope covering the features this integration exposes:
     # profile, top items, recently played, saved tracks, and playlists.
     self.oauth_provider = :spotify
-    self.oauth_authorize_uri = "https://accounts.spotify.com/authorize"
-    self.oauth_token_uri = "https://accounts.spotify.com/api/token"
     self.oauth_scope = "user-read-private user-top-read user-read-recently-played user-library-read playlist-read-private"
   end
 end

@@ -30,4 +30,11 @@ class OauthClientCredentialTest < ActiveSupport::TestCase
   test "masks the secret for display" do
     assert_equal "••••••••", oauth_client_credentials(:google_credential).masked_secret
   end
+
+  test "resolves the provider icon from the provider class" do
+    assert_equal "google.png", OauthClientCredential.icon_for("google")
+    assert_equal "spotify.png", OauthClientCredential.icon_for("spotify")
+    assert_equal "strava.png", OauthClientCredential.icon_for("strava")
+    assert_equal "placeholder.png", OauthClientCredential.icon_for("unknown")
+  end
 end

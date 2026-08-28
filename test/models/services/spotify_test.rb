@@ -9,8 +9,9 @@ class Services::SpotifyTest < ActiveSupport::TestCase
     assert_equal "spotify", Services::Spotify.kind
     assert_includes Service.kinds, "spotify"
     assert_equal "spotify", Services::Spotify.oauth_provider.to_s
-    assert_equal "https://accounts.spotify.com/authorize", Services::Spotify.oauth_authorize_uri
-    assert_equal "https://accounts.spotify.com/api/token", Services::Spotify.oauth_token_uri
+    assert_equal "https://accounts.spotify.com/authorize", Services::Spotify.provider_class.authorize_uri
+    assert_equal "https://accounts.spotify.com/api/token", Services::Spotify.provider_class.token_uri
+    assert_equal Oauth::Spotify, Services::Spotify.provider_class
   end
 
   test "is categorized as media" do
