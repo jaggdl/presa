@@ -41,16 +41,30 @@ module Spotify
       request_with_backoff(:get, path, params: params)
     end
 
-    def request_with_backoff(method, path, params:, retries: 0)
+    # PUT against the Spotify API, optionally with a JSON request body and
+    # query params (e.g. transfer playback, start/pause/seek/volume/shuffle
+    # and repeat commands). Like spotify_get, `path` is relative to the base.
+    def spotify_put(path, params: {}, body: nil)
+      request_with_backoff(:put, path, params: params, body: body)
+    end
+
+    # POST against the Spotify API, optionally with a JSON request body and
+    # query params (e.g. next/previous and add-to-queue commands).
+    def spotify_post(path, params: {}, body: nil)
+      request_with_backoff(:post, path, params: params, body: body)
+    end
+
+    def request_with_backoff(method, path, params:, body: nil, retries: 0)
       response = conn.send(method, path) do |req|
         req.headers["Authorization"] = "Bearer #{authorized_token}"
         req.params.update(params) if params.any?
+        req.body = body if body
       end
 
       return response.body unless response.status == 429 && retries < MAX_RETRIES
 
       sleep backoff_for(response, retries)
-      request_with_backoff(method, path, params: params, retries: retries + 1)
+      request_with_backoff(method, path, params: params, body: body, retries: retries + 1)
     end
 
     # Pause duration before retrying a 429. Honors the Retry-After header

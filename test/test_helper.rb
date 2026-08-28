@@ -6,6 +6,7 @@ require_relative "test_helpers/jellyfin_tools_helper"
 require_relative "test_helpers/gmail_tools_helper"
 require_relative "test_helpers/strava_tools_helper"
 require_relative "test_helpers/spotify_tools_helper"
+require_relative "test_helpers/spotify_player_tools_helper"
 require_relative "test_helpers/places_tools_helper"
 require_relative "test_helpers/workspace_tools_helper"
 

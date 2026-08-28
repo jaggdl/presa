@@ -49,6 +49,12 @@ spotify:
   name: Spotify
   config: {}
 
+spotify_player:
+  user: one
+  type: Services::SpotifyPlayer
+  name: Spotify Player
+  config: {}
+
 places:
   user: one
   type: Services::Places
