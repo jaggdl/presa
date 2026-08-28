@@ -12,6 +12,8 @@ class User < ApplicationRecord
 
   after_create :ensure_default_team
 
+  validates :password, length: { minimum: 8 }, confirmation: true, if: -> { password.present? }
+
   def can_use_tool?(_tool)
     true
   end

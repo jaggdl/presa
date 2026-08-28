@@ -1,0 +1,10 @@
+<div class="mx-auto md:w-2/3 w-full">
+  <h1 class="font-bold text-4xl">Create your account</h1>
+
+  <%= render "signups/form", user: @user, submit_label: "Sign up" %>
+
+  <div class="mt-4 text-sm text-zinc-400">
+    Already have an account?
+    <%= link_to "Sign in", new_session_path, class: "text-zinc-300 underline hover:no-underline" %>
+  </div>
+</div>

@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   mount RailsIcons::Engine, at: "/rails_icons"
   mount ActionCable.server => "/cable"
   resource :session
+  resource :signup, only: %i[ new create ], controller: "signups"
   resources :passwords, param: :token
 
   namespace :bots do

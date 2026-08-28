@@ -1,0 +1,29 @@
+<%= form_with model: user, url: signup_path, scope: :signup, class: "contents" do |form| %>
+  <% if user.errors.any? %>
+    <div class="my-5 text-red-400">
+      <ul class="list-disc list-inside">
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+  </div>
+
+  <div class="my-5">
+    <%= form.password_field :password, required: true, autocomplete: "new-password", placeholder: "Enter your password", maxlength: 72, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+  </div>
+
+  <div class="my-5">
+    <%= form.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Confirm your password", maxlength: 72, class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+  </div>
+
+  <div class="col-span-6 sm:flex sm:items-center sm:justify-end sm:gap-4">
+    <div class="inline">
+      <%= form.submit submit_label, class: "btn-primary" %>
+    </div>
+  </div>
+<% end %>
