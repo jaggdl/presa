@@ -11,10 +11,8 @@ module Services
   # call-time entry point tools use to obtain a valid access token, refreshing
   # it (via the service's grant + client) when an expired one is held.
   #
-  # Concrete providers subclass this and fill in provider + endpoints. To avoid
-  # repeating common provider config across many services, add an intermediate
-  # abstract subclass (e.g. Services::GoogleOauth) that sets shared values,
-  # with no `kind`; it is excluded from the offerable kinds automatically.
+  # Concrete providers subclass this and fill in the provider key. Provider
+  # endpoints/icon are composed from the matching Oauth::Base subclass.
   class OauthService < Service
     class_attribute :oauth_provider, default: nil
     class_attribute :oauth_scope, default: nil

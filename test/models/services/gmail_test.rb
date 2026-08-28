@@ -8,15 +8,14 @@ class Services::GmailTest < ActiveSupport::TestCase
     assert_empty Services::Gmail.config_fields
   end
 
-  test "inherits provider endpoints from GoogleOauth" do
+  test "declares the Google provider and composes its endpoints" do
     assert_equal "google", Services::Gmail.oauth_provider.to_s
-    assert_equal Services::Gmail.provider_class, Oauth::Google
+    assert_equal Oauth::Google, Services::Gmail.provider_class
     assert_equal "https://accounts.google.com/o/oauth2/v2/auth", Services::Gmail.new.authorize_uri
     assert_equal "https://oauth2.googleapis.com/token", Services::Gmail.new.token_uri
   end
 
   test "keeps abstract OAuth bases out of the offerable kinds" do
-    assert_not_includes Service.kinds, "google_oauth"
     assert_not_includes Service.kinds, "oauth_service"
   end
 
