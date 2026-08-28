@@ -23,6 +23,12 @@ module Services
   # it points at a remote Model Context Protocol endpoint and re-exposes the
   # tools that server advertises.
   class Mcp < Service
+    # How long a discovered tool list is cached per endpoint before a page load
+    # re-probes the remote server. Long enough that the warm cache is reused
+    # across browsing (and survives within a dev process), keeping tool-list
+    # loads fast when several MCP servers are connected.
+    DISCOVERY_TTL = 5.minutes
+
     kind :mcp
     icon "mcp.png"
     category :general
@@ -37,6 +43,23 @@ module Services
     validate :headers_must_be_valid_json
 
     class << self
+      # Warm every connected MCP service's remote tool list concurrently, so a
+      # page that then calls expose_for on each service hits the warm cache
+      # (cheap reads) instead of N serial network round-trips. Discovery is
+      # keyed on the endpoint, so instances sharing a URL (e.g. multiple Github
+      # MCP services) warm once. Accepts any service collection; non-MCP entries
+      # are ignored. Never raises — it is best-effort warmup.
+      def warm_remote_tools(services)
+        services
+          .select { |s| s.is_a?(Mcp) }
+          .uniq { |s| s.base_url }
+          .map { |s| Thread.new { s.remote_tools } }
+          .each(&:join)
+        nil
+      rescue StandardError
+        nil
+      end
+
       # Starts a preset subclass: resets the inherited generic config fields
       # (url, headers) so only the fields declared after this call appear in
       # the form. Returns self so the kind's fields can be declared next.
@@ -116,12 +139,15 @@ module Services
     end
 
     # Remote tool definitions ([{name, description, inputSchema}, ...]).
-    # Small cache keyed on url to avoid a discovery round-trip per request.
-    # Discovery is best-effort for listing: on failure it returns an empty list
-    # and records `remote_tools_error` so pages can surface the reason without
-    # an individual service breaking the whole list.
+    # Cached keyed on the endpoint so a discovery round-trip isn't repeated on
+    # every request. Same endpoint (and thus tool list) is shared across
+    # instances of a preset (e.g. all Github MCP services), so keying on
+    # base_url is correct — tool discovery is not per-token. Discovery is
+    # best-effort for listing: on failure it returns an empty list and records
+    # `remote_tools_error` so pages can surface the reason without an individual
+    # service breaking the whole list.
     def remote_tools
-      @remote_tools ||= Rails.cache.fetch([ "mcp_remote_tools", base_url ], expires_in: 30.seconds) do
+      @remote_tools ||= Rails.cache.fetch([ "mcp_remote_tools", base_url ], expires_in: DISCOVERY_TTL) do
         client.list_tools.with_indifferent_access[:tools] || []
       end
     rescue StandardError => e

@@ -5,6 +5,9 @@ class ServicesController < ApplicationController
     @services = Service.with_invocation_counts(Current.user.services.order(:type, :name))
     # Available service kinds a user can add, MCP first then alphabetical.
     @kinds = Service.kinds.sort_by { |kind| [ kind == "mcp" ? 0 : 1, kind ] }
+    # Prefetch remote tool lists in parallel so the per-row tool counts don't
+    # trigger a serial MCP discovery round-trip per service.
+    Services::Mcp.warm_remote_tools(@services)
   end
 
   def new
