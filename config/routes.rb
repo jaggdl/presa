@@ -6,6 +6,8 @@ Rails.application.routes.draw do
 
   namespace :bots do
     get "SKILL.md", to: "tools#skill", as: :skill
+    get "client/presa", to: "tools#client", as: :client
+    get "client/install.sh", to: "tools#installer", as: :client_installer
     post :authorize, controller: "authorizations"
     resources :authorizations, only: :show, param: :request_token do
       member do

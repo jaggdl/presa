@@ -4,6 +4,7 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @workspace = workspaces(:one)
     @user = @workspace.user
+    @base_url = ENV["BASE_URL"].presence || "http://www.example.com"
   end
 
   test "GET /bots/tools requires a bearer token" do
@@ -18,25 +19,44 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.content_type, "text/markdown"
     assert_includes response.body, "name: presa-bot-api" # frontmatter
-    assert_includes response.body, "Authorization: Bearer"
-    assert_includes response.body, "/bots/tools/{tool}/execute"
-    assert_includes response.body, "http://www.example.com/bots/tools" # base_url interpolated
+    assert_includes response.body, "presa login"
+    assert_includes response.body, "presa run"
+    assert_includes response.body, "#{@base_url}/bots/client/install.sh" # base_url interpolated
     refute_includes response.body, "jellyfin"
     refute_includes response.body, "search_workflows"
     refute_includes response.body, "<your-presa-url>"
   end
 
-  test "GET /bots/SKILL.md includes token storage guidance" do
+  test "GET /bots/SKILL.md includes install and token-storage guidance" do
     get bots_skill_path
 
     assert_response :success
-    assert_includes response.body, "## Storing the token"
+    assert_includes response.body, "## Installation"
+    assert_includes response.body, "client/install.sh"
     assert_includes response.body, "Never echo, log, or display the API token or the share code"
     assert_includes response.body, "TOOLS.md"
     assert_includes response.body, "AGENTS.md"
-    assert_includes response.body, "OpenClaw"
-    assert_includes response.body, "Claude Code"
-    assert_includes response.body, "$PRESA_TOKEN"
+    assert_includes response.body, "presa.token"
+  end
+
+  test "GET /bots/client/presa returns the client script with base URL baked in" do
+    get bots_client_path
+
+    assert_response :success
+    assert_includes response.content_type, "text/x-sh"
+    assert_includes response.body, "BASE_URL=\"#{@base_url}\""
+    assert_includes response.body, "/bots/tools/$t/execute"
+    assert_includes response.body, "presa.token"
+  end
+
+  test "GET /bots/client/install.sh embeds the client and is executable-shaped" do
+    get bots_client_installer_path
+
+    assert_response :success
+    assert_includes response.content_type, "text/x-sh"
+    assert_includes response.body, "#--PRESA_CLIENT_BEGIN--"
+    assert_includes response.body, "BASE_URL=\"#{@base_url}\""
+    assert_includes response.body, "install."
   end
 
   test "GET /bots/tools lists the workspace's available tools as plain text" do

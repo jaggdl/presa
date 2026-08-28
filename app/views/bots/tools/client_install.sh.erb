@@ -1,0 +1,52 @@
+#!/bin/sh
+# install.sh — installs the presa bot client into a directory and makes it
+# executable. The client source is embedded in this file, so this single script
+# is self-contained: fetch it once, run it, and you have a working `presa`.
+#
+#   ./install.sh                 # install into a scripts/ dir next to this file
+#   ./install.sh <dest-dir>      # install into a given directory
+#   ./install.sh --bin           # install as `presa` on the PATH
+#
+# The embedded client keeps its token next to itself, so installing into a
+# directory shared by one agent keeps co-located agents from clobbering each
+# other's credentials. The token file is never printed and is chmod 600.
+
+set -eu
+
+SELF="$0"
+client_start=$(awk '/^#--PRESA_CLIENT_BEGIN--$/{print NR+1; exit}' "$SELF")
+client_end=$(awk 'NR>'"$client_start"' && /^#--PRESA_CLIENT_END--$/{print NR-1; exit}' "$SELF")
+
+seed_dir() {
+  dir="$1"
+  mkdir -p "$dir"
+  if [ ! -x "$dir/presa" ]; then
+    sed -n "${client_start},${client_end}p" "$SELF" > "$dir/presa"
+    chmod +x "$dir/presa"
+    echo "Installed presa into $dir/presa"
+    echo "Run \`$dir/presa login <share-code>\` to sign in."
+  else
+    echo "presa already installed in $dir"
+  fi
+}
+
+case "${1:-}" in
+  "")
+    seed_dir "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/scripts"
+    ;;
+  --bin)
+    bin_dir="${XDG_BIN_HOME:-$HOME/.local/bin}"
+    seed_dir "$bin_dir"
+    echo "Add $bin_dir to PATH if not already there."
+    ;;
+  *)
+    seed_dir "$1"
+    ;;
+esac
+
+exit 0
+
+#--PRESA_CLIENT_BEGIN--
+<% content = @client_script.strip %>
+<%= content.html_safe %>
+#--PRESA_CLIENT_END--

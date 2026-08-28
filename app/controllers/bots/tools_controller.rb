@@ -9,7 +9,7 @@ module Bots
   class ToolsController < ApplicationController
     allow_unauthenticated_access
     skip_forgery_protection
-    before_action :authenticate_token!, except: :skill
+    before_action :authenticate_token!, except: %i[ skill client installer ]
 
     # GET /bots/SKILL.md — the agent skills file describing how to authenticate
     # and use the tools API. Served unauthenticated so agents can fetch it to
@@ -17,6 +17,22 @@ module Bots
     # workspace-specific tools, services, or workflows.
     def skill
       render "bots/tools/skill", layout: nil, content_type: "text/markdown", formats: [ :md ]
+    end
+
+    # GET /bots/client/presa — the bundled client script that the skill
+    # installs. Served unauthenticated alongside SKILL.md so agents can fetch
+    # it as part of setting up the skill. Base URL is baked in, so the client
+    # never needs it (or any tool URL / token) typed by hand.
+    def client
+      render "bots/tools/presa", layout: nil, formats: [ :sh ], content_type: "text/x-sh"
+    end
+
+    # GET /bots/client/install.sh — idempotent installer that puts the presa
+    # client on PATH. Also unauthenticated so the skill flow can pull it.
+    # Embeds the fully-rendered client so the installer is self-contained.
+    def installer
+      @client_script = render_to_string("bots/tools/presa", formats: [ :sh ])
+      render "bots/tools/client_install", layout: nil, formats: [ :sh ], content_type: "text/x-sh"
     end
 
     # GET /bots/workspace

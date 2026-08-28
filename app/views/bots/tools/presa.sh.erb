@@ -1,0 +1,159 @@
+#!/bin/sh
+# presa — command-line client for a Presa bot workspace.
+#
+# This replaces hand-written curl calls against the raw /bots API. Running the
+# subcommands below handles the base URL, the authorization (token) bookkeeping,
+# and the JSON request bodies for you. You never need to remember a URL or
+# where the token lives.
+#
+# The token is stored in "$PRESA_DIR/presa.token" (chmod 600), kept alongside
+# this script inside the skill directory. The agent must not read, echo, or
+# commit that file. It is only ever consumed by this client.
+#
+# Usage:
+#   presa login [name] [justification] [share-code]
+#   presa logout
+#   presa tools
+#   presa tool <tool>
+#   presa run <tool> [--json '{...}']
+#   presa workspace
+
+set -eu
+
+BASE_URL="<%= base_url %>"
+
+# Where the token lives: same directory as this script, so that co-located
+# agents each keep their own credential in their own skill dir.
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PRESA_DIR="${PRESA_DIR:-$SCRIPT_DIR}"
+TOKEN_FILE="$PRESA_DIR/presa.token"
+
+base_request() { # method path [json]
+  local method="$1" path="$2" json="${3:-}"
+  if [ -n "$json" ]; then
+    curl -sS -X "$method" \
+      "$BASE_URL$path" \
+      -H "Content-Type: application/json" \
+      --data "$json"
+  else
+    curl -sS -X "$method" "$BASE_URL$path"
+  fi
+}
+
+authed_request() { # method path [json]
+  if [ ! -f "$TOKEN_FILE" ]; then
+    echo "Not logged in. Run: presa login" >&2
+    exit 2
+  fi
+  local tok
+  tok=$(tr -d '[:space:]' < "$TOKEN_FILE")
+  local json="${3:-}"
+  if [ -n "$json" ]; then
+    curl -sS -X "$1" \
+      "$BASE_URL$2" \
+      -H "Authorization: Bearer $tok" \
+      -H "Content-Type: application/json" \
+      --data "$json"
+  else
+    curl -sS -X "$1" "$BASE_URL$2" -H "Authorization: Bearer $tok"
+  fi
+}
+
+login() {
+  local share_code name justification req_id auth_url code raw
+  share_code="${1:-}"
+  name="${2:-}"
+  justification="${3:-}"
+
+  if [ -z "$share_code" ]; then
+    echo "Usage: presa login <share-code> [bot-name] [justification]" >&2
+    exit 1
+  fi
+  if [ -z "$name" ]; then
+    name=$(basename "$PRESA_DIR")
+  fi
+
+  local resp
+  resp=$(base_request "POST" "/bots/authorize" \
+    "{\"share_code\":\"$share_code\",\"name\":\"$name\",\"justification\":\"$justification\"}")
+
+  # Parse the JSON response (request_id + authorize_url) without jq.
+  req_id=$(printf '%s' "$resp" | sed -n 's/.*"request_id":"\([^"]*\)".*/\1/p')
+  auth_url=$(printf '%s' "$resp" | sed -n 's/.*"authorize_url":"\([^"]*\)".*/\1/p')
+
+  if [ -z "$req_id" ] || [ -z "$auth_url" ]; then
+    echo "Authorize failed: $resp" >&2
+    exit 1
+  fi
+
+  echo "Please open this URL and approve the authorization:"
+  echo "  $auth_url"
+  echo "Then ask the user for the numeric code shown."
+  printf 'Code: '
+  read -r code
+
+  raw=$(base_request POST "/bots/authorizations/$req_id/token" \
+    "{\"code\":\"$code\"}")
+  token=$(printf '%s' "$raw" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+
+  if [ -z "$token" ]; then
+    echo "Redeem failed: $raw" >&2
+    exit 1
+  fi
+
+  if [ ! -d "$PRESA_DIR" ]; then
+    mkdir -p "$PRESA_DIR"
+  fi
+  printf '%s\n' "$token" > "$TOKEN_FILE"
+  chmod 600 "$TOKEN_FILE"
+  echo "Signed in. Token stored in $TOKEN_FILE (not printed to output)."
+}
+
+logout() {
+  if [ -f "$TOKEN_FILE" ]; then
+    rm -f "$TOKEN_FILE"
+    echo "Signed out."
+  else
+    echo "Not logged in."
+  fi
+}
+
+tools() {
+  authed_request GET "/bots/tools"
+}
+
+tool() {
+  [ $# -ge 1 ] || { echo "Usage: presa tool <tool>" >&2; exit 1; }
+  authed_request GET "/bots/tools/$1"
+}
+
+run() {
+  [ $# -ge 1 ] || { echo "Usage: presa run <tool> [--json '{...}']" >&2; exit 1; }
+  local t="$1"; shift
+  local json="{}"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --json) json="$2"; shift 2 ;;
+      *) json="$1"; shift ;;
+    esac
+  done
+  authed_request POST "/bots/tools/$t/execute" "$json"
+}
+
+workspace() {
+  authed_request GET "/bots/workspace"
+}
+
+cmd="${1:-}"
+[ -n "$cmd" ] || { echo "Usage: presa {login|logout|tools|tool|run|workspace}" >&2; exit 1; }
+shift
+
+case "$cmd" in
+  login) login "$@" ;;
+  logout) logout ;;
+  tools) tools ;;
+  tool) tool "$@" ;;
+  run) run "$@" ;;
+  workspace) workspace ;;
+  *) echo "Unknown command: $cmd" >&2; exit 1 ;;
+esac

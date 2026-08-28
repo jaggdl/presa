@@ -1,19 +1,29 @@
 ---
 name: presa-bot-api
-description: Authenticate an agent against a Presa workspace via the share-code device flow and use its tools over HTTP. Use when a bot needs to authenticate to Presa, list available tools, or execute a tool.
+description: Authenticate an agent against a Presa workspace via the share-code device flow and use its tools over HTTP using the bundled `presa` client. Use when a bot needs to authenticate to Presa, list available tools, or execute a tool.
 ---
 
 # Presa Bot API
 
-Allows an agent to authenticate against a Presa workspace and use its tools over plain HTTP.
+## Installation
+
+```sh
+curl -sS -O <%= base_url %>/bots/client/install.sh
+chmod +x install.sh
+./install.sh ./scripts
+```
+
+Or fetch the client directly:
+
+```sh
+mkdir -p ./scripts
+curl -sS -o ./scripts/presa <%= base_url %>/bots/client/presa
+chmod +x ./scripts/presa
+```
 
 ## Authentication
 
-Before you can call any tool you must obtain an API token for the workspace you want to use. The flow is interactive and requires the user's approval.
-
 ### 1. Ask the user for the workspace share code
-
-Presa does not hand out tokens directly to bots over the network. Instead, each workspace has a *share code* — a secret the workspace owner creates or resets from the Presa web UI. The owner shares this code with you out-of-band.
 
 - Ask the user to open the Presa web app and generate the workspace's bot share code.
 - Ask them to send it to you in chat.
@@ -21,175 +31,56 @@ Presa does not hand out tokens directly to bots over the network. Instead, each 
 
 ### 2. File an authorization request
 
-POST to the workspace's authorize endpoint with the share code, a name for the bot, and a justification:
-
 ```
-POST <%= base_url %>/bots/authorize
-Content-Type: application/json
-
-{
-  "share_code": "<share-code>",
-  "name": "<bot-name>",
-  "justification": "<why this bot needs access>"
-}
+./scripts/presa login "<share-code>" "<bot-name>" "<why this bot needs access>"
 ```
 
-On success you receive:
-
-```json
-{
-  "request_id": "<id>",
-  "authorize_url": "<%= base_url %>/bots/authorizations/<id>"
-}
-```
-
-Give the `authorize_url` to the user.
+Give the printed `authorize_url` to the user.
 
 ### 3. User approves in the browser
 
-The user opens the authorize URL, and, if they approve, the page shows a short numeric code. Ask them to read the code back to you.
+The user approves and reads the short numeric code back to you.
 
-### 4. Redeem the code for an API token
+### 4. Enter the code when the client prompts
 
-```
-POST <%= base_url %>/bots/authorizations/{request_id}/token
-Content-Type: application/json
-
-{ "code": "<the-numeric-code>" }
-```
-
-On success:
-
-```json
-{ "token": "mcp_..." }
-```
-
-Store this token securely (e.g. in your secrets store) and never print it to output. The code is single-use and short-lived; if it fails, ask the user to approve again.
-
-## Storing the token
-
-The token is a bearer credential for the workspace and must be treated as a secret. Two rules are absolute:
-
-- **Never echo, log, or display the API token or the share code** in any output, file, or chat message.
-- **The token must always live in a restricted secrets store**, never in `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, a committed config file, or any workspace file that could be read back to the user or committed to source control.
-
-Once the raw token is returned, write it only into the agent's native secret mechanism below (or an equivalent OS keychain / secret manager). Do not paste it into a file you can see.
-
-### Claude Code
-
-Inject it as an environment variable from a machine-local settings file, never from a committed one:
-
-- Open one of **`~/.claude/settings.json`** (user) or **`.claude/settings.local.json`** (project-local, git-excluded). Do NOT put secrets in the shared, committable `.claude/settings.json`.
-- Add it under the `env` key:
-
-```json
-{
-  "env": {
-    "PRESA_TOKEN": "mcp_..."
-  }
-}
-```
-
-Then reference `$PRESA_TOKEN` from the skill's curl calls. Claude Code also stores its own sign-in auth token in the OS keyring (macOS Keychain or the Linux Secret Service); prefer that same mechanism on your machine if you are not using a settings `env` block.
-
-### OpenClaw (OpenClaude CLI)
-
-OpenClaw has a dedicated, write-only secrets store — use it:
-
-```
-openclaw secrets store set PRESA_TOKEN --kind secret --value-file token.txt
-```
-
-or pipe it on stdin to avoid shell-history and terminal exposure:
-
-```
-cat token.txt | openclaw secrets store set PRESA_TOKEN --kind secret
-```
-
-The secret is stored in the local agent state database and cannot be read back. Reference it in your tool calls as `$PRESA_TOKEN`. Never put it in `openclaw.json` or a credentials file.
-
-### Codex CLI
-
-Use Codex's native credential/account store or your OS keychain, and expose the token to the session as an environment variable rather than writing it into a script. Set `PRESA_TOKEN` in your shell profile (or via the system keychain) and reference `$PRESA_TOKEN` in requests.
-
-### Cursor
-
-Cursor keeps machine-local credentials in the OS keychain and `~/.cursor`. Set `PRESA_TOKEN` as an environment variable (e.g. via your shell profile or keychain resolver) and read it with `$PRESA_TOKEN` in requests. Do not store it inside a project's committed config.
-
-### Aider, Goose, OpenHands
-
-These read API credentials from environment variables or an OS keyring. Set `PRESA_TOKEN` in your shell environment or keychain and reference `$PRESA_TOKEN`; never hardcode it into a file that can be committed or read back.
-
-### Any agent without a native store
-
-Export the token as an environment variable from your OS keychain / secrets manager at shell start, or write it to a dedicated file **outside the workspace** (e.g. `~/.presa/presa_token` with `chmod 600`) and reference it as `$PRESA_TOKEN`. Ensure the path is gitignored and never included in context files.
+The client redeems the code and stores the token. The code is single-use and short-lived; if it fails, ask the user to approve again.
 
 ## Using the API
 
-Attach the token on every request, reading it from your secret store as `$PRESA_TOKEN`:
-
-```
-Authorization: Bearer $PRESA_TOKEN
-```
-
 ### Workspace context
 
-Fetch a plain-text summary of the workspace — its name, linked services, and the tools available — at the start of a session and re-check it whenever you need up-to-date context:
+Check at the start of a session and re-check whenever you need up-to-date context:
 
 ```
-GET <%= base_url %>/bots/workspace
+./scripts/presa workspace
 ```
 
-Returned as sections like:
-
-```
-Workspace: Acme Trading
-Description: Internal tooling for the Acme trading team
-
-Services:
-  - Production (billing): 12 tools
-  - Media Library (media): 5 tools
-```
-
-Keep this file (SKILL.md) in sync with what `/bots/workspace` reports: before acting, compare the tools this file mentions against the current workspace context and note any drift. Do not assume this file is exhaustive — `/bots/workspace` is the source of truth for the actual workspace.
+Keep this file (SKILL.md) in sync with what `workspace` reports; `workspace` is the source of truth for the actual workspace.
 
 ### List tools
 
 ```
-GET <%= base_url %>/bots/tools
+./scripts/presa tools
 ```
-
-Returns plain text, one line per available tool: `name: description`. The set of tools is already scoped to the workspace and what the owner has allowed — do not assume any specific tool is present.
 
 ### Tool detail
 
 ```
-GET <%= base_url %>/bots/tools/{tool}
+./scripts/presa tool <tool>
 ```
-
-Returns the tool name, description and its argument schema. For a tool not available it returns 404.
 
 ### Execute a tool
 
 ```
-POST <%= base_url %>/bots/tools/{tool}/execute
-Content-Type: application/json
-
-{ "arg1": "value1", "arg2": "value2" }
+./scripts/presa run <tool> --json '{"arg1": "value1", "arg2": "value2"}'
 ```
 
-The body is JSON. Omitting it means no arguments. The response is plain text returned by the tool.
-
-Status codes:
-- `404` — tool not found / not allowed
-- `400` — malformed JSON body
-- `403` — the tool is not allowed in this workspace
-- `422` — the tool reported an error
+Omitting `--json` means no arguments.
 
 ## Rules
 
-- Reveal the workspace's current state from `GET /bots/workspace` and check it constantly (start of session and before relying on this file's tool list). Keep this SKILL.md accurate against what that endpoint reports.
-- Never mention, assume, or rely on any specific tool, service, or workflow. Discover what is available from `GET /bots/workspace` and `GET /bots/tools`.
+- Reveal the workspace's current state from `presa workspace` and check it constantly (start of session and before relying on this file's tool list). Keep this SKILL.md accurate against what that reports.
+- Never mention, assume, or rely on any specific tool, service, or workflow. Discover what is available from `presa workspace` and `presa tools`.
 - Never echo, log, or display the API token or the share code in any output, file, or chat message.
-- Keep the token only in a restricted secrets store — never in `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, or any file readable back to the user or committable to source.
-- Before making any call, check the tool's argument schema with `GET /bots/tools/{tool_name}`.
+- The token lives only in the `presa.token` file stored next to your copy of the client. It is chmod 600 and is never printed, committed, or read back to me. Never paste it into `TOOLS.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, or any file readable back to the user or committable to source.
+- Before running a tool, check its argument schema with `presa tool <tool_name>`.
