@@ -6,8 +6,6 @@ module Services
   # authorizes their account; the service then exposes Spotify tools (profile,
   # top items, recently played, saved library, playlists, and catalog lookups)
   # carrying the acquired grant's token.
-  # Endpoints and scope follow the Spotify Web API reference at
-  # https://developer.spotify.com/documentation/web-api.
   class Spotify < ::OauthService
     kind :spotify
     icon "spotify.png"
@@ -15,8 +13,8 @@ module Services
 
     # The minimum scope covering the features this integration exposes:
     # profile, top items, recently played, the saved library, and playlists.
-    # Catalog lookups, search, browse, recommendations, and audio analysis are
-    # public-endpoint reads and need no additional scope.
+    # Catalog lookups and search are public-endpoint reads and need no
+    # additional scope. Endpoints follow the Spotify Web API reference.
     self.oauth_provider = :spotify
     self.oauth_scope = "user-read-private user-top-read user-read-recently-played user-library-read playlist-read-private"
   end
