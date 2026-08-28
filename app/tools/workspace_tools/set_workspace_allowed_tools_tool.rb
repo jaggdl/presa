@@ -11,10 +11,10 @@ module WorkspaceTools
       required(:workspace_id).filled(:integer).description("The ID of the workspace")
       required(:service_id).filled(:integer).description("The ID of the connected service")
       optional(:all).filled(:bool).description("When true, allow every tool the service exposes")
-      optional(:tool_keys).array(:string).description("Tool keys to allow; the exact list when `all` is false (use read_workspace_allowed_tools to see the keys)")
+      optional(:allowed_tools).array(:string).description("Tool keys to allow; the exact list when `all` is false (use read_workspace_allowed_tools to see the keys)")
     end
 
-    def call(workspace_id:, service_id:, all: nil, tool_keys: nil)
+    def call(workspace_id:, service_id:, all: nil, allowed_tools: nil)
       ws = resolve_managed!(workspace_id)
       join = ws.workspace_services.find_by(service_id: service_id)
       raise ArgumentError, "Service #{service_id} is not connected to workspace #{ws.id}" if join.nil?
@@ -22,7 +22,7 @@ module WorkspaceTools
       join.allowed_tools = if all
                              [ WorkspaceService::ALLOW_ALL ]
       else
-                             keys = Array(tool_keys).map(&:to_s).reject(&:blank?)
+                             keys = Array(allowed_tools).map(&:to_s).reject(&:blank?)
                              keys.empty? ? [] : keys
       end
       join.save!

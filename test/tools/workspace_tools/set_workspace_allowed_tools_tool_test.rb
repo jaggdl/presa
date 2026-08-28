@@ -16,7 +16,7 @@ class WorkspaceToolsSetWorkspaceAllowedToolsToolTest < ActiveSupport::TestCase
     join = ws.workspace_services.find_by!(service: service)
     tool = expose_workspace_tool("set_workspace_allowed_tools", workspaces: [ ws ])
 
-    result = tool.call(workspace_id: ws.id, service_id: service.id, all: false, tool_keys: [ "next_up" ])
+    result = tool.call(workspace_id: ws.id, service_id: service.id, all: false, allowed_tools: [ "next_up" ])
 
     assert_equal false, join.reload.all_tools_allowed?
     assert_equal [ "next_up" ], join.allowed_tools
