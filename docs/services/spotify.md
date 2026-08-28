@@ -1,6 +1,6 @@
 # Spotify
 
-Pull your Spotify listening data into a workspace. Add a Spotify **OAuth client** and authorize your account, and Presa exposes tools for your profile, your top artists and tracks, your recently played tracks, your saved library, and your playlists as callable workspace tools. Built against the [Spotify Web API](https://developer.spotify.com/documentation/web-api) (Authorization Code flow).
+Pull your Spotify listening data into a workspace.
 
 ## Configuration
 
@@ -13,17 +13,8 @@ This kind is an **OAuth service** — you don't type API keys. Instead:
 
 The service is connected once it has acquired a grant, and exposes its tools from then on. Tokens are acquired and refreshed automatically.
 
-## Prerequisites
+## Tools
 
-- A Spotify Developer app with a client ID and secret, and the Presa redirect URI whitelisted.
-- A Spotify account to authorize.
+Read-only Spotify tools spanning your profile, top artists and tracks, recently played, saved library (tracks, albums, shows, episodes, audiobooks), playlists and their items, track/album/artist lookups, artist catalog and related artists, search, browse (new releases, featured playlists), genre seeds, recommendations, and track audio features/analysis.
 
-## Scope
-
-Requests request only the minimum scope for the exposed features: `user-read-private` (profile), `user-top-read` (top items), `user-read-recently-played` (recently played), `user-library-read` (saved tracks), and `playlist-read-private` (playlists). Playback control would require additional scopes and is intentionally not requested.
-
-## Notes
-
-- Connectivity is the acquired OAuth grant: a service is "connected" once it has one, and tokens refresh on demand.
-- Redirect callback is preconfigured; only your client credentials are required.
-- 429 rate-limit responses are handled with exponential backoff, honoring Spotify's `Retry-After` header.
+Requests request only the minimum scopes needed for these reads (`user-read-private`, `user-top-read`, `user-read-recently-played`, `user-library-read`, `playlist-read-private`). Playback control requires additional scopes and is intentionally not exposed.
