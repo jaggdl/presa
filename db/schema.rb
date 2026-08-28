@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_28_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_28_000005) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -92,6 +92,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000002) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "team_memberships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "team_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["team_id", "user_id"], name: "index_team_memberships_on_team_id_and_user_id", unique: true
+    t.index ["team_id"], name: "index_team_memberships_on_team_id"
+    t.index ["user_id"], name: "index_team_memberships_on_user_id"
+  end
+
+  create_table "teams", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "tool_invocations", force: :cascade do |t|
     t.integer "api_token_id", null: false
     t.json "arguments", default: {}
@@ -146,6 +162,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000002) do
   add_foreign_key "oauth_grants", "services"
   add_foreign_key "services", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "team_memberships", "teams"
+  add_foreign_key "team_memberships", "users"
   add_foreign_key "tool_invocations", "api_tokens"
   add_foreign_key "tool_invocations", "services"
   add_foreign_key "workspace_services", "services"
