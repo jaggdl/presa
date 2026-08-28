@@ -26,6 +26,29 @@ module ApplicationHelper
 
   private
 
+  # Formats a tool invocation's arguments JSON hash as a compact, readable
+  # "key: value" string, so rows show "movieId: 5, query: dune" instead of raw
+  # JSON syntax. Strings are quoted to make empty strings and spaces visible.
+  def format_invocation_arguments(arguments)
+    return "–" if arguments.blank?
+    return "truncated" if arguments.is_a?(Hash) && arguments["truncated"]
+
+    if arguments.is_a?(Hash)
+      arguments.map { |key, value| "#{key}: #{format_argument_value(value)}" }.join(", ")
+    else
+      format_argument_value(arguments)
+    end
+  end
+
+  def format_argument_value(value)
+    case value
+    when String then value.inspect
+    when Hash   then value.map { |k, v| "#{k}=#{format_argument_value(v)}" }.join(", ")
+    when Array  then value.map { |v| format_argument_value(v) }.join(", ")
+    else value.to_s
+    end
+  end
+
   # Render an OAuth provider's brand icon in the same framed tile style as a
   # service icon, so the credentials index reads like the services index. The
   # image is looked up on OauthClientCredential by provider (e.g.
