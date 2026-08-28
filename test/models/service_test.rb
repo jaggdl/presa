@@ -33,6 +33,13 @@ class ServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "test_connection? is true only for kinds with a real connectivity probe" do
+    assert Services::Seerr.test_connection?, "seerr should support a connectivity probe"
+    assert Services::Mcp.test_connection?, "mcp should support a connectivity probe"
+    assert_not Services::Workspace.test_connection?, "workspace has no connectivity probe"
+    assert_not Services::Gmail.test_connection?, "OAuth services use the exchange, not a probe"
+  end
+
   test "destroy removes linked tool invocations" do
     service = services(:seerr)
     token = workspaces(:one).api_tokens.create!(name: "Test", token_digest: "digest")

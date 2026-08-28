@@ -104,10 +104,12 @@
       <div class="flex items-center justify-end gap-3">
         <%= form.submit "Save service", class: "btn-primary" %>
 
-        <button type="submit" name="test_connection" formaction="<%= test_connection_services_path %>" formmethod="post"
-                class="inline-block rounded-md border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-zinc-300 hover:bg-zinc-700">
-          Test connection
-        </button>
+        <% if service.class.test_connection? %>
+          <button type="submit" name="test_connection" formaction="<%= test_connection_services_path %>" formmethod="post"
+                  class="inline-block rounded-md border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-zinc-300 hover:bg-zinc-700">
+            Test connection
+          </button>
+        <% end %>
       </div>
 
       <div id="service-test-status"></div>

@@ -39,6 +39,15 @@ class Service < ApplicationRecord
       config_kind || (name || "").demodulize.chomp("Service").underscore.presence
     end
 
+    # Whether this service kind supports a real connectivity check via
+    # `test_connection`. OAuth services inherit a stub from OauthService (their
+    # connection is verified during the OAuth exchange) and so are excluded.
+    def test_connection?
+      return false if defined?(OauthService) && self <= OauthService
+
+      new.respond_to?(:test_connection)
+    end
+
     # Declares the brand image for this service kind (filename under
     # app/assets/images, e.g. "github.png").
     def icon(value = nil)
