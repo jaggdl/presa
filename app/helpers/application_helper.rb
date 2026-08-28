@@ -37,12 +37,21 @@ module ApplicationHelper
   end
 
   # Render a service's brand icon, as declared on the model, padded and framed
-  # with a subtle border so it reads as a tile. `size` sets the Tailwind
-  # height/width classes, defaulting to a small avatar (h-7 w-7).
-  def service_icon(service, size: "h-7 w-7")
-    image = image_tag service.icon, class: (service.invert_icon? ? "#{size} invert" : size), "aria-hidden": true
+  # with a subtle border so it reads as a tile. `size` picks one of four fixed
+  # presets; `:md` is the default.
+  SERVICE_ICON_SIZES = {
+    sm:  { dims: "h-3 w-3",       padding: "p-0.5" }, # dense rows, e.g. tool invocations
+    md:  { dims: "h-5 w-5",     padding: "p-1.5" },   # sidebar/row tiles
+    lg:  { dims: "h-8 w-8",     padding: "p-2" },    # cards, forms
+    xl:  { dims: "h-14 w-14",   padding: "p-2" }     # page headers
+  }.freeze
+
+  def service_icon(service, size: :md)
+    size = SERVICE_ICON_SIZES.fetch(size, SERVICE_ICON_SIZES[:md])
+    dims = service.invert_icon? ? "#{size[:dims]} invert" : size[:dims]
+    image = image_tag service.icon, class: dims, "aria-hidden": true
     content_tag :span, image,
-                class: "inline-flex items-center justify-center p-2.5 bg-zinc-900 rounded-lg border border-zinc-700"
+                class: "inline-flex items-center justify-center #{size[:padding]} bg-zinc-900 rounded-md border border-zinc-700"
   end
 
   # A small deck of overlapping service icons, cascading right-and-down like
@@ -52,7 +61,7 @@ module ApplicationHelper
     icons = services.first(max)
     return if icons.blank?
 
-    tile = 52 # each tile is p-2.5 + h-8/w-8 img => 52px square
+    tile = 48 # p-2 + h-8/w-8 img => 48px square
     offset = 20
     extra = services.count - icons.length
     width = offset * (icons.length - 1) + tile
@@ -61,7 +70,7 @@ module ApplicationHelper
     content_tag :div, class: "service-icon-stack flex-shrink-0",
                 style: "width: #{width + 10}px; height: #{height}px; position: relative;" do
       stack = icons.each_with_index.map do |service, i|
-        content_tag :div, service_icon(service, size: "h-8 w-8"),
+        content_tag :div, service_icon(service, size: :lg),
                     style: "position: absolute; top: 0; left: #{i * offset}px;"
       end
       if extra.positive?

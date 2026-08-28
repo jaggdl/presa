@@ -2,7 +2,7 @@
   <p class="text-sm text-zinc-500 mb-2">
     <%= link_to "Services", services_path, class: "text-blue-500 hover:underline" %>
   </p>
-  <h1 class="font-bold text-4xl"><%= service_icon(@service, size: "h-14 w-14") %><span class="ml-3 inline-flex items-center"><%= @service.name %></span></h1>
+  <h1 class="font-bold text-4xl"><%= service_icon(@service, size: :xl) %><span class="ml-3 inline-flex items-center"><%= @service.name %></span></h1>
 
   <dl class="mt-8">
     <div class="py-2 border-b border-zinc-800">
