@@ -25,7 +25,7 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
 
     user = User.find_by!(email_address: "solo@example.com")
     assert_equal 1, user.teams.count
-    assert_redirected_to root_url
+    assert_redirected_to services_path
   end
 
   test "first run creates a working session after signup" do
@@ -68,7 +68,7 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
         signup: { email_address: "second@example.com", password: "password123", password_confirmation: "password123" }
       }
     end
-    assert_redirected_to root_url
+    assert_redirected_to services_path
   end
 
   test "signed-in users are redirected away from signup" do

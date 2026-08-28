@@ -16,7 +16,7 @@ class SignupsController < ApplicationController
     @user = User.new(signup_params)
     if @user.save
       start_new_session_for @user
-      redirect_to after_authentication_url
+      redirect_to services_path
     else
       render(Team.first_run? ? :first_run : :new, status: :unprocessable_entity)
     end
