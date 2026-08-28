@@ -6,7 +6,7 @@ class WorkspaceService < ApplicationRecord
 
   serialize :allowed_tools, coder: JSON
 
-  validate :service_belongs_to_same_user
+  validate :service_belongs_to_same_team
 
   # The tool identifiers this workspace may use for this service. `["*"]` means
   # every tool exposed by the service is allowed. Unset/legacy rows read as
@@ -42,7 +42,7 @@ class WorkspaceService < ApplicationRecord
 
   private
 
-  def service_belongs_to_same_user
-    errors.add(:service, "must belong to the same user as the workspace") if workspace.user_id != service.user_id
+  def service_belongs_to_same_team
+    errors.add(:service, "must belong to the same team as the workspace") if workspace.team_id != service.team_id
   end
 end

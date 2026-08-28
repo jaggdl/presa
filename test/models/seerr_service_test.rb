@@ -53,7 +53,7 @@ class SeerrServiceTest < ActiveSupport::TestCase
   end
 
   def build_service(fake_conn)
-    service = Services::Seerr.new(user: users(:one), name: "Test", config: { "api_key" => "abc", "base_url" => "http://localhost:5055" })
+    service = Services::Seerr.new(team: teams(:one), name: "Test", config: { "api_key" => "abc", "base_url" => "http://localhost:5055" })
     service.instance_variable_set(:@conn, fake_conn)
     service
   end
@@ -78,7 +78,7 @@ class SeerrServiceTest < ActiveSupport::TestCase
   end
 
   test "test_connection returns true on a 2xx response" do
-    service = Services::Seerr.new(user: users(:one), name: "Test",
+    service = Services::Seerr.new(team: teams(:one), name: "Test",
                                   config: { "api_key" => "abc", "base_url" => "http://localhost:5055" })
     response = Object.new
     response.define_singleton_method(:success?) { true }
@@ -90,7 +90,7 @@ class SeerrServiceTest < ActiveSupport::TestCase
   end
 
   test "test_connection raises on a non-2xx response" do
-    service = Services::Seerr.new(user: users(:one), name: "Test",
+    service = Services::Seerr.new(team: teams(:one), name: "Test",
                                   config: { "api_key" => "abc", "base_url" => "http://localhost:5055" })
     response = Object.new
     response.define_singleton_method(:success?) { false }

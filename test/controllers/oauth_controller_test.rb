@@ -21,7 +21,7 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
 
   test "start redirects to services when the credential is not the user's own" do
     other = oauth_client_credentials(:google_credential)
-    other.update!(created_by_user_id: users(:two).id)
+    other.update!(team: teams(:two))
 
     get oauth_start_path(service_id: @service.id, oauth_client_credential_id: other.id)
     assert_redirected_to services_path

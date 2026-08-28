@@ -3,7 +3,7 @@ require "test_helper"
 class Bots::AuthorizationsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @workspace = workspaces(:one)
-    @user = @workspace.user
+    @user = @workspace.team.users.first
     @share_code = @workspace.reset_share_code!
   end
 

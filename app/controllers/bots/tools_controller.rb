@@ -79,7 +79,8 @@ module Bots
 
       Current.api_token = token
       Current.workspace = token.workspace
-      Current.session = Session.new(user: token.workspace.user)
+      Current.team = token.workspace.team
+      Current.session = Session.new(user: token.workspace.team.users.first)
     end
   end
 end

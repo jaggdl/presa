@@ -2,7 +2,7 @@ class WorkspaceServicesController < ApplicationController
   before_action :set_workspace
 
   def create
-    service = Current.user.services.find(params[:service_id])
+    service = Current.team.services.find(params[:service_id])
     WorkspaceService.create!(workspace: @workspace, service: service)
 
     redirect_to workspace_path(@workspace), notice: "Service added."
@@ -43,7 +43,7 @@ class WorkspaceServicesController < ApplicationController
   private
 
   def set_workspace
-    @workspace = Current.user.workspaces.find(params[:workspace_id])
+    @workspace = Current.team.workspaces.find(params[:workspace_id])
   end
 
   # Stable identifier used to choose an allowed tool: the remote tool name for

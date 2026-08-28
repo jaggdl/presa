@@ -1,11 +1,14 @@
 class User < ApplicationRecord
   include Authenticatable
   has_many :sessions, dependent: :destroy
-  has_many :workspaces, dependent: :destroy
-  has_many :services, dependent: :destroy
-  has_many :oauth_client_credentials, dependent: :destroy, inverse_of: :created_by
   has_many :team_memberships, dependent: :destroy
   has_many :teams, through: :team_memberships
+
+  # Resources are owned by teams, not users: a user sees everything their teams
+  # own through the memberships above.
+  has_many :services, through: :teams
+  has_many :workspaces, through: :teams
+  has_many :oauth_client_credentials, through: :teams
 
   after_create :ensure_default_team
 

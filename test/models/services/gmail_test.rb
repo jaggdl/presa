@@ -71,7 +71,7 @@ class Services::GmailTest < ActiveSupport::TestCase
   end
 
   test "authorized_token raises when there is no grant" do
-    service = Services::Gmail.create!(name: "Gmail2", user: users(:one), type: "Services::Gmail")
+    service = Services::Gmail.create!(name: "Gmail2", team: teams(:one), type: "Services::Gmail")
     assert_raises(Oauth::Error) { service.authorized_token }
   end
 

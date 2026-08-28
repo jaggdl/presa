@@ -1,7 +1,7 @@
 class OauthClientCredentialsController < ApplicationController
   # GET /oauth_client_credentials
   def index
-    @credentials = Current.user.oauth_client_credentials.order(:provider, :name)
+    @credentials = Current.team.oauth_client_credentials.order(:provider, :name)
     @providers = oauth_providers
   end
 
@@ -12,7 +12,7 @@ class OauthClientCredentialsController < ApplicationController
 
   # POST /oauth_client_credentials
   def create
-    @credential = Current.user.oauth_client_credentials.new(credential_params)
+    @credential = Current.team.oauth_client_credentials.new(credential_params)
 
     if @credential.save
       if params[:modal] == "1"
@@ -30,19 +30,19 @@ class OauthClientCredentialsController < ApplicationController
   end
 
   def destroy
-    @credential = Current.user.oauth_client_credentials.find(params[:id])
+    @credential = Current.team.oauth_client_credentials.find(params[:id])
     @credential.destroy!
     redirect_to internal_path || oauth_client_credentials_path, notice: "OAuth client removed."
   end
 
   # GET /oauth_client_credentials/:id/edit
   def edit
-    @credential = Current.user.oauth_client_credentials.find(params[:id])
+    @credential = Current.team.oauth_client_credentials.find(params[:id])
   end
 
   # PATCH /oauth_client_credentials/:id
   def update
-    @credential = Current.user.oauth_client_credentials.find(params[:id])
+    @credential = Current.team.oauth_client_credentials.find(params[:id])
 
     # An empty client_secret field on update means "keep the stored secret".
     updates = credential_params
@@ -58,7 +58,7 @@ class OauthClientCredentialsController < ApplicationController
 private
 
   def clients_for(provider)
-    Current.user.oauth_client_credentials.where(provider: provider).order(:name)
+    Current.team.oauth_client_credentials.where(provider: provider).order(:name)
   end
 
   # Distinct OAuth providers among the offerable OAuth service leaves, for the

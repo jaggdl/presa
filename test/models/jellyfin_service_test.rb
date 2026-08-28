@@ -60,7 +60,7 @@ class JellyfinServiceTest < ActiveSupport::TestCase
   end
 
   def build_service(fake_conn)
-    service = Services::Jellyfin.new(user: users(:one), name: "Test", config: { "api_key" => "abc", "base_url" => "http://jf" })
+    service = Services::Jellyfin.new(team: teams(:one), name: "Test", config: { "api_key" => "abc", "base_url" => "http://jf" })
     service.instance_variable_set(:@conn, fake_conn)
     service
   end
@@ -84,7 +84,7 @@ class JellyfinServiceTest < ActiveSupport::TestCase
   end
 
   test "test_connection returns true on a 2xx response" do
-    service = Services::Jellyfin.new(user: users(:one), name: "Test",
+    service = Services::Jellyfin.new(team: teams(:one), name: "Test",
                                      config: { "api_key" => "abc", "base_url" => "http://jf:8096" })
     response = Object.new
     response.define_singleton_method(:success?) { true }
@@ -96,7 +96,7 @@ class JellyfinServiceTest < ActiveSupport::TestCase
   end
 
   test "test_connection raises on a non-2xx response" do
-    fake = Services::Jellyfin.new(user: users(:one), name: "Test",
+    fake = Services::Jellyfin.new(team: teams(:one), name: "Test",
                                   config: { "api_key" => "abc", "base_url" => "http://jf:8096" })
     response = Object.new
     response.define_singleton_method(:success?) { false }

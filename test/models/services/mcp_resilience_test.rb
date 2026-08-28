@@ -2,7 +2,7 @@ require "test_helper"
 
 class Services::McpDiscoveryErrorTest < ActiveSupport::TestCase
   test "remote_tools returns empty and records the error on discovery failure" do
-    service = Services::Mcp.new(name: "Search", user: users(:one))
+    service = Services::Mcp.new(name: "Search", team: teams(:one))
     service.config = { url: "https://example.com/mcp", headers: "{}" }
 
     # Force the autoloaded Mcp::Client (and its Mcp::Error) to load.

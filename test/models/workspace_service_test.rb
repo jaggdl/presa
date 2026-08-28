@@ -8,11 +8,11 @@ class WorkspaceServiceTest < ActiveSupport::TestCase
     assert_equal services(:github_prod), join.service
   end
 
-  test "rejects a service from another user" do
+  test "rejects a service from another team" do
     join = WorkspaceService.new(workspace: workspaces(:one), service: services(:other_user_service))
 
     assert_not join.valid?
-    assert_includes join.errors[:service], "must belong to the same user as the workspace"
+    assert_includes join.errors[:service], "must belong to the same team as the workspace"
   end
 
   test "unset allowed_tools reads as everything allowed" do

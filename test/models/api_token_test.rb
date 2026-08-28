@@ -11,11 +11,11 @@ class ApiTokenTest < ActiveSupport::TestCase
     refute_equal raw, workspace.api_tokens.last.token_digest
   end
 
-  test "resolves its user through the workspace" do
+  test "resolves its team through the workspace" do
     workspace = workspaces(:one)
     raw = ApiToken.issue!(workspace: workspace)
 
-    assert_equal workspace.user, ApiToken.find_active_by_token(raw).user
+    assert_equal workspace.team, ApiToken.find_active_by_token(raw).team
   end
 
   test "find_active_by_token records last_used_at" do

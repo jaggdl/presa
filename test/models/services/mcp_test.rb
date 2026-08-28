@@ -33,7 +33,7 @@ class Services::McpTest < ActiveSupport::TestCase
   end
 
   test "validates headers are parseable json" do
-    service = Services::Mcp.new(name: "Headers Test", user: users(:one))
+    service = Services::Mcp.new(name: "Headers Test", team: teams(:one))
     service.config = { url: "https://example.com/mcp", headers: "not-json" }
 
     assert_not service.valid?
@@ -41,7 +41,7 @@ class Services::McpTest < ActiveSupport::TestCase
   end
 
   test "accepts valid json headers" do
-    service = Services::Mcp.new(name: "Headers Valid", user: users(:one))
+    service = Services::Mcp.new(name: "Headers Valid", team: teams(:one))
     service.config = { url: "https://example.com/mcp", headers: '{"Authorization":"Bearer x"}' }
 
     assert service.valid?

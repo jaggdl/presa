@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_28_000005) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_28_000007) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -46,12 +46,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000005) do
     t.string "client_id", null: false
     t.string "client_secret", null: false
     t.datetime "created_at", null: false
-    t.integer "created_by_user_id", null: false
     t.string "name", null: false
     t.string "provider", null: false
+    t.integer "team_id", null: false
     t.datetime "updated_at", null: false
-    t.index ["created_by_user_id"], name: "index_oauth_client_credentials_on_created_by_user_id"
     t.index ["provider", "client_id"], name: "index_oauth_client_credentials_on_provider_and_client_id", unique: true
+    t.index ["team_id"], name: "index_oauth_client_credentials_on_team_id"
   end
 
   create_table "oauth_grants", force: :cascade do |t|
@@ -75,11 +75,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000005) do
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.json "oauth"
+    t.integer "team_id", null: false
     t.string "type", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["user_id", "type", "name"], name: "index_services_on_user_id_and_type_and_name", unique: true
-    t.index ["user_id"], name: "index_services_on_user_id"
+    t.index ["team_id", "type", "name"], name: "index_services_on_team_id_and_type_and_name", unique: true
+    t.index ["team_id"], name: "index_services_on_team_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -94,6 +94,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000005) do
 
   create_table "team_memberships", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "role", default: 0, null: false
     t.integer "team_id", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
@@ -150,17 +151,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000005) do
     t.string "name"
     t.string "share_code"
     t.string "share_code_digest"
+    t.integer "team_id", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["user_id"], name: "index_workspaces_on_user_id"
+    t.index ["team_id"], name: "index_workspaces_on_team_id"
   end
 
   add_foreign_key "api_tokens", "workspaces"
   add_foreign_key "bot_authorizations", "workspaces"
-  add_foreign_key "oauth_client_credentials", "users", column: "created_by_user_id"
+  add_foreign_key "oauth_client_credentials", "teams"
   add_foreign_key "oauth_grants", "oauth_client_credentials"
   add_foreign_key "oauth_grants", "services"
-  add_foreign_key "services", "users"
+  add_foreign_key "services", "teams"
   add_foreign_key "sessions", "users"
   add_foreign_key "team_memberships", "teams"
   add_foreign_key "team_memberships", "users"
@@ -168,5 +169,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000005) do
   add_foreign_key "tool_invocations", "services"
   add_foreign_key "workspace_services", "services"
   add_foreign_key "workspace_services", "workspaces"
-  add_foreign_key "workspaces", "users"
+  add_foreign_key "workspaces", "teams"
 end

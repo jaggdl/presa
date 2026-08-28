@@ -9,14 +9,14 @@ class Services::WorkspaceTest < ActiveSupport::TestCase
   end
 
   test "requires at least one workspace" do
-    service = Services::Workspace.new(name: "Admin", user: users(:one))
+    service = Services::Workspace.new(name: "Admin", team: teams(:one))
     service.config = { workspace_ids: [] }
     assert_not service.valid?
     assert service.errors[:config].any? { |e| e.to_s.include?("workspace") }
   end
 
   test "managed_workspaces scopes to the owner's configured workspaces" do
-    service = Services::Workspace.new(name: "Admin", user: users(:one))
+    service = Services::Workspace.new(name: "Admin", team: teams(:one))
     service.config = { workspace_ids: [ workspaces(:one).id, workspaces(:two).id ] }
 
     ids = service.managed_workspaces.pluck(:id)
@@ -25,7 +25,7 @@ class Services::WorkspaceTest < ActiveSupport::TestCase
   end
 
   test "manages_workspace? is false for a foreign workspace" do
-    service = Services::Workspace.new(name: "Admin", user: users(:one))
+    service = Services::Workspace.new(name: "Admin", team: teams(:one))
     service.config = { workspace_ids: [ workspaces(:two).id ] }
     assert_not service.manages_workspace?(workspaces(:two))
   end

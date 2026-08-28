@@ -1,9 +1,9 @@
 require "test_helper"
 
 class OauthClientCredentialTest < ActiveSupport::TestCase
-  test "is attributed to its creator and has many grants" do
+  test "is attributed to its team and has many grants" do
     credential = oauth_client_credentials(:google_credential)
-    assert_equal users(:one), credential.created_by
+    assert_equal teams(:one), credential.team
   end
 
   test "requires provider, name, client_id, and client_secret" do
@@ -21,7 +21,7 @@ class OauthClientCredentialTest < ActiveSupport::TestCase
       name: "Prod Google app",
       client_id: "google_client_1",
       client_secret: "x",
-      created_by: users(:one)
+      team: teams(:one)
     )
     assert_not dup.valid?
     assert dup.errors[:client_id].any?

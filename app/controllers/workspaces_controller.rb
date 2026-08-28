@@ -3,7 +3,7 @@ class WorkspacesController < ApplicationController
 
   def index
     @workspaces = Workspace.with_invocation_counts(
-      Current.user.workspaces.includes(:api_tokens, services: {}).order(:created_at)
+      Current.team.workspaces.includes(:api_tokens, services: {}).order(:created_at)
     )
   end
 
@@ -12,7 +12,7 @@ class WorkspacesController < ApplicationController
   end
 
   def create
-    @workspace = Current.user.workspaces.build(workspace_params)
+    @workspace = Current.team.workspaces.build(workspace_params)
 
     if @workspace.save
       redirect_to workspace_path(@workspace), notice: "Workspace created."
@@ -37,7 +37,7 @@ class WorkspacesController < ApplicationController
     @api_token = ApiToken.new
     @linked_services = Service.with_invocation_counts(@workspace.services.order(:type, :name))
     @ws_links = @workspace.workspace_services.includes(:service).index_by(&:service_id)
-    @available_services = Current.user.services.where.not(id: @linked_services.pluck(:id)).order(:type, :name)
+    @available_services = Current.team.services.where.not(id: @linked_services.pluck(:id)).order(:type, :name)
     # Prefetch remote tool lists in parallel so per-service enabled-tool counts
     # don't trigger a serial MCP discovery round-trip per service.
     Services::Mcp.warm_remote_tools(@linked_services)
@@ -73,7 +73,7 @@ class WorkspacesController < ApplicationController
   private
 
   def set_workspace
-    @workspace = Current.user.workspaces.find(params[:id])
+    @workspace = Current.team.workspaces.find(params[:id])
   end
 
   def workspace_params

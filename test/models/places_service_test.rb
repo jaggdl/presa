@@ -43,7 +43,7 @@ class PlacesServiceTest < ActiveSupport::TestCase
       response
     end
 
-    service = Services::Places.new(user: users(:one), name: "Test", config: { api_key: "abc" })
+    service = Services::Places.new(team: teams(:one), name: "Test", config: { api_key: "abc" })
     assert_equal true, service.test_connection
 
     body = JSON.parse(request.body)
@@ -64,7 +64,7 @@ class PlacesServiceTest < ActiveSupport::TestCase
       response
     end
 
-    service = Services::Places.new(user: users(:one), name: "Test", config: { api_key: "abc" })
+    service = Services::Places.new(team: teams(:one), name: "Test", config: { api_key: "abc" })
     error = assert_raises(RuntimeError) { service.test_connection }
     assert_match(/403/, error.message)
   ensure

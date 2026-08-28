@@ -2,7 +2,7 @@ class Workspace < ApplicationRecord
   include WorkspaceStats
   include WorkspaceTools
 
-  belongs_to :user
+  belongs_to :team
   has_many :api_tokens, dependent: :destroy
   has_many :tool_invocations, through: :api_tokens
   has_many :workspace_services, dependent: :destroy

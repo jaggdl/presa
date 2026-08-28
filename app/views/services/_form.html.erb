@@ -79,7 +79,7 @@
               <span class="block text-sm text-zinc-400">Workspaces to manage</span>
               <div class="mt-2 space-y-1">
                 <% selected = Array(service.config[:workspace_ids]).map(&:to_s) %>
-                <% Current.user.workspaces.order(:name).each do |workspace| %>
+                <% Current.team.workspaces.order(:name).each do |workspace| %>
                   <label class="flex items-center gap-2 text-zinc-300">
                     <%= check_box_tag "service[config][workspace_ids][]", workspace.id, selected.include?(workspace.id.to_s) %>
                     <%= workspace.name %>

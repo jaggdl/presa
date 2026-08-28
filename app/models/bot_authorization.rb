@@ -42,7 +42,7 @@ class BotAuthorization < ApplicationRecord
   end
 
   def owner?(user)
-    user == workspace.user
+    workspace.team.member?(user)
   end
 
   # Approve the request and mint the one-time verification code. Returns the

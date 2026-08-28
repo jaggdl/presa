@@ -2,7 +2,7 @@
 
 module WorkspaceTools
   # Reads a managed workspace's currently connected services and the services
-  # the owner could still add to it (those of the same user not yet connected).
+  # the team could still add to it (those of the same team not yet connected).
   class ReadWorkspaceServicesTool < Base
     description "Read a managed workspace's connected services and the services that could be added"
 
@@ -13,8 +13,8 @@ module WorkspaceTools
     def call(workspace_id:)
       ws = resolve_managed!(workspace_id)
       connected_ids = ws.workspace_services.pluck(:service_id)
-      connected = service.user.services.where(id: connected_ids).order(:name)
-      available = service.user.services.where.not(id: connected_ids).order(:name)
+      connected = service.team.services.where(id: connected_ids).order(:name)
+      available = service.team.services.where.not(id: connected_ids).order(:name)
 
       {
         workspace_id: ws.id,

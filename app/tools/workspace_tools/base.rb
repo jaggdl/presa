@@ -4,8 +4,8 @@ module WorkspaceTools
   # Abstract base for workspace-management tools. Not exposed directly.
   # Resolves the bound Workspace service and provides helpers to look up a
   # workspace within the service's managed set. All tools are scoped to the
-  # service owner's own workspaces, so a Workspace service can never mutate
-  # another user's data.
+  # owning team's workspaces, so a Workspace service can never mutate another
+  # team's data.
   class Base < ApplicationTool
     service_kind :workspace
     abstract_tool true

@@ -19,7 +19,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index does not crash when a service's MCP endpoint is unreachable" do
-    service = @user.services.create!(name: "Broken", type: "Services::Mcp",
+    service = @user.teams.first.services.create!(name: "Broken", type: "Services::Mcp",
                                      config: { url: "https://example.com/broken", headers: "{}" })
     service.define_singleton_method(:remote_tools) { |*| [] }
 
@@ -103,7 +103,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "destroy deletes a service" do
-    service = @user.services.create!(name: "Temp", type: "Services::Github", config: { api_token: "tok" })
+    service = @user.teams.first.services.create!(name: "Temp", type: "Services::Github", config: { api_token: "tok" })
 
     assert_difference -> { @user.services.count }, -1 do
       delete service_path(service)

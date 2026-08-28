@@ -7,10 +7,10 @@ class OauthController < ApplicationController
   #   * create a new service via OAuth: ?kind=&name=&oauth_client_credential_id=
   # Builds a signed state and bounces the user to the provider's consent screen.
   def start
-    credential = Current.user.oauth_client_credentials.find(params[:oauth_client_credential_id])
+    credential = Current.team.oauth_client_credentials.find(params[:oauth_client_credential_id])
 
     if params[:service_id].present?
-      service = Current.user.services.find(params[:service_id])
+      service = Current.team.services.find(params[:service_id])
       raise ActiveRecord::RecordNotFound unless service.is_a?(OauthService)
 
       state = oauth_verifier.generate(
@@ -41,7 +41,7 @@ class OauthController < ApplicationController
   # successful exchange (so a cancelled/failed OAuth leaves no row behind).
   def callback
     state = oauth_verifier.verify(params[:state], purpose: "oauth_start")
-    credential = Current.user.oauth_client_credentials.find(state.fetch("oauth_client_credential_id"))
+    credential = Current.team.oauth_client_credentials.find(state.fetch("oauth_client_credential_id"))
 
     if params[:code].blank?
       target = state["service_id"].present? ? service_path(state["service_id"]) : services_path
@@ -63,7 +63,7 @@ end
   private
 
   def reconnect_existing!(state, credential)
-    service = Current.user.services.find(state["service_id"])
+    service = Current.team.services.find(state["service_id"])
     raise ActiveRecord::RecordNotFound unless service.is_a?(OauthService)
 
     service.acquire_credentials!(code: params[:code], redirect_uri: oauth_callback_url, client_credential: credential)
@@ -75,7 +75,7 @@ end
     name = state["name"].to_s.presence
     raise "Service name can't be blank" if name.blank?
 
-    service = klass.new(user: Current.user, name: name)
+    service = klass.new(team: Current.team, name: name)
     tokens = service.exchange_tokens(code: params[:code], redirect_uri: oauth_callback_url, client_credential: credential)
     service.store_grant!(tokens: tokens, client_credential: credential)
     service.save!

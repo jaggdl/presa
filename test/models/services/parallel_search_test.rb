@@ -20,7 +20,7 @@ class Services::ParallelSearchTest < ActiveSupport::TestCase
   end
 
   test "does not require any config to be valid" do
-    service = Services::Parallel.new(name: "Parallel Search", user: users(:one))
+    service = Services::Parallel.new(name: "Parallel Search", team: teams(:one))
     assert service.valid?
   end
 end

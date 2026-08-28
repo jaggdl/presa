@@ -3,7 +3,7 @@ require "test_helper"
 class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @workspace = workspaces(:one)
-    @user = @workspace.user
+    @user = @workspace.team.users.first
     @base_url = ENV["BASE_URL"].presence || "http://www.example.com"
   end
 
@@ -129,7 +129,7 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /bots/tools returns no tools for an empty workspace" do
-    empty = Workspace.create!(name: "Empty", user: @user)
+    empty = Workspace.create!(name: "Empty", team: @workspace.team)
     token = ApiToken.issue!(workspace: empty, name: "bot")
 
     get bots_tools_path, headers: { "Authorization" => "Bearer #{token}" }

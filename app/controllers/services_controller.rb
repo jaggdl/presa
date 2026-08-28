@@ -2,7 +2,7 @@ class ServicesController < ApplicationController
   before_action :set_service, only: %i[ show update destroy ]
 
   def index
-    @services = Service.with_invocation_counts(Current.user.services.order(:type, :name))
+    @services = Service.with_invocation_counts(Current.team.services.order(:type, :name))
     # Available service kinds a user can add, MCP first then alphabetical.
     @kinds = Service.kinds.sort_by { |kind| [ kind == "mcp" ? 0 : 1, kind ] }
     # Prefetch remote tool lists in parallel so the per-row tool counts don't
@@ -21,7 +21,7 @@ class ServicesController < ApplicationController
       return create_oauth_service
     end
 
-    @service = service_klass.new(user: Current.user, name: service_params[:name], config: service_config_params)
+    @service = service_klass.new(team: Current.team, name: service_params[:name], config: service_config_params)
 
     if @service.save
       redirect_to services_path, notice: "Service created."
@@ -56,7 +56,7 @@ class ServicesController < ApplicationController
     config = service_config_params
 
     begin
-      klass.new(user: Current.user, name: service_params[:name], config: config).test_connection(config)
+      klass.new(team: Current.team, name: service_params[:name], config: config).test_connection(config)
       @connected = true
     rescue StandardError => e
       @connected = false
@@ -93,13 +93,13 @@ class ServicesController < ApplicationController
   # the user) or a freshly created (and saved) one from the nested fields.
   def resolve_oauth_client_credential
     if params[:oauth_client_credential_id].present? && params[:oauth_client_credential_id] != "new"
-      Current.user.oauth_client_credentials.find_by(id: params[:oauth_client_credential_id])
+      Current.team.oauth_client_credentials.find_by(id: params[:oauth_client_credential_id])
     elsif params[:oauth_client_credential].present?
       cred_params = params.require(:oauth_client_credential).permit(:name, :client_id, :client_secret)
       return nil if cred_params[:name].blank? || cred_params[:client_id].blank? || cred_params[:client_secret].blank?
 
       provider = service_klass.respond_to?(:oauth_provider) ? service_klass.oauth_provider.to_s : "google"
-      Current.user.oauth_client_credentials.create!(cred_params.merge(provider: provider))
+      Current.team.oauth_client_credentials.create!(cred_params.merge(provider: provider))
     end
   rescue ActiveRecord::RecordNotUnique
     nil
@@ -107,11 +107,11 @@ class ServicesController < ApplicationController
 
   def load_oauth_clients
     provider = @service.respond_to?(:provider) ? @service.provider : nil
-    @clients = provider.present? ? Current.user.oauth_client_credentials.where(provider: provider) : []
+    @clients = provider.present? ? Current.team.oauth_client_credentials.where(provider: provider) : []
   end
 
   def set_service
-    @service = Current.user.services.find(params[:id])
+    @service = Current.team.services.find(params[:id])
   end
 
   def service_klass

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module WorkspaceTools
-  # Connects (links) a service owned by the same user to a managed workspace.
+  # Connects (links) a service owned by the same team to a managed workspace.
   class ConnectServiceTool < Base
     description "Link a service to a managed workspace so its tools become available in that workspace"
 
@@ -12,7 +12,7 @@ module WorkspaceTools
 
     def call(workspace_id:, service_id:)
       ws = resolve_managed!(workspace_id)
-      svc = service.user.services.find_by(id: service_id)
+      svc = service.team.services.find_by(id: service_id)
       raise ArgumentError, "Service #{service_id} not found" if svc.nil?
 
       join = ws.workspace_services.find_or_initialize_by(service: svc)

@@ -3,7 +3,7 @@ class ApiToken < ApplicationRecord
 
   belongs_to :workspace
   has_many :tool_invocations, dependent: :destroy
-  delegate :user, to: :workspace
+  delegate :team, to: :workspace
 
   scope :active, -> { where(revoked_at: nil).where("expires_at IS NULL OR expires_at > ?", Time.current) }
 

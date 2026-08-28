@@ -60,7 +60,7 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "destroy removes a client credential" do
-    cred = @user.oauth_client_credentials.create!(provider: "google", name: "X", client_id: "c", client_secret: "s")
+    cred = @user.teams.first.oauth_client_credentials.create!(provider: "google", name: "X", client_id: "c", client_secret: "s")
     assert_difference -> { @user.oauth_client_credentials.count }, -1 do
       delete oauth_client_credential_path(cred)
     end

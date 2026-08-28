@@ -20,7 +20,7 @@ class ApiTokensController < ApplicationController
   private
 
   def workspace
-    @workspace ||= Current.user.workspaces.find(params[:workspace_id])
+    @workspace ||= Current.team.workspaces.find(params[:workspace_id])
   end
 
   def api_token_params

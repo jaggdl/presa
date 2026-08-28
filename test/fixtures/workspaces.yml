@@ -1,11 +1,11 @@
 one:
-  user: one
+  team: one
   name: Workspace One
 
 two:
-  user: two
+  team: two
   name: Workspace Two
 
 one_second:
-  user: one
+  team: one
   name: Second Workspace

@@ -23,6 +23,8 @@ module Authentication
 
     def resume_session
       Current.session ||= find_session_by_cookie
+      Current.team ||= Current.user&.teams&.first
+      Current.session
     end
 
     def find_session_by_cookie
@@ -65,6 +67,7 @@ module Authentication
     def start_new_session_for(user)
       user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
         Current.session = session
+        Current.team = user.teams.first
         set_session_cookie(session)
       end
     end

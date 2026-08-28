@@ -8,7 +8,7 @@ class WorkspaceServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create attaches a service to the workspace" do
-    service = @user.services.create!(name: "Other", type: "Services::Github", config: { api_token: "tok" })
+    service = @user.teams.first.services.create!(name: "Other", type: "Services::Github", config: { api_token: "tok" })
 
     assert_difference -> { @workspace.workspace_services.count }, 1 do
       post workspace_workspace_services_path(@workspace), params: { service_id: service.id }

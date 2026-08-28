@@ -1,5 +1,5 @@
 class Service < ApplicationRecord
-  belongs_to :user
+  belongs_to :team
   has_many :workspace_services, dependent: :destroy
   has_many :workspaces, through: :workspace_services
   has_many :tool_invocations, dependent: :destroy
@@ -27,7 +27,7 @@ class Service < ApplicationRecord
     general: "general"
   }
 
-  validates :name, presence: true, uniqueness: { scope: %i[user_id type] }
+  validates :name, presence: true, uniqueness: { scope: %i[team_id type] }
 
   before_validation :apply_config_defaults
   after_initialize :apply_category_default
