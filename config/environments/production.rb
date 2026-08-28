@@ -33,6 +33,16 @@ Rails.application.configure do
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
+  # When the instance is published under an https BASE_URL (domain + reverse
+  # proxy or load balancer terminating TLS), assume the proxy already handled
+  # SSL and enforce it end-to-end (redirect, HSTS, secure cookies). Plain-HTTP
+  # localhost containers leave BASE_URL unset or http://, so this stays off.
+  if ENV["BASE_URL"].to_s.start_with?("https://")
+    config.assume_ssl = true
+    config.force_ssl = true
+    config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  end
+
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
   config.logger   = ActiveSupport::TaggedLogging.logger(STDOUT)
