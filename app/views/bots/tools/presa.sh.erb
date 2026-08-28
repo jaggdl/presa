@@ -10,8 +10,17 @@
 # this script inside the skill directory. The agent must not read, echo, or
 # commit that file. It is only ever consumed by this client.
 #
+# The share code, token, and approval code are never logged or echoed. To run
+# login headlessly (no terminal), set PRESA_SHARE_CODE and, once the user has
+# approved, PRESA_CODE; login will then print the authorize URL and redeem
+# without waiting on stdin, and all output goes to stdout.
+#
+# A pending authorization's request id is persisted in presa.request so that
+# re-running `login` (e.g. after the user approves the URL printed by an
+# earlier run) reuses the same pending request instead of filing a new one.
+#
 # Usage:
-#   presa login [name] [justification] [share-code]
+#   presa login [share-code] [name] [justification]   # or via env vars
 #   presa logout
 #   presa tools
 #   presa tool <tool>
@@ -27,6 +36,7 @@ BASE_URL="<%= base_url %>"
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PRESA_DIR="${PRESA_DIR:-$SCRIPT_DIR}"
 TOKEN_FILE="$PRESA_DIR/presa.token"
+REQUEST_FILE="$PRESA_DIR/presa.request"
 
 base_request() { # method path [json]
   local method="$1" path="$2" json="${3:-}"
@@ -61,51 +71,69 @@ authed_request() { # method path [json]
 
 login() {
   local share_code name justification req_id auth_url code raw
-  share_code="${1:-}"
+  local resp token
+  share_code="${PRESA_SHARE_CODE:-${1:-}}"
   name="${2:-}"
   justification="${3:-}"
 
   if [ -z "$share_code" ]; then
     echo "Usage: presa login <share-code> [bot-name] [justification]" >&2
+    echo "  or set PRESA_SHARE_CODE / PRESA_CODE for headless login" >&2
     exit 1
   fi
   if [ -z "$name" ]; then
     name=$(basename "$PRESA_DIR")
   fi
+  if [ ! -d "$PRESA_DIR" ]; then
+    mkdir -p "$PRESA_DIR"
+  fi
 
-  local resp
-  resp=$(base_request "POST" "/bots/authorize" \
-    "{\"share_code\":\"$share_code\",\"name\":\"$name\",\"justification\":\"$justification\"}")
+  # Reuse a pending authorization if one exists, so re-running login after the
+  # user approves an earlier-printed URL doesn't file a fresh request.
+  if [ -f "$REQUEST_FILE" ]; then
+    req_id=$(tr -d '[:space:]' < "$REQUEST_FILE")
+    auth_url="$BASE_URL/bots/authorizations/$req_id"
+  else
+    local resp
+    resp=$(base_request "POST" "/bots/authorize" \
+      "{\"share_code\":\"$share_code\",\"name\":\"$name\",\"justification\":\"$justification\"}")
+    req_id=$(printf '%s' "$resp" | sed -n 's/.*"request_id":"\([^"]*\)".*/\1/p')
+    auth_url=$(printf '%s' "$resp" | sed -n 's/.*"authorize_url":"\([^"]*\)".*/\1/p')
 
-  # Parse the JSON response (request_id + authorize_url) without jq.
-  req_id=$(printf '%s' "$resp" | sed -n 's/.*"request_id":"\([^"]*\)".*/\1/p')
-  auth_url=$(printf '%s' "$resp" | sed -n 's/.*"authorize_url":"\([^"]*\)".*/\1/p')
-
-  if [ -z "$req_id" ] || [ -z "$auth_url" ]; then
-    echo "Authorize failed: $resp" >&2
-    exit 1
+    if [ -z "$req_id" ] || [ -z "$auth_url" ]; then
+      echo "Authorize failed." >&2
+      exit 1
+    fi
+    printf '%s\n' "$req_id" > "$REQUEST_FILE"
+    chmod 600 "$REQUEST_FILE"
   fi
 
   echo "Please open this URL and approve the authorization:"
   echo "  $auth_url"
-  echo "Then ask the user for the numeric code shown."
-  printf 'Code: '
-  read -r code
+  echo "Then provide the numeric code shown."
+
+  code="${PRESA_CODE:-}"
+  if [ -z "$code" ]; then
+    printf 'Code: '
+    IFS= read -r code
+  fi
+  if [ -z "$code" ]; then
+    echo "No code provided." >&2
+    exit 1
+  fi
 
   raw=$(base_request POST "/bots/authorizations/$req_id/token" \
     "{\"code\":\"$code\"}")
   token=$(printf '%s' "$raw" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 
   if [ -z "$token" ]; then
-    echo "Redeem failed: $raw" >&2
+    echo "Redeem failed: code invalid or expired." >&2
     exit 1
   fi
 
-  if [ ! -d "$PRESA_DIR" ]; then
-    mkdir -p "$PRESA_DIR"
-  fi
   printf '%s\n' "$token" > "$TOKEN_FILE"
   chmod 600 "$TOKEN_FILE"
+  rm -f "$REQUEST_FILE"
   echo "Signed in. Token stored in $TOKEN_FILE (not printed to output)."
 }
 
