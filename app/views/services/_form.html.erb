@@ -24,7 +24,9 @@
 
       <% if service.persisted? %>
         <div class="my-5">
-          <p class="text-sm text-zinc-500">This service's connection is managed on its page.</p>
+          <% if service.is_a?(OauthService) %>
+            <%= render "services/oauth", service: service %>
+          <% end %>
           <%= form.submit "Save service", class: "btn-primary" %>
         </div>
       <% else %>

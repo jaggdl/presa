@@ -26,7 +26,7 @@ Rails.application.routes.draw do
     resources :workspace_services, only: %i[ show create update destroy ]
     get :invocations, on: :member
   end
-  resources :services do
+  resources :services, only: %i[ index new create show update destroy ] do
     get ":kind/new", action: "new", on: :collection, as: :new_kind_service
     post "test_connection", action: "test_connection", on: :collection
   end

@@ -2,82 +2,91 @@
   <p class="text-sm text-zinc-500 mb-2">
     <%= link_to "Services", services_path, class: "text-blue-500 hover:underline" %>
   </p>
-  <h1 class="font-bold text-4xl"><%= service_icon(@service, size: :xl) %><span class="ml-3 inline-flex items-center"><%= @service.name %></span></h1>
+  <h1 class="font-bold text-4xl"><%= @service.name %></h1>
 
-  <dl class="mt-8">
-    <div class="py-2 border-b border-zinc-800">
-      <dt class="text-sm text-zinc-500">Kind</dt>
-      <dd><%= @service.kind %></dd>
-    </div>
-    <div class="py-2 border-b border-zinc-800">
-      <dt class="text-sm text-zinc-500">Workspaces</dt>
-      <dd>
-        <% joins = @service.workspace_services.includes(:workspace).to_a %>
-        <% if joins.any? %>
-          <% joins.each do |join| %>
-            <%= link_to join.workspace.name, workspace_workspace_service_path(join.workspace, join), class: "text-blue-500 hover:underline" %><%= "," unless join.equal?(joins.last) %>
-          <% end %>
-        <% else %>
-          None
-        <% end %>
-      </dd>
-    </div>
-  </dl>
+  <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+    <div>
+      <div class="inline-flex items-center text-zinc-300">
+        <%= service_icon(@service, size: :lg) %>
+        <span class="ml-2 capitalize"><%= @service.kind.humanize %></span>
+      </div>
 
-  <% if @service.is_a?(OauthService) %>
-    <%= render "services/oauth", service: @service %>
-  <% end %>
+      <h2 class="font-bold text-2xl mt-10">Tools</h2>
 
-  <% if @service.description.present? %>
-    <div class="mt-8">
-      <%= render_markdown(@service.description) %>
-    </div>
-  <% end %>
-
-  <h2 class="font-bold text-2xl mt-10">Tools</h2>
-
-  <% if @service.respond_to?(:remote_tools_error) && @service.remote_tools_error.present? %>
-    <div class="mt-4 py-3 px-4 rounded-lg border border-red-500/30 bg-red-950/40 text-red-400 text-sm">
-      Couldn't reach this service's MCP endpoint: <%= h @service.remote_tools_error.message %>
-    </div>
-  <% end %>
-
-  <% if @tools.any? %>
-    <ul class="mt-4">
-      <% @tools.each do |tool| %>
-        <li class="py-3 border-b border-zinc-800">
-          <code class="text-sm text-blue-500"><%= tool.tool_name %></code>
-          <% if description = tool.description %>
-            <p class="text-sm text-zinc-400 mt-1"><%= description %></p>
-          <% end %>
-
-          <% if (params = tool.input_parameters).any? %>
-            <ul class="mt-3 space-y-1">
-              <% params.each do |param| %>
-                <li class="text-sm">
-                  <code class="text-zinc-300"><%= param[:name] %></code>
-                  <span class="text-zinc-500"><%= param[:type] %><%= param[:required] ? "" : "?" %></span>
-                  <% if param[:required] %>
-                    <span class="text-red-400">required</span>
-                  <% end %>
-                  <% if param[:description] %>
-                    <span class="text-zinc-500">— <%= param[:description] %></span>
-                  <% end %>
-                </li>
-              <% end %>
-            </ul>
-          <% else %>
-            <p class="text-sm text-zinc-500 mt-1">Accepts no arguments.</p>
-          <% end %>
-        </li>
+      <% if @service.respond_to?(:remote_tools_error) && @service.remote_tools_error.present? %>
+        <div class="py-3 px-4 rounded-lg border border-red-500/30 bg-red-950/40 text-red-400 text-sm">
+          Couldn't reach this service's MCP endpoint: <%= h @service.remote_tools_error.message %>
+        </div>
       <% end %>
-    </ul>
-  <% else %>
-    <p class="text-zinc-500 mt-4">No tools available for this service.</p>
-  <% end %>
+
+      <% if @tools.any? %>
+        <ul>
+          <% @tools.each do |tool| %>
+            <li class="py-3 border-b border-zinc-800">
+              <code class="text-sm text-blue-500"><%= tool.tool_name %></code>
+              <% if description = tool.description %>
+                <p class="text-sm text-zinc-400 mt-1"><%= description %></p>
+              <% end %>
+
+              <% if (params = tool.input_parameters).any? %>
+                <ul class="mt-3 space-y-1">
+                  <% params.each do |param| %>
+                    <li class="text-sm">
+                      <code class="text-zinc-300"><%= param[:name] %></code>
+                      <span class="text-zinc-500"><%= param[:type] %><%= param[:required] ? "" : "?" %></span>
+                      <% if param[:required] %>
+                        <span class="text-red-400">required</span>
+                      <% end %>
+                      <% if param[:description] %>
+                        <span class="text-zinc-500">— <%= param[:description] %></span>
+                      <% end %>
+                    </li>
+                  <% end %>
+                </ul>
+              <% else %>
+                <p class="text-sm text-zinc-500 mt-1">Accepts no arguments.</p>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-zinc-500">No tools available for this service.</p>
+      <% end %>
+    </div>
+
+    <div class="md:border-l md:border-zinc-800 md:pl-10">
+      <dl>
+        <div class="py-2">
+          <dt class="text-sm text-zinc-500">Workspaces</dt>
+          <dd class="mt-2">
+            <% joins = @service.workspace_services.includes(:workspace).to_a %>
+            <% if joins.any? %>
+              <ul>
+                <% joins.each do |join| %>
+                  <li class="flex items-center gap-3 py-2 border-b border-zinc-800">
+                    <%= link_to join.workspace.name, workspace_workspace_service_path(join.workspace, join), class: "text-blue-500 hover:underline" %>
+                    <%= render "shared/tool_count_badge", title: "Enabled tools", count: join.enabled_tool_count(@tools), label: "enabled" %>
+                  </li>
+                <% end %>
+              </ul>
+            <% else %>
+              None
+            <% end %>
+          </dd>
+        </div>
+      </dl>
+
+      <h2 class="font-bold text-xl mt-8 mb-4">Settings</h2>
+
+      <%= render "form", service: @service %>
+
+      <div class="mt-8">
+        <%= button_to "Delete service", service_path(@service), method: :delete, class: "text-red-400 underline hover:no-underline", form: { data: { turbo_confirm: "Delete this service?" } } %>
+      </div>
+    </div>
+  </div>
 
   <div class="mt-8">
-    <%= link_to "Edit", edit_service_path(@service), class: "text-blue-500 underline hover:no-underline mr-3" %>
     <%= link_to "Back", services_path, class: "text-zinc-400 underline hover:no-underline" %>
   </div>
 </div>

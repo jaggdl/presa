@@ -1,5 +1,5 @@
 class ServicesController < ApplicationController
-  before_action :set_service, only: %i[ show edit update destroy ]
+  before_action :set_service, only: %i[ show update destroy ]
 
   def index
     @services = Service.with_invocation_counts(Current.user.services.order(:type, :name))
@@ -34,14 +34,12 @@ class ServicesController < ApplicationController
     @tools = ApplicationTool.expose_for(@service)
   end
 
-  def edit
-  end
-
   def update
     if @service.update(name: service_params[:name], config: service_config_params)
       redirect_to services_path, notice: "Service updated."
     else
-      render :edit, status: :unprocessable_entity
+      @tools = ApplicationTool.expose_for(@service)
+      render :show, status: :unprocessable_entity
     end
   end
 
