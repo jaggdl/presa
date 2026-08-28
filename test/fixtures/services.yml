@@ -54,3 +54,9 @@ places:
   type: Services::Places
   name: Google Places
   config: <%= { api_key: "places_test_key" }.to_json %>
+
+workspace_manager:
+  user: one
+  type: Services::Workspace
+  name: Workspace Admin
+  config: <%= { workspace_ids: [ 1 ] }.to_json %>

@@ -94,8 +94,8 @@ class Service < ApplicationRecord
       concrete_service_classes.find { |klass| klass.kind == kind && offerable?(klass) }
     end
 
-    def config_field(name, required: false, secret: false, default: nil, textarea: false)
-      self.config_fields = config_fields.merge(name.to_sym => { required: required, secret: secret, default: default, textarea: textarea })
+    def config_field(name, required: false, secret: false, default: nil, textarea: false, array: false)
+      self.config_fields = config_fields.merge(name.to_sym => { required: required, secret: secret, default: default, textarea: textarea, array: array })
     end
 
     # Decorates each service in `relation` with its invocation count since

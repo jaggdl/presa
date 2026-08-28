@@ -128,7 +128,18 @@ class ServicesController < ApplicationController
     return {} unless params[:service].key?(:config)
 
     klass = @service&.class || service_klass
-    keys = klass.config_fields.keys.map(&:to_s)
-    params.require(:service).require(:config).permit(*keys)
+    # Fields declared `array: true` (e.g. workspace_ids multi-select) are
+    # permitted as arrays; everything else is a scalar value.
+    scalar_keys = []
+    array_keys = []
+    klass.config_fields.each do |field, opts|
+      opts[:array] ? array_keys << field.to_s : scalar_keys << field.to_s
+    end
+
+    if array_keys.any?
+      params.require(:service).require(:config).permit(*scalar_keys, array_keys.to_h { |k| [ k, [] ] })
+    else
+      params.require(:service).require(:config).permit(*scalar_keys)
+    end
   end
 end

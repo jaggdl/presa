@@ -5,3 +5,7 @@ one:
 two:
   user: two
   name: Workspace Two
+
+one_second:
+  user: one
+  name: Second Workspace
