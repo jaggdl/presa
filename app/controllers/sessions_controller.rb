@@ -6,11 +6,15 @@ class SessionsController < ApplicationController
   end
 
   def create
-    if user = User.authenticate_by(params.permit(:email_address, :password))
+    status, user = User.attempt_login(params[:email_address].to_s, params[:password].to_s)
+
+    if status == :success
       start_new_session_for user
       redirect_to after_authentication_url
     else
-      redirect_to new_session_path, alert: "Try another email address or password."
+      user.register_failed_login! if user.persisted?
+      alert = status == :locked ? "Too many sign-in attempts. Try again later." : "Try another email address or password."
+      redirect_to new_session_path, alert: alert
     end
   end
 

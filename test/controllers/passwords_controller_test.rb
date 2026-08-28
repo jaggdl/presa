@@ -60,6 +60,19 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_notice "Passwords did not match"
   end
 
+  test "update clears the login lockout" do
+    @user.update_columns(failed_login_attempts: User::MAX_FAILED_LOGIN_ATTEMPTS, locked_until: 15.minutes.from_now)
+    assert @user.reload.locked_out?
+
+    put password_path(@user.password_reset_token), params: { password: "new", password_confirmation: "new" }
+    assert_redirected_to new_session_path
+
+    @user.reload
+    assert_equal 0, @user.failed_login_attempts
+    assert_nil @user.locked_until
+    assert_not @user.locked_out?
+  end
+
   private
     def assert_notice(text)
       assert_select "p#notice, p#alert", /#{text}/
