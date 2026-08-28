@@ -58,15 +58,20 @@
           <tr class="border-b border-zinc-800">
             <td class="py-2">
               <div class="flex items-center gap-3">
-                <%= service_icon(service, size: :md) %>
-                <% if join = @ws_links[service.id] %>
-                  <%= link_to service.name, workspace_workspace_service_path(@workspace, join), class: "text-blue-500 hover:underline" %>
-                  <span class="text-zinc-500"><%= service.kind %></span>
-                  <%= render "shared/tool_count_badge", title: "Enabled tools", count: join.enabled_tool_count(ApplicationTool.expose_for(join.service)), label: "enabled" %>
-                <% else %>
-                  <span class="text-zinc-100"><%= service.name %></span>
-                  <span class="text-zinc-500"><%= service.kind %></span>
-                <% end %>
+                <span class="relative flex-shrink-0">
+                  <%= service_icon(service, size: :md) %>
+                  <% if join = @ws_links[service.id] %>
+                    <%= render "shared/tool_count_badge", title: "Enabled tools", count: join.enabled_tool_count(ApplicationTool.expose_for(join.service)), label: "enabled" %>
+                  <% end %>
+                </span>
+                <div>
+                  <% if join = @ws_links[service.id] %>
+                    <%= link_to service.name, workspace_workspace_service_path(@workspace, join), class: "text-blue-500 hover:underline" %>
+                  <% else %>
+                    <span class="text-zinc-100"><%= service.name %></span>
+                  <% end %>
+                  <div class="text-xs text-zinc-500"><%= service.kind %></div>
+                </div>
               </div>
             </td>
             <td class="py-2 text-right">

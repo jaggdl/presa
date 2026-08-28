@@ -21,15 +21,20 @@
           <tr class="border-b border-zinc-800">
             <td class="py-2">
               <div class="flex items-center gap-3">
-                <%= service_icon(service, size: :md) %>
-                <%= link_to service.name, service_path(service), class: "text-blue-500 hover:underline" %>
-                <span class="text-zinc-500"><%= service.kind %></span>
-                <%= render "shared/tool_count_badge", title: "Available tools", count: ApplicationTool.expose_for(service).count, label: "available" %>
+                <span class="relative flex-shrink-0">
+                  <%= service_icon(service, size: :md) %>
+                  <%= render "shared/tool_count_badge", title: "Available tools", count: ApplicationTool.expose_for(service).count, label: "available" %>
+                </span>
+                <div>
+                  <%= link_to service.name, service_path(service), class: "text-blue-500 hover:underline" %>
+                  <div class="text-xs text-zinc-500"><%= service.kind %></div>
+                </div>
               </div>
             </td>
             <td class="py-2 text-right">
-              <span class="text-xs text-zinc-500">
-                <span class="text-zinc-400">Used in <%= pluralize(service.workspaces.count, "workspace") %></span> · <%= pluralize(service.invocation_count, "invocation") %> in 24h
+              <span class="inline-flex items-center justify-end gap-2 text-xs text-zinc-500">
+                <%= render "shared/workspace_count_badge", title: "Linked workspaces", count: service.workspaces.count, label: "workspace" %>
+                <span><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
               </span>
             </td>
           </tr>
