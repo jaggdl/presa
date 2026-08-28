@@ -31,7 +31,7 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
     get oauth_client_credentials_path
     assert_response :success
     assert_select "a", text: "Prod Google app"
-    assert_select "span", text: "google"
+    assert_select "div", text: "google"
   end
 
   test "create saves a client credential with a name for the current user" do

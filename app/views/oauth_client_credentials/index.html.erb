@@ -20,8 +20,10 @@
             <td class="py-2">
               <div class="flex items-center gap-3">
                 <%= oauth_provider_icon(cred.provider, size: "h-5 w-5") %>
-                <%= link_to cred.name, edit_oauth_client_credential_path(cred), class: "text-blue-500 hover:underline" %>
-                <span class="text-zinc-500"><%= cred.provider %></span>
+                <div>
+                  <%= link_to cred.name, edit_oauth_client_credential_path(cred), class: "text-blue-500 hover:underline" %>
+                  <div class="text-xs text-zinc-500"><%= cred.provider %></div>
+                </div>
               </div>
             </td>
             <td class="py-2 text-right">
