@@ -27,13 +27,22 @@ module Gmail
     def build_mime(to:, subject:, body:, cc:, bcc:)
       headers = [
         "To: #{to}",
-        "Subject: #{subject}"
+        "Subject: #{encode_word(subject)}"
       ]
       headers << "Cc: #{cc}" if cc.present?
       headers << "Bcc: #{bcc}" if bcc.present?
       headers << "MIME-Version: 1.0"
       headers << "Content-Type: text/plain; charset=UTF-8"
       "#{headers.join("\r\n")}\r\n\r\n#{body}"
+    end
+
+    # RFC 2047 encoded-word for non-ASCII header values (e.g. accents in the
+    # subject). Mail headers must stay ASCII; leaving raw UTF-8 bytes in a
+    # header makes clients decode them as Latin-1 and show mojibake ("ó" → "Ã³").
+    def encode_word(value)
+      return value if value.ascii_only?
+
+      "=?UTF-8?B?#{Base64.strict_encode64(value)}?="
     end
   end
 end

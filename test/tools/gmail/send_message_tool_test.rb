@@ -26,4 +26,18 @@ class GmailSendMessageToolTest < ActiveSupport::TestCase
     result = tool.call(to: "friend@example.com", subject: "Hi", body: "Just saying hello")
     assert_equal "sent-1", result["id"]
   end
+
+  test "encodes non-ascii subjects as an RFC 2047 encoded-word" do
+    tool = expose_gmail_tool("send_message") do |stub|
+      stub.post("/gmail/v1/users/me/messages/send") do |env|
+        body = JSON.parse(env.body)
+        decoded = Base64.urlsafe_decode64(body["raw"])
+        assert_includes decoded, "Subject: =?UTF-8?B?VmVyaWZpY2FjacOz"
+        gmail_json_response({ id: "sent-2" })
+      end
+    end
+
+    result = tool.call(to: "friend@example.com", subject: "Verificación", body: "Hola")
+    assert_equal "sent-2", result["id"]
+  end
 end
