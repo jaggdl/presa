@@ -119,6 +119,27 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta Session::SLIDING_IDLE_TIMEOUT.from_now.to_i, @user.sessions.reload.first.expires_at.to_i, 10
   end
 
+  test "old sessions are rotated to a fresh id" do
+    sign_in_as(@user)
+    old_id = cookies[:session_id]
+    @user.sessions.update_all(created_at: Session::ROTATE_AFTER.ago - 1.minute)
+
+    get root_path
+    assert_response :success
+    assert_equal 1, @user.sessions.reload.count
+    assert_not_equal old_id, cookies[:session_id]
+  end
+
+  test "recently-created sessions are not rotated" do
+    sign_in_as(@user)
+    old_id = cookies[:session_id]
+
+    get root_path
+    assert_response :success
+    assert_equal 1, @user.sessions.reload.count
+    assert_equal old_id, cookies[:session_id]
+  end
+
   test "lockout expires and a correct password signs in afterwards" do
     User::MAX_FAILED_LOGIN_ATTEMPTS.times do
       post session_path, params: { email_address: @user.email_address, password: "wrong" }

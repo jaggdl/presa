@@ -47,4 +47,12 @@ class SessionTest < ActiveSupport::TestCase
       session.slide_expiry!
     end
   end
+
+  test "rotation_due? becomes true once the session id is old enough" do
+    session = users(:one).sessions.create!
+    assert_not session.rotation_due?
+
+    session.update_columns(created_at: Session::ROTATE_AFTER.ago - 1.minute)
+    assert session.rotation_due?
+  end
 end
