@@ -4,7 +4,6 @@ module Jellyfin
   # Lists the episodes of a series (optionally a specific season) on the server.
   class GetEpisodesTool < Base
     description "List the episodes of a series (optionally a specific season) on the Jellyfin server"
-    kind "get_episodes"
 
     arguments do
       required(:series_id).filled(:string).description("Id of the series to list episodes for")

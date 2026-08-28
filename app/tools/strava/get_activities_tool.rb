@@ -5,7 +5,6 @@ module Strava
   # optional `before`/`after` epoch timestamps and a page size.
   class GetActivitiesTool < Base
     description "List the authenticated athlete's activities (most recent first)"
-    kind "get_activities"
 
     arguments do
       optional(:before).filled(:integer).description("An epoch timestamp to return activities started before this time")

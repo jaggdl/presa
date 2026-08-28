@@ -4,7 +4,6 @@ module Gmail
   # Fetches a single message (without attachments) from the connected mailbox.
   class GetMessageTool < Base
     description "Fetch a single message (id and metadata) from the connected Gmail mailbox"
-    kind "get_message"
 
     arguments do
       required(:id).filled(:string).description("The message id to fetch, as returned by list_messages")

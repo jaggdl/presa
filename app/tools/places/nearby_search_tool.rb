@@ -6,7 +6,6 @@ module Places
   # the returned (and billed) place fields.
   class NearbySearchTool < Base
     description "Search for places near a location by radius and optional place types"
-    kind "nearby_search"
 
     DEFAULT_FIELDS = "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.priceLevel"
 

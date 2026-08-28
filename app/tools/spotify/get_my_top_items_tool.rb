@@ -4,7 +4,6 @@ module Spotify
   # The current user's top artists or tracks, based on calculated affinity.
   class GetMyTopItemsTool < Base
     description "Get the current user's top artists or tracks based on listening affinity"
-    kind "get_my_top_items"
 
     arguments do
       required(:type).filled(:string, included_in?: %w[artists tracks]).description("The type of entity to return: artists or tracks")

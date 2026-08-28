@@ -7,7 +7,6 @@ module Gmail
   # Sends an email from the connected Gmail account.
   class SendMessageTool < Base
     description "Send an email from the connected Gmail account"
-    kind "send_message"
 
     arguments do
       required(:to).filled(:string).description("Recipient email address")

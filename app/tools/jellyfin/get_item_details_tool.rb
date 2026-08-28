@@ -4,7 +4,6 @@ module Jellyfin
   # Gets details for a specific item in the user's media library.
   class GetItemDetailsTool < Base
     description "Get detailed metadata for a specific Jellyfin item"
-    kind "get_item_details"
 
     arguments do
       required(:item_id).filled(:string).description("ID of the item to fetch details for")

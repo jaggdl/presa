@@ -4,7 +4,6 @@ module Jellyfin
   # Searches the user's media library on the Jellyfin server.
   class SearchUserMediaTool < Base
     description "Search the user's media library on the Jellyfin server"
-    kind "search_user_media"
 
     arguments do
       required(:query).filled(:string).description("Search term to match against media titles")

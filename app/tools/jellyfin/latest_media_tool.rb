@@ -4,7 +4,6 @@ module Jellyfin
   # Lists the latest items added to the user's media library.
   class LatestMediaTool < Base
     description "List the latest media items added to the Jellyfin server"
-    kind "latest_media"
 
     arguments do
       optional(:limit).filled(:integer, gt?: 0).description("Maximum number of items to return")

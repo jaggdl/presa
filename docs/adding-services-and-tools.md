@@ -95,7 +95,6 @@ module Tools
   module Slack
     class PostMessage < Base
       description "Post a message to a Slack channel"
-      kind :post_message
 
       arguments do
         required(:channel).filled(:string).description("Channel to post to")
@@ -116,10 +115,14 @@ end
 ### Key DSL methods (on `ApplicationTool`)
 
 - `service_kind :slack` — which service kind this tool runs against.
-- `kind :post_message` — the machine name of the tool (see MCP naming below).
 - `abstract_tool true` — marks a base class so it is never exposed directly.
 - `description "…"`, `arguments do … end` — the fast-mcp/MCP schema DSL.
 - `def call(...)` — the handler. Reads the bound service via `self.class.service_id`.
+
+The tool's machine name (`kind`) is derived from its class name by stripping the
+`Tool` suffix and snake_casing — `PostMessage -> post_message` — so you don't
+declare it explicitly. Override it only when the class name would produce the
+wrong machine name, using `kind :custom_name`.
 
 ### Discovering the bound service
 
@@ -134,7 +137,7 @@ This reads config at call time, so editing a service's credentials takes effect 
 
 ### MCP tool naming
 
-Exposed MCP tool names are built as `<service_kind>_<kind>`, service kind first so every tool a service exposes clusters under one prefix. For a GitHub service, a tool `kind :list_issues` becomes `github_list_issues`. The service name is only appended when the workspace has more than one service of that kind — two GitHub services named "Prod" / "Staging" produce `github_list_issues_prod` and `github_list_issues_staging` — keeping names short (and token-efficient) by default while still avoiding collisions.
+Exposed MCP tool names are built as `<service_kind>_<kind>`, service kind first so every tool a service exposes clusters under one prefix. The tool `kind` defaults to the handler class name with the `Tool` suffix stripped and snake_cased (e.g. `ListIssuesTool -> list_issues`). For a GitHub service, a tool kind `list_issues` becomes `github_list_issues`. The service name is only appended when the workspace has more than one service of that kind — two GitHub services named "Prod" / "Staging" produce `github_list_issues_prod` and `github_list_issues_staging` — keeping names short (and token-efficient) by default while still avoiding collisions.
 
 ## Testing tools
 

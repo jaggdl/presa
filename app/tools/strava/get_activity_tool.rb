@@ -5,7 +5,6 @@ module Strava
   # available to the authenticated athlete.
   class GetActivityTool < Base
     description "Fetch a single activity's detailed data by ID"
-    kind "get_activity"
 
     arguments do
       required(:id).filled(:integer).description("The ID of the activity, as returned by get_activities")

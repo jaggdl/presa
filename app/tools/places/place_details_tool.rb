@@ -6,7 +6,6 @@ module Places
   # returned (and billed) fields.
   class PlaceDetailsTool < Base
     description "Get detailed information about a place by its place ID (as returned by a search)"
-    kind "place_details"
 
     DEFAULT_FIELDS = "id,displayName,formattedAddress,location,websiteUri,types,rating,userRatingCount,priceLevel,internationalPhoneNumber,photos"
 

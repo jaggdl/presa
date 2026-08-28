@@ -4,7 +4,6 @@ module Jellyfin
   # Lists all user media folders (libraries) on the Jellyfin server.
   class GetLibrariesTool < Base
     description "List media libraries on the Jellyfin server"
-    kind "get_libraries"
 
     def call
       service.get("/Library/MediaFolders")

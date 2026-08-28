@@ -4,7 +4,6 @@ module Jellyfin
   # Lists items similar to a given item in the user's media library.
   class SimilarItemsTool < Base
     description "List items similar to a given Jellyfin item"
-    kind "similar_items"
 
     arguments do
       required(:item_id).filled(:string).description("ID of the item to find similar items for")

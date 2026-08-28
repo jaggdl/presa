@@ -7,7 +7,6 @@ module Places
   # billed) suggestion fields.
   class PlaceAutocompleteTool < Base
     description "Get place and query predictions as the user types (autocomplete), optionally scoped to a region"
-    kind "place_autocomplete"
 
     DEFAULT_FIELDS = "suggestions.placePrediction.place,suggestions.placePrediction.placeId,suggestions.placePrediction.text.text,suggestions.placePrediction.structuredFormat.mainText.text,suggestions.placePrediction.structuredFormat.secondaryText.text,suggestions.placePrediction.types"
 

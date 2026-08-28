@@ -6,7 +6,6 @@ module Spotify
   # millisecond timestamps.
   class GetRecentlyPlayedTool < Base
     description "Get tracks from the current user's recently played tracks"
-    kind "get_recently_played"
 
     arguments do
       optional(:limit).filled(:integer, gteq?: 0, lteq?: 50).description("Maximum number of items to return (default 20, min 1, max 50)")

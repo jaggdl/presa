@@ -4,7 +4,6 @@ module Jellyfin
   # Lists partially-watched items the user can resume on the Jellyfin server.
   class ResumeItemsTool < Base
     description "List partially-watched items the user can resume on the Jellyfin server"
-    kind "resume_items"
 
     arguments do
       optional(:limit).filled(:integer, gt?: 0).description("Maximum number of results to return")

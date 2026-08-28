@@ -12,9 +12,13 @@ class ApplicationTool < ActionTool::Base
     end
 
     # Declares the machine name of this tool, used to build the MCP tool name.
+    # Defaults to the tool's class name with the "Tool" suffix stripped and
+    # snake_cased (e.g. SearchUserMediaTool -> search_user_media). Bound
+    # handlers are anonymous Class.new subclasses, so fall back to the
+    # superclass name (the concrete handler) when the class itself is unnamed.
     def kind(value = nil)
       self.config_tool_kind = value.to_s if value
-      config_tool_kind || name.demodulize.chomp("Tool").underscore
+      config_tool_kind || tool_name_from_class
     end
 
     # The stable identifier used to select this tool in a workspace's
@@ -59,6 +63,11 @@ class ApplicationTool < ActionTool::Base
     end
 
     private
+
+    def tool_name_from_class
+      source = name.blank? ? superclass&.name : name
+      source.to_s.demodulize.chomp("Tool").underscore
+    end
 
     # Remote MCP services proxy another server's tools. Build one dynamic class
     # per advertised tool, named "<service slug>_<remote tool name>" (e.g.

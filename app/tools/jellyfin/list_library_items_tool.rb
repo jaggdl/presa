@@ -4,7 +4,6 @@ module Jellyfin
   # Lists items in a library folder (optionally filtered by item type) on the server.
   class ListLibraryItemsTool < Base
     description "List items in a library folder on the Jellyfin server"
-    kind "list_library_items"
 
     arguments do
       optional(:library_id).filled(:string).description("Id of the library folder to list items from")

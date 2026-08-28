@@ -4,7 +4,6 @@ module Jellyfin
   # Lists episodes that are queued up to play next in the user's library.
   class NextUpTool < Base
     description "List next-up episodes for shows the user is currently watching on the Jellyfin server"
-    kind "next_up"
 
     arguments do
       optional(:user_id).filled(:string).description("User ID to scope the request to (defaults to the first server user)")

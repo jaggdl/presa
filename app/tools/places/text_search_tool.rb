@@ -6,7 +6,6 @@ module Places
   # returned (and billed) place fields.
   class TextSearchTool < Base
     description "Search for places by a free-text query (e.g. 'coffee near Union Square')"
-    kind "text_search"
 
     DEFAULT_FIELDS = "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.priceLevel"
 

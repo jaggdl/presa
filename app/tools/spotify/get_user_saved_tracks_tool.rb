@@ -4,7 +4,6 @@ module Spotify
   # The saved tracks in the current user's "Your Music" library.
   class GetUserSavedTracksTool < Base
     description "Get a list of the songs saved in the current user's Spotify library"
-    kind "get_user_saved_tracks"
 
     arguments do
       optional(:limit).filled(:integer, gteq?: 0, lteq?: 50).description("Maximum number of items to return (default 20, min 1, max 50)")

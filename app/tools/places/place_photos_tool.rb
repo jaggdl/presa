@@ -7,7 +7,6 @@ module Places
   # from a recent search/details call.
   class PlacePhotosTool < Base
     description "Get photo details and a URL for a place photo (drived from a photo name in a search or details response)"
-    kind "place_photos"
 
     arguments do
       required(:photo_name).filled(:string).description("The photo resource name from a place's photos[] array, e.g. 'places/PLACE_ID/photos/PHOTO_RESOURCE'")

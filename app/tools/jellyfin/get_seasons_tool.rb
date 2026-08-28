@@ -4,7 +4,6 @@ module Jellyfin
   # Get the seasons for a series on the Jellyfin server.
   class GetSeasonsTool < Base
     description "Get the seasons of a series on the Jellyfin server"
-    kind "get_seasons"
 
     arguments do
       required(:series_id).filled(:string).description("The ID of the series to get seasons for")

@@ -5,7 +5,6 @@ module Strava
   # totals for runs, rides, swims).
   class GetStatsTool < Base
     description "Get the authenticated athlete's aggregated activity stats"
-    kind "get_stats"
 
     def call
       athlete = strava_get("athlete")

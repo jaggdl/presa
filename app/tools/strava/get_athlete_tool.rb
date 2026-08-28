@@ -5,7 +5,6 @@ module Strava
   # profile picture, units of measure preference, ...).
   class GetAthleteTool < Base
     description "Get the connected athlete's public profile"
-    kind "get_athlete"
 
     def call
       strava_get("athlete")
