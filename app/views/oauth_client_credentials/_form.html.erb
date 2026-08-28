@@ -14,7 +14,7 @@
 
 <% read_only_secret = credential.persisted? %>
 <%= form_with model: credential, scope: :oauth_client_credential, url: (credential.persisted? ? oauth_client_credential_path(credential) : oauth_client_credentials_path), method: (credential.persisted? ? :patch : :post), class: "contents" do |form| %>
-  <%= hidden_field_tag :return_to, params[:return_to] %>
+  <%= hidden_field_tag :return_to, internal_path %>
   <%= hidden_field_tag :modal, "1" if modal %>
 
   <%= form.hidden_field :provider %>
@@ -62,7 +62,7 @@
     <% if modal %>
       <button type="button" data-action="oauth-client#closeDialog" class="text-zinc-400 underline hover:no-underline">Cancel</button>
     <% else %>
-      <%= link_to "Cancel", params[:return_to].presence || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
+      <%= link_to "Cancel", internal_path || oauth_client_credentials_path, class: "text-zinc-400 underline hover:no-underline" %>
     <% end %>
   </div>
 <% end %>

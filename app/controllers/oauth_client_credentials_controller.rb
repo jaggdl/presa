@@ -19,7 +19,7 @@ class OauthClientCredentialsController < ApplicationController
         @clients = clients_for(@credential.provider)
         render :create, formats: [ :turbo_stream ]
       else
-        redirect_to params[:return_to].presence || oauth_client_credentials_path, notice: "OAuth app added."
+        redirect_to internal_path || oauth_client_credentials_path, notice: "OAuth app added."
       end
     elsif params[:modal] == "1"
       @clients = clients_for(@credential.provider)
@@ -32,7 +32,7 @@ class OauthClientCredentialsController < ApplicationController
   def destroy
     @credential = Current.user.oauth_client_credentials.find(params[:id])
     @credential.destroy!
-    redirect_to params[:return_to].presence || oauth_client_credentials_path, notice: "OAuth client removed."
+    redirect_to internal_path || oauth_client_credentials_path, notice: "OAuth client removed."
   end
 
   # GET /oauth_client_credentials/:id/edit
@@ -49,7 +49,7 @@ class OauthClientCredentialsController < ApplicationController
     updates = updates.except(:client_secret) if updates[:client_secret].blank?
 
     if @credential.update(updates)
-      redirect_to params[:return_to].presence || oauth_client_credentials_path, notice: "OAuth client updated."
+      redirect_to internal_path || oauth_client_credentials_path, notice: "OAuth client updated."
     else
       render :edit, status: :unprocessable_entity
     end
