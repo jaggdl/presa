@@ -79,31 +79,19 @@ class Service < ApplicationRecord
     end
 
     def kinds
-      concrete_service_classes.filter_map { |klass| klass.kind if includeable?(klass) }
+      concrete_service_classes.filter_map { |klass| klass.kind if offerable?(klass) }
     end
 
-    # A kind is offerable when it declares config fields, or it is a preset MCP
-    # service (Services::Mcp subclass) that may declare no fields at all (e.g.
-    # a public endpoint like Parallel Search), or an OAuth *leaf* service
-    # (an OauthService subclass that declares its own `kind`; e.g.
-    # Services::Gmail). The abstract OauthService base declares no kind and so
-    # is never offerable.
-    def includeable?(klass)
-      klass.config_fields.present? || oauth_service_leaf?(klass) ||
-        (klass.respond_to?(:mcp_preset_url) && klass.kind != "mcp")
-    end
-
-    # An OAuth leaf is a concrete OauthService subclass that declares
-    # its own machine kind, e.g. Services::Gmail. The abstract
-    # OauthService base is excluded because it carries no kind.
-    def oauth_service_leaf?(klass)
-      klass <= OauthService && klass.config_kind.present?
-    rescue NameError
-      false
+    # A kind is offerable when its class declares config fields (plain services
+    # and the generic MCP server) or its own machine kind (OAuth leaves like
+    # Gmail, MCP presets like Parallel). Abstract bases (Service, OauthService)
+    # declare neither and so are never offerable.
+    def offerable?(klass)
+      klass.config_fields.present? || klass.config_kind.present?
     end
 
     def class_for_kind(kind)
-      concrete_service_classes.find { |klass| klass.kind == kind }
+      concrete_service_classes.find { |klass| klass.kind == kind && offerable?(klass) }
     end
 
     def config_field(name, required: false, secret: false, default: nil, textarea: false)
