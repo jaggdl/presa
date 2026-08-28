@@ -26,7 +26,17 @@ module Authentication
     end
 
     def find_session_by_cookie
-      Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
+      session_record = Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
+      return nil if session_record.nil?
+
+      if session_record.expired?
+        session_record.destroy
+        cookies.delete(:session_id)
+        return nil
+      end
+
+      session_record.slide_expiry!
+      session_record
     end
 
     def request_authentication

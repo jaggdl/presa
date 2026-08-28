@@ -97,6 +97,28 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, User.where(email_address: "ghost@example.com").count
   end
 
+  test "expired session is destroyed and requires reauthentication" do
+    sign_in_as(@user)
+    @user.sessions.update_all(expires_at: 1.minute.ago)
+
+    travel_to(2.minutes.from_now) do
+      get root_path
+      assert_redirected_to new_session_path
+      assert_empty @user.sessions.reload
+      assert_empty cookies[:session_id]
+    end
+  end
+
+  test "session expiry slides forward with activity" do
+    sign_in_as(@user)
+    @user.sessions.update_all(expires_at: 10.minutes.from_now)
+
+    get root_path
+    assert_response :success
+
+    assert_in_delta Session::SLIDING_IDLE_TIMEOUT.from_now.to_i, @user.sessions.reload.first.expires_at.to_i, 10
+  end
+
   test "lockout expires and a correct password signs in afterwards" do
     User::MAX_FAILED_LOGIN_ATTEMPTS.times do
       post session_path, params: { email_address: @user.email_address, password: "wrong" }
