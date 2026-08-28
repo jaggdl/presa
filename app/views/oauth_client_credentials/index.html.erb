@@ -1,11 +1,11 @@
 <div class="mx-auto md:w-3/4 w-full">
   <h1 class="font-bold text-4xl">Credentials</h1>
 
-  <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
     <% @providers.each do |p| %>
       <%= link_to new_oauth_client_credential_path(provider: p[:provider].to_s), class: "flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
         <%= oauth_provider_icon(p[:provider].to_s, size: "h-9 w-9") %>
-        <span class="font-medium text-zinc-100 mr-auto"><%= p[:provider].to_s.humanize %></span>
+        <span class="flex-1 min-w-0 truncate font-medium text-zinc-100"><%= p[:provider].to_s.humanize %></span>
         <%= icon "plus", class: "size-6 text-zinc-500" %>
       <% end %>
     <% end %>

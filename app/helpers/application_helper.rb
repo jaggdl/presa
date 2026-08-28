@@ -31,9 +31,9 @@ module ApplicationHelper
   # image is looked up on OauthClientCredential by provider (e.g.
   # "spotify.png"), falling back to the generic placeholder.
   def oauth_provider_icon(provider, size: "h-7 w-7")
-    image = image_tag OauthClientCredential.icon_for(provider), class: size, "aria-hidden": true
+    image = image_tag OauthClientCredential.icon_for(provider), class: "#{size} shrink-0", "aria-hidden": true
     content_tag :span, image,
-                class: "inline-flex items-center justify-center p-2.5 bg-zinc-900 rounded-lg border border-zinc-700"
+                class: "inline-flex items-center justify-center shrink-0 p-2.5 bg-zinc-900 rounded-lg border border-zinc-700"
   end
 
   # Render a service's brand icon, as declared on the model, padded and framed
@@ -49,9 +49,9 @@ module ApplicationHelper
   def service_icon(service, size: :md)
     size = SERVICE_ICON_SIZES.fetch(size, SERVICE_ICON_SIZES[:md])
     dims = service.invert_icon? ? "#{size[:dims]} invert" : size[:dims]
-    image = image_tag service.icon, class: dims, "aria-hidden": true
+    image = image_tag service.icon, class: "#{dims} shrink-0", "aria-hidden": true
     content_tag :span, image,
-                class: "inline-flex items-center justify-center #{size[:padding]} bg-zinc-900 rounded-md border border-zinc-700"
+                class: "inline-flex items-center justify-center shrink-0 #{size[:padding]} bg-zinc-900 rounded-md border border-zinc-700"
   end
 
   # A small deck of overlapping service icons, cascading right-and-down like
