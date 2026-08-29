@@ -31,6 +31,11 @@ seerr:
   type: Services::Seerr
   name: Seerr
   config: <%= { api_key: "seerr_key", base_url: "http://localhost:5055" }.to_json %>
+nano_banana:
+  team: one
+  type: Services::NanoBanana
+  name: Nano Banana
+  config: <%= { api_key: "gemini_test_key" }.to_json %>
 gmail:
   team: one
   type: Services::Gmail

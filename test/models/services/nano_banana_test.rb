@@ -1,0 +1,55 @@
+# frozen_string_literal: true
+
+require "test_helper"
+
+class Services::NanoBananaTest < ActiveSupport::TestCase
+  test "is an offerable native service" do
+    assert_equal "nano_banana", Services::NanoBanana.kind
+    assert_includes Service.kinds, "nano_banana"
+  end
+
+  test "is categorized as media" do
+    assert_equal "media", Services::NanoBanana.category
+  end
+
+  test "requires an api_key config" do
+    service = Services::NanoBanana.new(team: teams(:one), name: "Nano Banana", config: {})
+    assert_not service.valid?
+    assert_includes service.errors["config"], "api_key is required"
+  end
+
+  test "is valid with an api_key" do
+    assert services(:nano_banana).valid?
+  end
+
+  test "exposes the generate and edit tools" do
+    kinds = ApplicationTool.expose_for(services(:nano_banana)).map(&:kind)
+    assert_includes kinds, "generate_image"
+    assert_includes kinds, "edit_image"
+  end
+
+  test "test_connection lists models without generating an image" do
+    service = services(:nano_banana)
+    response = Object.new
+    response.define_singleton_method(:success?) { true }
+    Faraday.singleton_class.send(:define_method, :get) { |*_args, &_block| response }
+
+    assert service.test_connection
+  ensure
+    Faraday.singleton_class.send(:undef_method, :get)
+  end
+
+  test "test_connection raises on a non-success response" do
+    service = services(:nano_banana)
+    response = Object.new
+    response.define_singleton_method(:success?) { false }
+    response.define_singleton_method(:status) { 401 }
+    response.define_singleton_method(:body) { { error: { message: "API key not valid" } }.to_json }
+    Faraday.singleton_class.send(:define_method, :get) { |*_args, &_block| response }
+
+    error = assert_raises(RuntimeError) { service.test_connection }
+    assert_includes error.message, "401"
+  ensure
+    Faraday.singleton_class.send(:undef_method, :get)
+  end
+end

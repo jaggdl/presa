@@ -12,6 +12,7 @@ module Services
   # team workspaces, so a Workspace service can never touch another team's data.
   class Workspace < Service
     kind :workspace
+    icon "workspace.png"
     category :automation
 
     config_field :workspace_ids, array: true
