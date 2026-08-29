@@ -13,7 +13,7 @@ module Gmail
     def call(query: nil, limit: nil)
       params = { maxResults: limit || 20 }
       params[:q] = query if query.present?
-      gmail_get("/gmail/v1/users/me/messages", params: params)
+      gmail_get("users/me/messages", params: params)
     end
   end
 end

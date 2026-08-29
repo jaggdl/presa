@@ -12,5 +12,6 @@ module Services
 
     self.oauth_provider = :google
     self.oauth_scope = "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly"
+    self.oauth_api_base_url = "https://gmail.googleapis.com/gmail/v1"
   end
 end

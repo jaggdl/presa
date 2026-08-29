@@ -10,7 +10,7 @@ module Gmail
     end
 
     def call(id:)
-      gmail_get("/gmail/v1/users/me/messages/#{id}")
+      gmail_get("users/me/messages/#{id}")
     end
   end
 end

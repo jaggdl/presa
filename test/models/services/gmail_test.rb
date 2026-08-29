@@ -13,6 +13,12 @@ class Services::GmailTest < ActiveSupport::TestCase
     assert_equal Oauth::Google, Services::Gmail.provider_class
     assert_equal "https://accounts.google.com/o/oauth2/v2/auth", Services::Gmail.new.authorize_uri
     assert_equal "https://oauth2.googleapis.com/token", Services::Gmail.new.token_uri
+    assert_equal "https://gmail.googleapis.com/gmail/v1", Services::Gmail.oauth_api_base_url
+  end
+
+  test "composes a client against the API base URL" do
+    service = services(:gmail)
+    assert_instance_of Oauth::Client, service.client
   end
 
   test "keeps abstract OAuth bases out of the offerable kinds" do

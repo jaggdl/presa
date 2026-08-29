@@ -18,7 +18,7 @@ module Gmail
 
     def call(to:, subject:, body:, cc: nil, bcc: nil)
       message = build_mime(to: to, subject: subject, body: body, cc: cc, bcc: bcc)
-      gmail_post("/gmail/v1/users/me/messages/send", body: { raw: Base64.urlsafe_encode64(message) })
+      gmail_post("users/me/messages/send", body: { raw: Base64.urlsafe_encode64(message) })
     end
 
     private
