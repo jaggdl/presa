@@ -15,7 +15,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   test "index lists the user's services" do
     get services_path
     assert_response :success
-    assert_select "a", text: "Prod"
+    assert_select "span", text: "Prod"
   end
 
   test "index does not crash when a service's MCP endpoint is unreachable" do
@@ -25,7 +25,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
     get services_path
     assert_response :success
-    assert_select "a", text: "Broken"
+    assert_select "span", text: "Broken"
   end
 
   test "new renders the form" do

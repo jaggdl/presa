@@ -91,8 +91,8 @@
     <table class="w-full text-left mt-4">
       <tbody>
         <% @linked_services.each do |service| %>
-          <tr class="border-b border-zinc-800">
-            <td class="py-2">
+          <tr class="relative border-b border-zinc-800 transition hover:bg-zinc-800/50 focus-within:bg-zinc-800/50">
+            <td class="py-2 pl-2">
               <div class="flex items-center gap-3">
                 <span class="relative flex-shrink-0">
                   <%= service_icon(service, size: :md) %>
@@ -101,23 +101,26 @@
                   <% end %>
                 </span>
                 <div>
-                  <% if join = @ws_links[service.id] %>
-                    <%= link_to service.name, workspace_workspace_service_path(@workspace, join), class: "text-blue-500 hover:underline" %>
-                  <% else %>
-                    <span class="text-zinc-100"><%= service.name %></span>
-                  <% end %>
+                  <span class="block font-medium text-zinc-100"><%= service.name %></span>
                   <div class="text-xs text-zinc-500"><%= service.kind %></div>
                 </div>
               </div>
             </td>
-            <td class="py-2 text-right">
+            <td class="py-2 text-right pr-2">
               <div class="flex items-center justify-end gap-3">
                 <span class="text-xs text-zinc-500"><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
-                <%= button_to workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Remove this service from the workspace?" } }, "aria-label": "Remove service" do %>
-                  <%= icon "unlink", class: "size-5" %>
-                <% end %>
+                <span class="relative z-10">
+                  <%= button_to workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Remove this service from the workspace?" } }, "aria-label": "Remove service" do %>
+                    <%= icon "unlink", class: "size-5" %>
+                  <% end %>
+                </span>
               </div>
             </td>
+            <% if join = @ws_links[service.id] %>
+              <td>
+                <%= link_to "", workspace_workspace_service_path(@workspace, join), class: "absolute inset-0", aria: { label: service.name } %>
+              </td>
+            <% end %>
           </tr>
         <% end %>
       </tbody>

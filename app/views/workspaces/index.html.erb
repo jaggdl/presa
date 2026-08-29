@@ -8,13 +8,13 @@
   <% if @workspaces.any? %>
     <ul class="mt-6">
       <% @workspaces.each do |workspace| %>
-        <li class="flex items-center gap-3 py-3 border-b border-zinc-800">
+        <li class="relative flex items-center gap-3 py-3 pl-2 pr-2 border-b border-zinc-800 transition hover:bg-zinc-800/50 focus-within:bg-zinc-800/50">
           <%= service_icon_stack(workspace.services) %>
-          <%= link_to workspace.name.presence || "Unnamed workspace", workspace, class: "text-blue-500 hover:underline" %>
-          <% stats = workspace %>
+          <span class="font-medium text-zinc-100"><%= workspace.name.presence || "Unnamed workspace" %></span>
           <span class="ml-auto text-xs text-zinc-500">
             <%= pluralize(workspace.api_token_count, "client") %> · <%= pluralize(workspace.invocation_count, "invocation") %> in 24h
           </span>
+          <%= link_to "", workspace, class: "absolute inset-0", aria: { label: workspace.name.presence || "Unnamed workspace" } %>
         </li>
       <% end %>
     </ul>

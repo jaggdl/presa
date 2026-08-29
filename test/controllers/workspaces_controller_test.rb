@@ -15,8 +15,10 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "a", text: "Workspace One"
-    assert_select "a", text: "Workspace Two", count: 0
+    one = @user.workspaces.find_by(name: "Workspace One")
+    assert_select "span", text: "Workspace One"
+    assert_select "a[href='/workspaces/#{one.id}'][aria-label='Workspace One']"
+    assert_select "span", text: "Workspace Two", count: 0
   end
 
   test "new requires authentication" do
