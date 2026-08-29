@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
-require "faraday"
-require "json"
-
 module GoogleAnalytics
-  # Abstract base for all Google Analytics tools. Not exposed directly.
-  # Resolves the bound OAuth service's live access token (refreshing it if
-  # needed) and issues authorized requests against the Analytics Admin and
-  # Data REST APIs, sharing the same OAuth flow as Gmail.
+  # Abstract base for all Google Analytics tools. Not exposed directly. HTTP
+  # transport and OAuth bearer-token injection live on the service (composed
+  # per API base URL via `Oauth::Client`); this base only shapes requests to
+  # the Analytics Admin and Data REST APIs, sharing the same OAuth flow as
+  # Gmail and Google Calendar.
+  #
+  # Analytics hits two hosts (admin + data), each with version-selected
+  # resources (v1beta/v1alpha), so bases are host-only and paths keep the
+  # leading slash plus version segment — unlike single-version kinds whose
+  # tools use relative paths against a base that includes the version.
   class Base < ApplicationTool
     service_kind :google_analytics
     abstract_tool true
@@ -15,41 +18,17 @@ module GoogleAnalytics
     ADMIN_API = "https://analyticsadmin.googleapis.com"
     DATA_API = "https://analyticsdata.googleapis.com"
 
-    # A Faraday connection for the given API base URL. Overridable in tests to
-    # inject a fake adapter.
-    def conn(base_url)
-      @conn ||= {}
-      @conn[base_url] ||= Faraday.new(url: base_url) do |faraday|
-        faraday.request :json
-        faraday.response :json, content_type: /\bjson$/
-        faraday.adapter Faraday.default_adapter
-        faraday.options.timeout = 30
-        faraday.options.open_timeout = 10
-      end
-    end
-
     private
 
     # GET against the given API base URL, returning the parsed JSON body.
     def ga_get(base_url, path, params: {})
-      conn(base_url).get(path) do |req|
-        req.headers["Authorization"] = "Bearer #{authorized_token}"
-        req.params.update(params)
-      end.body
+      service.client(base_url: base_url).get(path, params: params)
     end
 
     # POST against the given API base URL, sending `body` as JSON. Returns the
     # parsed JSON body.
     def ga_post(base_url, path, body:)
-      conn(base_url).post(path) do |req|
-        req.headers["Authorization"] = "Bearer #{authorized_token}"
-        req.headers["Content-Type"] = "application/json"
-        req.body = JSON.generate(body)
-      end.body
-    end
-
-    def authorized_token
-      service.authorized_token
+      service.client(base_url: base_url).post(path, body: body)
     end
 
     # Normalizes a user-supplied property ID to the REST resource name, e.g.

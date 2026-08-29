@@ -41,4 +41,16 @@ class Services::GoogleAnalyticsTest < ActiveSupport::TestCase
     ]
     expected.each { |kind| assert_includes kinds, kind }
   end
+
+  test "composes a client per API base URL" do
+    service = services(:google_analytics)
+    assert_instance_of Oauth::Client, service.client(base_url: GoogleAnalytics::Base::ADMIN_API)
+    assert_instance_of Oauth::Client, service.client(base_url: GoogleAnalytics::Base::DATA_API)
+  end
+
+  test "memoizes one client per API base URL" do
+    service = services(:google_analytics)
+    assert_same service.client(base_url: GoogleAnalytics::Base::DATA_API), service.client(base_url: GoogleAnalytics::Base::DATA_API)
+    assert_not_same service.client(base_url: GoogleAnalytics::Base::ADMIN_API), service.client(base_url: GoogleAnalytics::Base::DATA_API)
+  end
 end
