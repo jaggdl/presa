@@ -10,6 +10,11 @@ class Services::SpotifyPlayerTest < ActiveSupport::TestCase
     assert_includes Service.kinds, "spotify_player"
     assert_equal "spotify", Services::SpotifyPlayer.oauth_provider.to_s
     assert_equal Oauth::Spotify, Services::SpotifyPlayer.provider_class
+    assert_equal "https://api.spotify.com/v1", Services::SpotifyPlayer.oauth_api_base_url
+  end
+
+  test "composes a client against the API base URL" do
+    assert_instance_of Oauth::Client, services(:spotify_player).client
   end
 
   test "is categorized as media with the Spotify icon" do

@@ -17,5 +17,6 @@ module Services
     # additional scope. Endpoints follow the Spotify Web API reference.
     self.oauth_provider = :spotify
     self.oauth_scope = "user-read-private user-top-read user-read-recently-played user-library-read playlist-read-private"
+    self.oauth_api_base_url = "https://api.spotify.com/v1"
   end
 end

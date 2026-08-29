@@ -18,7 +18,7 @@ class SpotifyBaseRateLimitTest < ActiveSupport::TestCase
         end
       end
     end
-    tool.define_singleton_method(:sleep) { |*| }
+    client_for(tool).define_singleton_method(:sleep) { |*| }
 
     result = tool.call
     assert_equal "Ada", result["display_name"]
@@ -31,7 +31,7 @@ class SpotifyBaseRateLimitTest < ActiveSupport::TestCase
     end
 
     slept = []
-    tool.define_singleton_method(:sleep) { |secs| slept << secs }
+    client_for(tool).define_singleton_method(:sleep) { |secs| slept << secs }
 
     tool.call
 
@@ -45,7 +45,7 @@ class SpotifyBaseRateLimitTest < ActiveSupport::TestCase
     end
 
     slept = []
-    tool.define_singleton_method(:sleep) { |secs| slept << secs }
+    client_for(tool).define_singleton_method(:sleep) { |secs| slept << secs }
 
     tool.call
 
@@ -60,7 +60,7 @@ class SpotifyBaseRateLimitTest < ActiveSupport::TestCase
         spotify_json_response({ "error" => { "status" => 403, "message" => "forbidden" } }, status: 403)
       end
     end
-    tool.define_singleton_method(:sleep) { |*| flunk "should not sleep on non-429" }
+    client_for(tool).define_singleton_method(:sleep) { |*| flunk "should not sleep on non-429" }
 
     result = tool.call
     assert_equal 1, calls

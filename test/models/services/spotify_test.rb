@@ -12,6 +12,11 @@ class Services::SpotifyTest < ActiveSupport::TestCase
     assert_equal "https://accounts.spotify.com/authorize", Services::Spotify.provider_class.authorize_uri
     assert_equal "https://accounts.spotify.com/api/token", Services::Spotify.provider_class.token_uri
     assert_equal Oauth::Spotify, Services::Spotify.provider_class
+    assert_equal "https://api.spotify.com/v1", Services::Spotify.oauth_api_base_url
+  end
+
+  test "composes a client against the API base URL" do
+    assert_instance_of Oauth::Client, services(:spotify).client
   end
 
   test "is categorized as media" do

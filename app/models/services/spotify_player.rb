@@ -20,5 +20,6 @@ module Services
     # reference.
     self.oauth_provider = :spotify
     self.oauth_scope = "user-read-playback-state user-read-currently-playing user-modify-playback-state"
+    self.oauth_api_base_url = "https://api.spotify.com/v1"
   end
 end
