@@ -14,14 +14,19 @@ class NanoBananaToolsTest < ActiveSupport::TestCase
       @calls = []
     end
 
-    def generate_image(prompt)
-      @calls << { method: :generate_image, prompt: prompt }
+    def generate_image(prompt, model: nil)
+      @calls << { method: :generate_image, prompt: prompt, model: model }
       "data:image/png;base64,abc123"
     end
 
-    def edit_image(prompt:, image_uri:)
-      @calls << { method: :edit_image, prompt: prompt, image_uri: image_uri }
+    def edit_image(prompt:, image_uri:, model: nil)
+      @calls << { method: :edit_image, prompt: prompt, image_uri: image_uri, model: model }
       "data:image/png;base64,edited"
+    end
+
+    def list_models
+      @calls << { method: :list_models }
+      [ { id: "gemini-3.1-flash-image", label: "Nano Banana 2", default: true } ]
     end
   end
 
@@ -44,8 +49,26 @@ class NanoBananaToolsTest < ActiveSupport::TestCase
 
     result = tool.call(prompt: "a cat wearing a top hat")
 
-    assert_equal [ { method: :generate_image, prompt: "a cat wearing a top hat" } ], fake.calls
+    assert_equal [ { method: :generate_image, prompt: "a cat wearing a top hat", model: nil } ], fake.calls
     assert_equal "data:image/png;base64,abc123", result
+  end
+
+  test "generate_image passes an explicit model when provided" do
+    tool, fake = expose_nano_banana_tool("generate_image")
+
+    result = tool.call(prompt: "a dam", model: "gemini-3-pro-image")
+
+    assert_equal [ { method: :generate_image, prompt: "a dam", model: "gemini-3-pro-image" } ], fake.calls
+    assert_equal "data:image/png;base64,abc123", result
+  end
+
+  test "list_models returns the available models" do
+    tool, fake = expose_nano_banana_tool("list_models")
+
+    result = tool.call
+
+    assert_equal [ { method: :list_models } ], fake.calls
+    assert_equal [ { id: "gemini-3.1-flash-image", label: "Nano Banana 2", default: true } ], result
   end
 
   test "edit_image calls the service with the prompt and image uri" do
@@ -53,7 +76,16 @@ class NanoBananaToolsTest < ActiveSupport::TestCase
 
     result = tool.call(prompt: "make it a dog", image_uri: "data:image/png;base64,xyz")
 
-    assert_equal [ { method: :edit_image, prompt: "make it a dog", image_uri: "data:image/png;base64,xyz" } ], fake.calls
+    assert_equal [ { method: :edit_image, prompt: "make it a dog", image_uri: "data:image/png;base64,xyz", model: nil } ], fake.calls
+    assert_equal "data:image/png;base64,edited", result
+  end
+
+  test "edit_image passes an explicit model when provided" do
+    tool, fake = expose_nano_banana_tool("edit_image")
+
+    result = tool.call(prompt: "make it a dam", image_uri: "data:image/png;base64,xyz", model: "gemini-3-pro-image")
+
+    assert_equal [ { method: :edit_image, prompt: "make it a dam", image_uri: "data:image/png;base64,xyz", model: "gemini-3-pro-image" } ], fake.calls
     assert_equal "data:image/png;base64,edited", result
   end
 

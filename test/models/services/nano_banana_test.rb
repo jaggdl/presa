@@ -26,6 +26,21 @@ class Services::NanoBananaTest < ActiveSupport::TestCase
     kinds = ApplicationTool.expose_for(services(:nano_banana)).map(&:kind)
     assert_includes kinds, "generate_image"
     assert_includes kinds, "edit_image"
+    assert_includes kinds, "list_models"
+  end
+
+  test "defaults to the flash model and validates model ids" do
+    service = services(:nano_banana)
+    assert_equal "gemini-3.1-flash-image", Services::NanoBanana::DEFAULT_MODEL
+
+    assert_raises(RuntimeError) { service.generate_image("x", model: "not-a-model") }
+  end
+
+  test "url uses the requested model" do
+    service = services(:nano_banana)
+    url = service.send(:auth_url, "KEY", "gemini-3-pro-image")
+    assert_includes url, "models/gemini-3-pro-image:generateContent"
+    assert_includes url, "key=KEY"
   end
 
   test "test_connection lists models without generating an image" do

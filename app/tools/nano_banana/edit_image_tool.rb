@@ -12,14 +12,19 @@ module NanoBanana
       optional(:image_uri).filled(:string).description("The image to edit: a data URI (data:image/...;base64,...) or an http(s) URL")
       optional(:image).filled(:string).description("The image to edit as raw base64 image data (optionally data-URI prefixed).")
       required(:prompt).filled(:string).description("Text description of how to edit the image (max 1000 characters)")
+      optional(:model).filled(:string).description("Nano Banana model id to use (default gemini-3.1-flash-image). Call the list_models tool to see available ids.")
     end
 
-    def call(image_uri: nil, image: nil, prompt:)
+    def call(image_uri: nil, image: nil, prompt:, model: nil)
       provided = [ image_uri, image ].count(&:present?)
       raise "Provide exactly one of image_uri or image" unless provided == 1
 
       uri = image_uri.presence || temp_uri_from_image!(image)
-      service.edit_image(prompt: prompt, image_uri: uri)
+      if model.present?
+        service.edit_image(prompt: prompt, image_uri: uri, model: model)
+      else
+        service.edit_image(prompt: prompt, image_uri: uri)
+      end
     end
 
     private
