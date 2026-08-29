@@ -85,7 +85,84 @@
     </div>
   </div>
 
-  <h2 class="font-bold text-2xl mt-10">Services</h2>
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
+
+    <section class="min-w-0">
+  <h2 class="font-bold text-2xl">Clients</h2>
+
+  <p class="text-sm text-zinc-500 mt-1">Each client connects with its own API token to use this workspace's tools.</p>
+
+  <div data-controller="clients" data-clients-show-revoked-value="false" class="group">
+    <div class="flex items-center justify-between mt-3">
+      <% if @api_tokens.any? %>
+        <button type="button" data-action="clients#toggle" title="Toggle revoked clients" class="text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5" aria-label="Toggle revoked clients">
+          <span class="inline group-data-[clients-show-revoked-value=true]:hidden"><%= icon "eye", class: "size-5" %></span>
+          <span class="hidden group-data-[clients-show-revoked-value=true]:block"><%= icon "eye-off", class: "size-5" %></span>
+          <span class="text-sm">revoked</span>
+        </button>
+      <% else %>
+        <span></span>
+      <% end %>
+
+      <div class="flex items-center gap-2">
+        <button type="button" data-action="clients#open" class="text-center rounded-md px-2.5 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 inline-block font-medium cursor-pointer">Connect via MCP</button>
+        <button type="button" data-action="clients#openSkill" class="text-center rounded-md px-2.5 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 inline-block font-medium cursor-pointer">Connect via skill</button>
+      </div>
+    </div>
+
+    <table class="w-full text-left mt-2">
+      <tbody id="clients-table-body">
+        <% if @api_tokens.any? %>
+          <%= render partial: "client_row", collection: @api_tokens, as: :api_token, locals: { workspace: @workspace } %>
+        <% else %>
+          <tr id="clients-empty">
+            <td class="py-4 text-zinc-500">No clients connected yet.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%= render "shared/dialog", controller: "clients" do %>
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-xl">Connect a client</h3>
+        <button type="button" data-action="clients#close" class="text-zinc-400 hover:text-zinc-200 transition" aria-label="Close">
+          <%= icon "x", class: "size-5" %>
+        </button>
+      </div>
+
+      <div data-clients-target="mcpPanel">
+        <div class="flex flex-wrap gap-1 mb-4">
+          <button type="button" data-action="clients#select" data-panel="mcp" class="px-2.5 py-1 rounded-md border border-blue-500 text-white bg-blue-500/20 text-xs">MCP</button>
+          <button type="button" data-action="clients#select" data-panel="skill" class="px-2.5 py-1 rounded-md border border-zinc-700 text-zinc-400 text-xs">Skill</button>
+        </div>
+        <div id="client_form">
+          <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace) do |form| %>
+            <div class="mb-4">
+              <%= form.label :name, "Client name", class: "block text-sm text-zinc-400 mb-1" %>
+              <%= form.text_field :name, placeholder: "e.g. Cursor", id: "client_modal_name", class: "block w-full shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-800" %>
+            </div>
+            <div class="flex justify-end">
+              <%= form.submit "Create client", id: "client_modal_submit", class: "btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+        <div id="client-modal-result" class="mt-4"></div>
+      </div>
+
+      <div data-clients-target="skillPanel" class="hidden">
+        <div class="flex flex-wrap gap-1 mb-4">
+          <button type="button" data-action="clients#select" data-panel="mcp" class="px-2.5 py-1 rounded-md border border-zinc-700 text-zinc-400 text-xs">MCP</button>
+          <button type="button" data-action="clients#select" data-panel="skill" class="clients-skill-tab px-2.5 py-1 rounded-md border border-blue-500 text-white bg-blue-500/20 text-xs">Skill</button>
+        </div>
+        <%= render "skill_instructions", workspace: @workspace, skill_url: @skill_url, share_code: @share_code %>
+      </div>
+    <% end %>
+  </div>
+
+    </section>
+
+    <section class="min-w-0">
+  <h2 class="font-bold text-2xl">Services</h2>
 
   <% if @linked_services.any? %>
     <table class="w-full text-left mt-4">
@@ -172,77 +249,8 @@
     </div>
   <% end %>
 
-  <h2 class="font-bold text-2xl mt-10">Clients</h2>
-
-  <p class="text-sm text-zinc-500 mt-1">Each client connects with its own API token to use this workspace's tools.</p>
-
-  <div data-controller="clients" data-clients-show-revoked-value="false" class="group">
-    <div class="flex items-center justify-between mt-3">
-      <% if @api_tokens.any? %>
-        <button type="button" data-action="clients#toggle" title="Toggle revoked clients" class="text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5" aria-label="Toggle revoked clients">
-          <span class="inline group-data-[clients-show-revoked-value=true]:hidden"><%= icon "eye", class: "size-5" %></span>
-          <span class="hidden group-data-[clients-show-revoked-value=true]:block"><%= icon "eye-off", class: "size-5" %></span>
-          <span class="text-sm">revoked</span>
-        </button>
-      <% else %>
-        <span></span>
-      <% end %>
-
-      <div class="flex items-center gap-2">
-        <button type="button" data-action="clients#open" class="text-center rounded-md px-2.5 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 inline-block font-medium cursor-pointer">Connect via MCP</button>
-        <button type="button" data-action="clients#openSkill" class="text-center rounded-md px-2.5 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 inline-block font-medium cursor-pointer">Connect via skill</button>
-      </div>
-    </div>
-
-    <table class="w-full text-left mt-2">
-      <tbody id="clients-table-body">
-        <% if @api_tokens.any? %>
-          <%= render partial: "client_row", collection: @api_tokens, as: :api_token, locals: { workspace: @workspace } %>
-        <% else %>
-          <tr id="clients-empty">
-            <td class="py-4 text-zinc-500">No clients connected yet.</td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-
-    <%= render "shared/dialog", controller: "clients" do %>
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-xl">Connect a client</h3>
-        <button type="button" data-action="clients#close" class="text-zinc-400 hover:text-zinc-200 transition" aria-label="Close">
-          <%= icon "x", class: "size-5" %>
-        </button>
-      </div>
-
-      <div data-clients-target="mcpPanel">
-        <div class="flex flex-wrap gap-1 mb-4">
-          <button type="button" data-action="clients#select" data-panel="mcp" class="px-2.5 py-1 rounded-md border border-blue-500 text-white bg-blue-500/20 text-xs">MCP</button>
-          <button type="button" data-action="clients#select" data-panel="skill" class="px-2.5 py-1 rounded-md border border-zinc-700 text-zinc-400 text-xs">Skill</button>
-        </div>
-        <div id="client_form">
-          <%= form_with model: @api_token, url: workspace_api_tokens_path(@workspace) do |form| %>
-            <div class="mb-4">
-              <%= form.label :name, "Client name", class: "block text-sm text-zinc-400 mb-1" %>
-              <%= form.text_field :name, placeholder: "e.g. Cursor", id: "client_modal_name", class: "block w-full shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-800" %>
-            </div>
-            <div class="flex justify-end">
-              <%= form.submit "Create client", id: "client_modal_submit", class: "btn-primary" %>
-            </div>
-          <% end %>
-        </div>
-        <div id="client-modal-result" class="mt-4"></div>
-      </div>
-
-      <div data-clients-target="skillPanel" class="hidden">
-        <div class="flex flex-wrap gap-1 mb-4">
-          <button type="button" data-action="clients#select" data-panel="mcp" class="px-2.5 py-1 rounded-md border border-zinc-700 text-zinc-400 text-xs">MCP</button>
-          <button type="button" data-action="clients#select" data-panel="skill" class="clients-skill-tab px-2.5 py-1 rounded-md border border-blue-500 text-white bg-blue-500/20 text-xs">Skill</button>
-        </div>
-        <%= render "skill_instructions", workspace: @workspace, skill_url: @skill_url, share_code: @share_code %>
-      </div>
-    <% end %>
+    </section>
   </div>
-
   <div class="flex items-center justify-between mt-10">
     <h2 class="font-bold text-2xl">Tool invocations</h2>
 
