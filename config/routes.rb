@@ -23,6 +23,8 @@ Rails.application.routes.draw do
     get :workspace, controller: "tools"
   end
 
+  get "temp_images/*filename", to: "temp_images#show", as: :temp_image
+
   resources :workspaces do
     post :reset_bot_share_code, on: :member
     resources :api_tokens, only: %i[ create destroy ]

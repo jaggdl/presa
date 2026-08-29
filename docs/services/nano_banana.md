@@ -11,6 +11,6 @@ Google's Nano Banana image model (`gemini-2.5-flash-image`), exposed as native t
 ## Tools
 
 - `generate_image` — generate an image from a text prompt. Returns the image as a `data:` URI.
-- `edit_image` — edit an existing image (passed as a data URI or an http(s) URL) using a text prompt. Returns the edited image as a `data:` URI.
+- `edit_image` — edit an existing image. Pass the image as a data URI or URL (`image_uri`), or as raw base64 image data (`image`). Returns the edited image as a `data:` URI.
 
-Images are returned inline; nothing is stored or uploaded to third-party hosts.
+Images are returned inline; binary uploads are stored briefly (a few minutes) at a temporary URL so the service can fetch them, then deleted in the background. Nothing persists.
