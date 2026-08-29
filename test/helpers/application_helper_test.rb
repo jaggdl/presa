@@ -37,4 +37,17 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "High", high[:label]
     assert_equal "flame", high[:icon]
   end
+
+  test "format_invocation_args_multiline always returns rows, never a string" do
+    assert_equal [ { key: nil, value: "truncated" } ],
+                 format_invocation_args_multiline({ "truncated" => true, "original_bytes" => 100 })
+    assert_equal [ { key: "a", value: "1" }, { key: "b", value: "1, 2" } ],
+                 format_invocation_args_multiline({ "a" => 1, "b" => [ 1, 2 ] })
+    assert_nil format_invocation_args_multiline(nil)
+  end
+
+  test "format_invocation_output pretty-prints json" do
+    assert_includes format_invocation_output({ "places" => [ { "id" => "x" } ] }), "\"places\": ["
+    assert_equal "truncated", format_invocation_output({ "truncated" => true })
+  end
 end

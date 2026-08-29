@@ -64,10 +64,11 @@ module ApplicationHelper
   end
 
   # Formats a tool invocation's arguments as one line per key, with the key and
-  # its value separated so the expanded log reads as a tidy checklist.
+  # its value separated so the expanded log reads as a tidy checklist. Always
+  # returns an array of {key:, value:} rows.
   def format_invocation_args_multiline(arguments)
     return if arguments.blank?
-    return "truncated" if arguments.is_a?(Hash) && arguments["truncated"]
+    return [ { key: nil, value: "truncated" } ] if arguments.is_a?(Hash) && arguments["truncated"]
 
     if arguments.is_a?(Hash)
       arguments.map { |key, value| { key: key, value: format_argument_value(value) } }
