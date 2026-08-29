@@ -1,0 +1,13 @@
+<div id="tool-data-switch">
+  <%= form_with model: workspace, url: workspace_path(workspace), method: :patch, data: { controller: "auto-submit" } do |form| %>
+    <label class="inline-flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
+      <span>Log tool input/output</span>
+      <span class="relative inline-flex">
+        <%= form.check_box :log_tool_data, class: "peer sr-only", data: { action: "auto-submit#submit" } %>
+        <span class="inline-flex h-5 w-9 rounded-full bg-zinc-700 transition peer-checked:bg-blue-600"></span>
+        <span class="pointer-events-none absolute left-0.5 top-0.5 size-4 rounded-full bg-white transition peer-checked:translate-x-[18px]"></span>
+      </span>
+    </label>
+    <noscript><%= form.submit "Save", class: "ml-2" %></noscript>
+  <% end %>
+</div>

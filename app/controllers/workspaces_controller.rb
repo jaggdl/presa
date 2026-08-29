@@ -26,7 +26,16 @@ class WorkspacesController < ApplicationController
 
   def update
     if @workspace.update(workspace_params)
-      redirect_to workspace_path(@workspace), notice: "Workspace updated."
+      respond_to do |format|
+        format.html { redirect_to workspace_path(@workspace), notice: "Workspace updated." }
+        format.turbo_stream do
+          @tool_invocations = ToolInvocation.for_workspace(@workspace).recent(50).includes(:service, :api_token)
+          render turbo_stream: [
+            turbo_stream.replace("tool-data-switch", partial: "workspaces/log_tool_data_switch", locals: { workspace: @workspace }),
+            turbo_stream.replace("tool-invocations-log", partial: "workspaces/tool_invocations_log", locals: { workspace: @workspace, tool_invocations: @tool_invocations })
+          ]
+        end
+      end
     else
       redirect_to workspace_path(@workspace), alert: @workspace.errors.full_messages.to_sentence
     end
@@ -80,6 +89,6 @@ class WorkspacesController < ApplicationController
   end
 
   def workspace_params
-    params.require(:workspace).permit(:name, :description)
+    params.require(:workspace).permit(:name, :description, :log_tool_data)
   end
 end

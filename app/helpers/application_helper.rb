@@ -63,6 +63,32 @@ module ApplicationHelper
     end
   end
 
+  # Formats a tool invocation's arguments as one line per key, with the key and
+  # its value separated so the expanded log reads as a tidy checklist.
+  def format_invocation_args_multiline(arguments)
+    return if arguments.blank?
+    return "truncated" if arguments.is_a?(Hash) && arguments["truncated"]
+
+    if arguments.is_a?(Hash)
+      arguments.map { |key, value| { key: key, value: format_argument_value(value) } }
+    else
+      [ { key: nil, value: format_argument_value(arguments) } ]
+    end
+  end
+
+  # Pretty-prints a tool invocation's output as indented JSON, falling back to
+  # the plain value for non-hash/array payloads.
+  def format_invocation_output(response)
+    return if response.blank?
+    return "truncated" if response.is_a?(Hash) && response["truncated"]
+
+    if response.is_a?(Hash) || response.is_a?(Array)
+      JSON.pretty_generate(response)
+    else
+      response.to_s
+    end
+  end
+
   # Render an OAuth provider's brand icon in the same framed tile style as a
   # service icon, so the credentials index reads like the services index. The
   # image is looked up on OauthClientCredential by provider (e.g.

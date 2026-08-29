@@ -167,6 +167,16 @@ class ApplicationTool < ActionTool::Base
   private
 
   def record_invocation(args:, result:, status:, error_message: nil, duration_ms: nil)
+    log_tool_data = Current.workspace.nil? || Current.workspace.log_tool_data
+    # When the workspace has "log tool input/output" turned off, keep the
+    # invocation row and its metadata (when/who/tool/status/duration) but drop
+    # the potentially sensitive payload — the arguments and the response.
+    unless log_tool_data
+      args = nil
+      result = nil
+      error_message = nil
+    end
+
     ToolInvocation.record!(
       api_token: Current.api_token,
       service: service,

@@ -135,4 +135,48 @@ class ApplicationToolTest < ActiveSupport::TestCase
     assert_equal "object", schema[:type]
     assert_equal %w[q], schema[:required]
   end
+
+  test "record_invocation logs payloads when log_tool_data is enabled" do
+    workspace = workspaces(:one)
+    workspace.update!(log_tool_data: true)
+    ApiToken.issue!(workspace: workspace, name: "Cursor")
+    token = workspace.api_tokens.active.take
+    Current.workspace = workspace
+    Current.api_token = token
+
+    tool = ApplicationTool.expose_for(services(:jellyfin)).find { |t| t.kind == "next_up" }.new
+    tool.send(:record_invocation,
+              args: { limit: 5 }, result: { content: "ok" }, status: "success", duration_ms: 10)
+
+    record = ToolInvocation.last
+    assert_equal({ "limit" => 5 }, record.arguments)
+    assert_equal({ "content" => "ok" }, record.response)
+  ensure
+    Current.workspace = nil
+    Current.api_token = nil
+  end
+
+  test "record_invocation strips payloads when log_tool_data is disabled" do
+    workspace = workspaces(:one)
+    workspace.update!(log_tool_data: false)
+    ApiToken.issue!(workspace: workspace, name: "Cursor")
+    token = workspace.api_tokens.active.take
+    Current.workspace = workspace
+    Current.api_token = token
+
+    tool = ApplicationTool.expose_for(services(:jellyfin)).find { |t| t.kind == "next_up" }.new
+    tool.send(:record_invocation,
+              args: { limit: 5 }, result: { content: "ok" }, status: "error",
+              error_message: "boom", duration_ms: 10)
+
+    record = ToolInvocation.last
+    assert_nil record.arguments
+    assert_nil record.response
+    assert_nil record.error_message
+    assert_equal "error", record.status
+    assert_equal "jellyfin_next_up", record.tool_name
+  ensure
+    Current.workspace = nil
+    Current.api_token = nil
+  end
 end

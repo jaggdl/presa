@@ -4,11 +4,11 @@
     <span class="text-zinc-500"><%= invocation.created_at.strftime("%H:%M:%S") %></span>
     <%= tag.span invocation.tool_name, class: (invocation.success? ? "text-zinc-400" : "text-red-400/70") %>
     <span class="text-zinc-500"><%= invocation.duration_ms ? "#{invocation.duration_ms} ms" : "–" %></span>
-    <code class="text-zinc-400 flex-1 min-w-0 truncate"><%= truncate(format_invocation_arguments(invocation.arguments), length: 60) %></code>
+    <code class="text-zinc-400 flex-1 min-w-0 truncate"><%= invocation.arguments.presence ? truncate(format_invocation_arguments(invocation.arguments), length: 60) : nil %></code>
     <span class="text-zinc-500"><%= invocation.api_token.name.presence || "–" %></span>
   </div>
 
-  <div data-invocation-target="details" class="hidden border-t border-zinc-800/60 px-4 py-2 space-y-2">
+  <div data-invocation-target="details" class="hidden border-t border-zinc-800/60 px-4 py-2 space-y-2 cursor-text select-text">
     <% unless invocation.success? %>
       <div>
         <div class="text-red-400/70">Error</div>
@@ -17,7 +17,30 @@
     <% end %>
     <div>
       <div class="text-zinc-500">Arguments</div>
-      <code class="text-zinc-300 break-all"><%= format_invocation_arguments(invocation.arguments) %></code>
+      <% if rows = format_invocation_args_multiline(invocation.arguments) %>
+        <dl class="mt-1 space-y-0.5">
+          <% rows.each do |row| %>
+            <div class="flex gap-2">
+              <dt class="text-zinc-400 shrink-0"><%= row[:key] %></dt>
+              <dd class="text-zinc-300 break-all min-w-0"><%= row[:value] %></dd>
+            </div>
+          <% end %>
+        </dl>
+      <% end %>
     </div>
+    <div>
+      <div class="text-zinc-500">Output</div>
+      <% if output = format_invocation_output(invocation.response) %>
+        <pre class="mt-1 text-zinc-300 break-all whitespace-pre-wrap"><%= output %></pre>
+      <% end %>
+    </div>
+    <% if local_assigns[:logging_disabled] %>
+      <div class="flex items-center justify-between gap-3 border-t border-zinc-800/60 pt-2 text-xs text-zinc-500">
+        <span>Inputs &amp; outputs aren't being recorded for this workspace.</span>
+        <%= button_to "Enable logging", workspace_path(local_assigns[:workspace]), method: :patch,
+                      params: { workspace: { log_tool_data: true } },
+                      class: "shrink-0 rounded-md px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-medium cursor-pointer" %>
+      </div>
+    <% end %>
   </div>
 </li>

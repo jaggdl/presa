@@ -1,5 +1,5 @@
 <%= turbo_stream.append "tool-invocations" do %>
-  <%= render partial: "tool_invocations/invocation", collection: @tool_invocations %>
+  <%= render partial: "tool_invocations/invocation", collection: @tool_invocations, locals: { workspace: @workspace, logging_disabled: !@workspace.log_tool_data } %>
 <% end %>
 
 <%= turbo_stream.update "invocations-more" do %>

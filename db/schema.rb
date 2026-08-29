@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_28_000007) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_29_031520) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -148,6 +148,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_000007) do
   create_table "workspaces", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
+    t.boolean "log_tool_data", default: false, null: false
     t.string "name"
     t.string "share_code"
     t.string "share_code_digest"
