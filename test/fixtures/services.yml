@@ -48,6 +48,12 @@ google_analytics:
   name: Google Analytics
   config: {}
 
+google_calendar:
+  team: one
+  type: Services::GoogleCalendar
+  name: Google Calendar
+  config: {}
+
 strava:
   team: one
   type: Services::Strava

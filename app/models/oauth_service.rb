@@ -16,6 +16,12 @@ class OauthService < Service
   class_attribute :oauth_provider, default: nil
   class_attribute :oauth_scope, default: nil
 
+  # The service kind's API base URL for its tools' requests, e.g.
+  # "https://gmail.googleapis.com". Kinds whose tools hit multiple APIs (Google
+  # Analytics' Admin + Data APIs) pass a `base_url:` to `#client` instead of
+  # (or in addition to) declaring this.
+  class_attribute :oauth_api_base_url, default: nil
+
   tags :oauth
 
   has_one :oauth_grant, foreign_key: :service_id, dependent: :destroy
@@ -30,6 +36,20 @@ class OauthService < Service
   # The provider name (e.g. "google") for this service kind.
   def provider
     self.class.oauth_provider.to_s
+  end
+
+  # The composed HTTP client for this service's tools, against the given API
+  # base URL (defaulting to the kind's declared `oauth_api_base_url`). Tools
+  # use it to issue authorized requests: bearer-token injection and transport
+  # live here, resolved from this service's grant at call time and refreshed
+  # on demand. Memoized per base URL, so Google-Analytics-style kinds that
+  # hit multiple APIs hold one client each.
+  def client(base_url: self.class.oauth_api_base_url)
+    base = base_url.to_s.presence
+    raise ArgumentError, "OAuth API base URL is not configured for #{self.class.kind}" if base.blank?
+
+    @oauth_clients ||= {}
+    @oauth_clients[base] ||= Oauth::Client.new(base_url: base, token_source: self)
   end
 
   def connected?

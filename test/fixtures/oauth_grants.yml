@@ -17,3 +17,13 @@ google_analytics_grant:
   token_type: Bearer
   scope: https://www.googleapis.com/auth/analytics.readonly
   expires_at: <%= 2.hours.from_now %>
+
+google_calendar_grant:
+  service: google_calendar
+  oauth_client_credential: google_credential
+  provider: google
+  access_token: fresh_access
+  refresh_token: refresh_1
+  token_type: Bearer
+  scope: https://www.googleapis.com/auth/calendar
+  expires_at: <%= 2.hours.from_now %>
