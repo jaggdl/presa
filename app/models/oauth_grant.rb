@@ -15,10 +15,12 @@ class OauthGrant < ApplicationRecord
   # Refresh slightly before the token truly expires to avoid a doomed request.
   REFRESH_LEEWAY = 30.seconds
 
-  # True when the access token is missing or has (or is about to) expire and so
-  # should be refreshed (or re-acquired) before use.
+  # True when the access token has (or is about to) expire and so should be
+  # refreshed before use. A nil expires_at means the provider issued a
+  # non-rotating token (e.g. Notion, whose integration tokens never expire),
+  # which is treated as not expired — those kinds are also not refreshable.
   def expired?
-    expires_at.nil? || expires_at <= Time.current + REFRESH_LEEWAY
+    expires_at.present? && expires_at <= Time.current + REFRESH_LEEWAY
   end
 
   # True when we hold a refresh token capable of restoring a fresh access token.

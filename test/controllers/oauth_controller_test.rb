@@ -36,7 +36,7 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
   test "callback exchanges the code and persists a grant on the service" do
     @service.oauth_grant.destroy!
     fake_exchange = Class.new do
-      def exchange_code(token_uri:, code:, client_id:, client_secret:, redirect_uri:)
+      def exchange_code(token_uri:, code:, client_id:, client_secret:, redirect_uri:, client_auth: :form)
         { "access_token" => "exchanged_access", "refresh_token" => "exchanged_refresh", "expires_in" => 3600 }
       end
     end
@@ -85,7 +85,7 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
 
   test "callback creates a service and its grant from a kind-based state" do
     fake_exchange = Class.new do
-      def exchange_code(token_uri:, code:, client_id:, client_secret:, redirect_uri:)
+      def exchange_code(token_uri:, code:, client_id:, client_secret:, redirect_uri:, client_auth: :form)
         { "access_token" => "new_service_access", "refresh_token" => "new_service_refresh", "expires_in" => 3600 }
       end
     end

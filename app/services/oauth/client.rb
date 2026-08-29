@@ -15,17 +15,22 @@ module Oauth
   # HTTP 429 rate-limit responses are retried with exponential backoff,
   # honoring the Retry-After header when present. An injectable Faraday
   # `connection` is honored for tests, mirroring `Mcp::Client`.
+  #
+  # `default_headers` are merged into every request, letting a service pin
+  # required-but-per-call headers such as Notion's `Notion-Version` without
+  # the tool bases repeating them.
   class Client
     # How many times a rate-limited request is retried before the body is
     # returned as-is. Backoff starts at 1s (never a tight loop) and caps out.
     MAX_RETRIES = 3
     RETRY_AFTER_CAP = 60
 
-    def initialize(base_url:, token_source:, connection: nil, max_retries: MAX_RETRIES)
+    def initialize(base_url:, token_source:, connection: nil, max_retries: MAX_RETRIES, default_headers: {})
       @base_url = base_url
       @token_source = token_source
       @connection = connection
       @max_retries = max_retries
+      @default_headers = default_headers || {}
     end
 
     # GET against the API base URL, returning the parsed JSON body.
@@ -61,6 +66,7 @@ module Oauth
     def request(method, path, body: nil, params: {}, retries: 0)
       response = conn.public_send(method, path) do |req|
         req.headers["Authorization"] = "Bearer #{@token_source.authorized_token}"
+        req.headers.update(@default_headers) if @default_headers.any?
         req.params.update(params) if params.any?
         req.headers["Content-Type"] = "application/json" if body
         req.body = JSON.generate(body) if body

@@ -22,6 +22,16 @@ class OauthService < Service
   # (or in addition to) declaring this.
   class_attribute :oauth_api_base_url, default: nil
 
+  # Extra headers merged into every tool request for this service kind, e.g.
+  # Notion's required `Notion-Version` pin. Carried on the composed client so
+  # tool bases never repeat them.
+  class_attribute :oauth_api_headers, default: {}
+
+  # How the client credentials are presented to the provider's token endpoint:
+  # `:form` (Google/Spotify/Strava — client_id/client_secret in the form body)
+  # or `:basic` (Notion — an HTTP Basic Authorization header with a JSON body).
+  class_attribute :oauth_client_auth, default: :form
+
   tags :oauth
 
   has_one :oauth_grant, foreign_key: :service_id, dependent: :destroy
@@ -49,7 +59,11 @@ class OauthService < Service
     raise ArgumentError, "OAuth API base URL is not configured for #{self.class.kind}" if base.blank?
 
     @oauth_clients ||= {}
-    @oauth_clients[base] ||= Oauth::Client.new(base_url: base, token_source: self)
+    @oauth_clients[base] ||= Oauth::Client.new(
+      base_url: base,
+      token_source: self,
+      default_headers: self.class.oauth_api_headers
+    )
   end
 
   def connected?
@@ -114,7 +128,8 @@ class OauthService < Service
       code: code,
       client_id: client_credential.client_id,
       client_secret: client_credential.client_secret,
-      redirect_uri: redirect_uri
+      redirect_uri: redirect_uri,
+      client_auth: self.class.oauth_client_auth
     )
   end
 
@@ -184,7 +199,8 @@ class OauthService < Service
       token_uri: token_uri,
       refresh_token: grant.refresh_token,
       client_id: client.client_id,
-      client_secret: client.client_secret
+      client_secret: client.client_secret,
+      client_auth: self.class.oauth_client_auth
     )
     new_token = tokens["access_token"].presence
     raise Oauth::Error, "Refresh returned no access token; reconnect the service" if new_token.blank?

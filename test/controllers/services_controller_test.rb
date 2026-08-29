@@ -139,7 +139,8 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     get new_kind_service_services_path("gmail")
     assert_response :success
     assert_select "select[name=oauth_client_credential_id]"
-    assert_select "option", text: @user.oauth_client_credentials.first.name
+    assert_select "option", text: "Prod Google app"
+    refute_select "option", text: "Notion integration"
   end
 
   test "new does not crash for a non-OAuth service" do

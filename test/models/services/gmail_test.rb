@@ -67,7 +67,7 @@ class Services::GmailTest < ActiveSupport::TestCase
     service = services(:gmail)
 
     fake = Oauth::Exchange.new
-    fake.define_singleton_method(:refresh) do |token_uri:, refresh_token:, client_id:, client_secret:|
+    fake.define_singleton_method(:refresh) do |token_uri:, refresh_token:, client_id:, client_secret:, client_auth: :form|
       { "access_token" => "rotated_access", "expires_in" => 3600 }
     end
     service.instance_variable_set(:@exchange, fake)

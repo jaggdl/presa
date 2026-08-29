@@ -27,3 +27,12 @@ google_calendar_grant:
   token_type: Bearer
   scope: https://www.googleapis.com/auth/calendar
   expires_at: <%= 2.hours.from_now %>
+
+# Notion tokens never expire and are not refreshable: no expires_at or
+# refresh_token is stored.
+notion_grant:
+  service: notion
+  oauth_client_credential: notion_credential
+  provider: notion
+  access_token: notion_access
+  token_type: Bearer

@@ -9,6 +9,7 @@ require_relative "test_helpers/google_calendar_tools_helper"
 require_relative "test_helpers/strava_tools_helper"
 require_relative "test_helpers/spotify_tools_helper"
 require_relative "test_helpers/spotify_player_tools_helper"
+require_relative "test_helpers/notion_tools_helper"
 require_relative "test_helpers/places_tools_helper"
 require_relative "test_helpers/workspace_tools_helper"
 

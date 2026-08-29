@@ -61,6 +61,32 @@ class Oauth::ExchangeTest < ActiveSupport::TestCase
     assert_equal "new_acc", tokens["access_token"]
   end
 
+  test "exchange_code with basic auth sends JSON and a Basic Authorization header (Notion)" do
+    exchange = stub_exchange do |stub|
+      stub.post("/token") do |env|
+        assert_equal "Basic #{Base64.strict_encode64("cid:secret")}", env.request_headers["Authorization"]
+        assert_equal "application/json", env.request_headers["Content-Type"]
+        body = JSON.parse(env.body)
+        assert_equal "authorization_code", body["grant_type"]
+        assert_equal "code123", body["code"]
+        assert_equal "https://presa.example/oauth/callback", body["redirect_uri"]
+        assert_nil body["client_id"]
+        assert_nil body["client_secret"]
+        [ 200, { "content-type" => "application/json" }, JSON.generate("access_token" => "acc") ]
+      end
+    end
+
+    tokens = exchange.exchange_code(
+      token_uri: "https://oauth2.googleapis.com/token",
+      code: "code123",
+      client_id: "cid",
+      client_secret: "secret",
+      redirect_uri: "https://presa.example/oauth/callback",
+      client_auth: :basic
+    )
+    assert_equal "acc", tokens["access_token"]
+  end
+
   test "raises on a non-success token response" do
     exchange = stub_exchange do |stub|
       stub.post("/token") do |_env|

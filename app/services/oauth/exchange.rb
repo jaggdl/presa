@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "base64"
 require "faraday"
 require "json"
 require "uri"
@@ -36,18 +37,21 @@ module Oauth
 
     # Exchange an authorization `code` for an access (and refresh) token.
     # Returns a hash of token fields: {access_token, refresh_token, token_type,
-    # scope, expires_in} (absent keys omitted).
-    def exchange_code(token_uri:, code:, client_id:, client_secret:, redirect_uri:)
-      post_tokens(token_uri, grant_type: "authorization_code", code: code,
-                             client_id: client_id, client_secret: client_secret,
-                             redirect_uri: redirect_uri)
+    # scope, expires_in} (absent keys omitted). `client_auth` selects how the
+    # client credentials are presented: `:form` (the Google/Spotify/Strava
+    # convention — client_id/client_secret in the form body) or `:basic`, used
+    # by Notion, which demands them in an HTTP Basic Authorization header and a
+    # JSON body.
+    def exchange_code(token_uri:, code:, client_id:, client_secret:, redirect_uri:, client_auth: :form)
+      params = { grant_type: "authorization_code", code: code, redirect_uri: redirect_uri }
+      post_tokens(token_uri, params, client_id: client_id, client_secret: client_secret, client_auth: client_auth)
     end
 
     # Refresh an expired access token. Returns the same shape as
     # `exchange_code` (refresh_token may be absent/blank).
-    def refresh(token_uri:, refresh_token:, client_id:, client_secret:)
-      post_tokens(token_uri, grant_type: "refresh_token", refresh_token: refresh_token,
-                             client_id: client_id, client_secret: client_secret)
+    def refresh(token_uri:, refresh_token:, client_id:, client_secret:, client_auth: :form)
+      params = { grant_type: "refresh_token", refresh_token: refresh_token }
+      post_tokens(token_uri, params, client_id: client_id, client_secret: client_secret, client_auth: client_auth)
     end
 
     private
@@ -60,18 +64,28 @@ module Oauth
       end
     end
 
-    def post_tokens(token_uri, params)
-      response = conn(token_uri).post("", URI.encode_www_form(params)) do |req|
-        req.headers["Content-Type"] = "application/x-www-form-urlencoded"
-        req.headers["Accept"] = "application/json"
+    def post_tokens(token_uri, params, client_id:, client_secret:, client_auth:)
+      headers = { "Accept" => "application/json" }
+      body =
+        if client_auth == :basic
+          headers["Content-Type"] = "application/json"
+          headers["Authorization"] = "Basic #{Base64.strict_encode64("#{client_id}:#{client_secret}")}"
+          JSON.generate(params)
+        else
+          headers["Content-Type"] = "application/x-www-form-urlencoded"
+          URI.encode_www_form(params.merge(client_id: client_id, client_secret: client_secret))
+        end
+
+      response = conn(token_uri).post("", body) do |req|
+        req.headers.update(headers)
       end
 
-      body = parse(response.body)
+      parsed = parse(response.body)
       unless response.success?
-        raise Error, "OAuth token request failed (#{response.status}): #{sanitize(body)}"
+        raise Error, "OAuth token request failed (#{response.status}): #{sanitize(response.body)}"
       end
 
-      body.slice("access_token", "refresh_token", "token_type", "scope", "expires_in")
+      parsed.slice("access_token", "refresh_token", "token_type", "scope", "expires_in")
     end
 
     def parse(body)
