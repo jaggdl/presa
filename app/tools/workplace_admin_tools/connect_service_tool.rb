@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Connects (links) a service owned by the same team to a managed workspace.
   class ConnectServiceTool < Base
     description "Link a service to a managed workspace so its tools become available in that workspace"

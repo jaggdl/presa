@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Reads a managed workspace's currently connected services and the services
   # the team could still add to it (those of the same team not yet connected).
   class ReadWorkspaceServicesTool < Base

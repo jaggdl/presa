@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Disconnects (unlinks) a service from a managed workspace.
   class DisconnectServiceTool < Base
     description "Remove a service from a managed workspace"

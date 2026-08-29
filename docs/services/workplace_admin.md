@@ -1,13 +1,13 @@
-# Workspace
+# Workplace Admin
 
 Expose one or more of your workspaces as MCP tools so an agent can read and
 manage them directly — without you needing to open the web UI.
 
 ## Configuration
 
-Choose the workspace(s) this service may manage. A Workspace service is scoped
-strictly to your own workspaces: it can only read or change the workspaces you
-select, and never another user's data.
+Choose the workspace(s) this service may manage. A Workplace Admin service is
+scoped strictly to your own workspaces: it can only read or change the
+workspaces you select, and never another user's data.
 
 ### Which workspace(s) to manage
 

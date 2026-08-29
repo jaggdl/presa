@@ -11,6 +11,7 @@ class Service < ApplicationRecord
   class_attribute :config_icon, default: nil
   class_attribute :config_icon_invert, default: false
   class_attribute :config_category, default: nil
+  class_attribute :config_display_name, default: nil
   class_attribute :config_tags, default: []
 
   # Domain categories, declared per service implementation. A virtual attribute
@@ -55,6 +56,14 @@ class Service < ApplicationRecord
     def icon(value = nil)
       self.config_icon = value.to_s if value
       config_icon
+    end
+
+    # The user-facing product name for this service kind, e.g. "Workplace
+    # Admin". Defaults to the humanized kind ("Github", "Nano banana", ...);
+    # kinds with a name that humanize would mangle override it.
+    def display_name(value = nil)
+      self.config_display_name = value.to_s if value
+      config_display_name || kind.humanize
     end
 
     # Declares whether this kind's image needs CSS inversion to read as
@@ -162,6 +171,11 @@ class Service < ApplicationRecord
   # the kind has not declared an icon.
   def icon
     self.class.config_icon.presence || "placeholder.png"
+  end
+
+  # The user-facing product name for this service kind.
+  def display_name
+    self.class.display_name
   end
 
   # Whether the icon must be inverted to read on a dark background.

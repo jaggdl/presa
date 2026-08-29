@@ -36,7 +36,7 @@ class ServiceTest < ActiveSupport::TestCase
   test "test_connection? is true only for kinds with a real connectivity probe" do
     assert Services::Seerr.test_connection?, "seerr should support a connectivity probe"
     assert Services::Mcp.test_connection?, "mcp should support a connectivity probe"
-    assert_not Services::Workspace.test_connection?, "workspace has no connectivity probe"
+    assert_not Services::WorkplaceAdmin.test_connection?, "workplace admin has no connectivity probe"
     assert_not Services::Gmail.test_connection?, "OAuth services use the exchange, not a probe"
   end
 

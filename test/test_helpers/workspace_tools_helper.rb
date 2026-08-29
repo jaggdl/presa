@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-# Shared support for testing Workspace management tools. Builds a bound tool for
-# `kind` against the `workspace_manager` fixture (a Services::Workspace bound to
-# user `one`'s workspaces) and returns it bound to a fake service snapshot.
+# Shared support for testing Workplace Admin management tools. Builds a bound
+# tool for `kind` against the `workspace_manager` fixture (a
+# Services::WorkplaceAdmin bound to user `one`'s workspaces) and returns it
+# bound to a fake service snapshot.
 module WorkspaceToolsTestHelper
   # Builds a bound tool for `kind` bound to the workspace_manager service and
   # the given managed workspaces (default: the workspaces(:one) fixture). The

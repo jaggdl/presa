@@ -2,21 +2,21 @@
 
 require "test_helper"
 
-class Services::WorkspaceTest < ActiveSupport::TestCase
+class Services::WorkplaceAdminTest < ActiveSupport::TestCase
   test "is a registered service kind" do
-    assert_equal "workspace", Services::Workspace.kind
-    assert_includes Service.kinds, "workspace"
+    assert_equal "workplace_admin", Services::WorkplaceAdmin.kind
+    assert_includes Service.kinds, "workplace_admin"
   end
 
   test "requires at least one workspace" do
-    service = Services::Workspace.new(name: "Admin", team: teams(:one))
+    service = Services::WorkplaceAdmin.new(name: "Admin", team: teams(:one))
     service.config = { workspace_ids: [] }
     assert_not service.valid?
     assert service.errors[:config].any? { |e| e.to_s.include?("workspace") }
   end
 
   test "managed_workspaces scopes to the owner's configured workspaces" do
-    service = Services::Workspace.new(name: "Admin", team: teams(:one))
+    service = Services::WorkplaceAdmin.new(name: "Admin", team: teams(:one))
     service.config = { workspace_ids: [ workspaces(:one).id, workspaces(:two).id ] }
 
     ids = service.managed_workspaces.pluck(:id)
@@ -25,8 +25,13 @@ class Services::WorkspaceTest < ActiveSupport::TestCase
   end
 
   test "manages_workspace? is false for a foreign workspace" do
-    service = Services::Workspace.new(name: "Admin", team: teams(:one))
+    service = Services::WorkplaceAdmin.new(name: "Admin", team: teams(:one))
     service.config = { workspace_ids: [ workspaces(:two).id ] }
     assert_not service.manages_workspace?(workspaces(:two))
+  end
+
+  test "declares the Workplace Admin display name" do
+    assert_equal "Workplace Admin", Services::WorkplaceAdmin.display_name
+    assert_equal "Workplace Admin", Services::WorkplaceAdmin.new.display_name
   end
 end

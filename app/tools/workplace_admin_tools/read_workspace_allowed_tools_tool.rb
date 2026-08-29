@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Reads a workspace's connected services and, for each, the tools it currently
   # allows (their MCP tool names) plus every tool the service exposes.
   class ReadWorkspaceAllowedToolsTool < Base

@@ -74,6 +74,6 @@ places:
 
 workspace_manager:
   team: one
-  type: Services::Workspace
+  type: Services::WorkplaceAdmin
   name: Workspace Admin
   config: <%= { workspace_ids: [ 1 ] }.to_json %>

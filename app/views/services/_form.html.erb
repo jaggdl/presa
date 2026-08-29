@@ -74,7 +74,7 @@
 
       <%= form.fields_for :config do |cf| %>
         <% service.config_schema.each do |field, opts| %>
-          <% if service.is_a?(Services::Workspace) && field == "workspace_ids" %>
+          <% if service.is_a?(Services::WorkplaceAdmin) && field == "workspace_ids" %>
             <div class="my-5">
               <span class="block text-sm text-zinc-400">Workspaces to manage</span>
               <div class="mt-2 space-y-1">

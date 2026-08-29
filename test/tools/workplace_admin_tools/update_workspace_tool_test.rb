@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class WorkspaceToolsUpdateWorkspaceToolTest < ActiveSupport::TestCase
+class WorkplaceAdminToolsUpdateWorkspaceToolTest < ActiveSupport::TestCase
   include WorkspaceToolsTestHelper
 
   test "is exposed for workspace services" do

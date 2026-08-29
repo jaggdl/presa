@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Reads a managed workspace's recent tool-invocation history.
   class ReadWorkspaceInvocationsTool < Base
     description "Read a managed workspace's recent tool invocations"

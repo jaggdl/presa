@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Abstract base for workspace-management tools. Not exposed directly.
-  # Resolves the bound Workspace service and provides helpers to look up a
-  # workspace within the service's managed set. All tools are scoped to the
-  # owning team's workspaces, so a Workspace service can never mutate another
-  # team's data.
+  # Resolves the bound Workplace Admin service and provides helpers to look up
+  # a workspace within the service's managed set. All tools are scoped to the
+  # owning team's workspaces, so a Workplace Admin service can never mutate
+  # another team's data.
   class Base < ApplicationTool
-    service_kind :workspace
+    service_kind :workplace_admin
     abstract_tool true
 
     private
 
-    # The bound Workspace service instance.
+    # The bound Workplace Admin service instance.
     def workspace_service
       service
     end

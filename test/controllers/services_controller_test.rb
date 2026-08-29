@@ -36,14 +36,14 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   test "create builds the chosen service kind" do
     assert_difference -> { @user.services.count }, 2 do
       post services_path, params: { service: { name: "Staging2", kind: "github", config: { api_token: "tok", base_url: "https://api.github.com" } } }
-      post services_path, params: { service: { name: "Admin", kind: "workspace", config: { workspace_ids: [ workspaces(:one).id, workspaces(:two).id ] } } }
+      post services_path, params: { service: { name: "Admin", kind: "workplace_admin", config: { workspace_ids: [ workspaces(:one).id, workspaces(:two).id ] } } }
     end
 
     assert_redirected_to services_path
     assert_equal Services::Github, @user.services.where(name: "Staging2").first.class
 
     admin = @user.services.where(name: "Admin").first!
-    assert_equal Services::Workspace, admin.class
+    assert_equal Services::WorkplaceAdmin, admin.class
     assert_equal [ workspaces(:one).id.to_s, workspaces(:two).id.to_s ], admin.config[:workspace_ids]
   end
 

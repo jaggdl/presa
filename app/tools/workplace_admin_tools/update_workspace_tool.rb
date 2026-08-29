@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Updates a managed workspace's name and/or description.
   class UpdateWorkspaceTool < Base
     description "Update a managed workspace's name and/or description"

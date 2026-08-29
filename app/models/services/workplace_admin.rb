@@ -9,10 +9,11 @@ module Services
   # Unlike HTTP/OAuth services, it holds no credentials: its only config is the
   # set of workspace IDs it is allowed to manage, picked in the service form so
   # the granted scope is explicit. All tools are scoped to the service owner's
-  # team workspaces, so a Workspace service can never touch another team's data.
-  class Workspace < Service
-    kind :workspace
-    icon "workspace.png"
+  # team workspaces, so a Workplace Admin service can never touch another team's data.
+  class WorkplaceAdmin < Service
+    kind :workplace_admin
+    icon "workplace_admin.png"
+    display_name "Workplace Admin"
     category :built_in
 
     config_field :workspace_ids, array: true

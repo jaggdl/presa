@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module WorkspaceTools
+module WorkplaceAdminTools
   # Sets a workspace's allowed tools for a connected service. Pass `all: true`
   # to allow every tool the service exposes, or a list of tool keys (the stable
   # identifiers used to select tools) to restrict to a subset.
