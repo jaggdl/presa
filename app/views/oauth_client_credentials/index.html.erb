@@ -16,8 +16,9 @@
     <table class="w-full text-left mt-4">
       <tbody>
         <% @credentials.each do |cred| %>
-          <tr class="relative border-b border-zinc-800 transition hover:bg-zinc-800/50 focus-within:bg-zinc-800/50">
-            <td class="py-2 pl-2">
+          <tr class="border-b border-zinc-800 transition">
+            <td class="py-2 pl-2 pr-2 rounded-l relative hover:bg-zinc-800/50 focus-within:bg-zinc-800/50">
+              <%= link_to "", edit_oauth_client_credential_path(cred), class: "absolute inset-0", aria: { label: cred.name } %>
               <div class="flex items-center gap-3">
                 <%= oauth_provider_icon(cred.provider, size: "h-5 w-5") %>
                 <div>
@@ -35,9 +36,6 @@
                   <%= icon "trash", class: "h-4 w-4" %>
                 <% end %>
               </span>
-            </td>
-            <td>
-              <%= link_to "", edit_oauth_client_credential_path(cred), class: "absolute inset-0", aria: { label: cred.name } %>
             </td>
           </tr>
         <% end %>

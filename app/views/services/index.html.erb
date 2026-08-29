@@ -16,8 +16,9 @@
     <table class="w-full text-left mt-4">
       <tbody>
         <% @services.each do |service| %>
-          <tr class="relative border-b border-zinc-800 transition hover:bg-zinc-800/50 focus-within:bg-zinc-800/50">
-            <td class="py-2 pl-2">
+          <tr class="border-b border-zinc-800 transition">
+            <td class="py-2 pl-2 pr-2 rounded-l relative hover:bg-zinc-800/50 focus-within:bg-zinc-800/50">
+              <%= link_to "", service_path(service), class: "absolute inset-0", aria: { label: service.name } %>
               <div class="flex items-center gap-3">
                 <span class="relative flex-shrink-0">
                   <%= service_icon(service, size: :md) %>
@@ -34,9 +35,6 @@
                 <%= render "shared/workspace_count_badge", title: "Linked workspaces", count: service.workspaces.count, label: "workspace" %>
                 <span><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
               </span>
-            </td>
-            <td>
-              <%= link_to "", service_path(service), class: "absolute inset-0", aria: { label: service.name } %>
             </td>
           </tr>
         <% end %>
