@@ -16,6 +16,8 @@ class OauthService < Service
   class_attribute :oauth_provider, default: nil
   class_attribute :oauth_scope, default: nil
 
+  tags :oauth
+
   has_one :oauth_grant, foreign_key: :service_id, dependent: :destroy
 
   validate :provider_configured

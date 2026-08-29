@@ -25,6 +25,7 @@ class Service < ApplicationRecord
     media: "media",
     automation: "automation",
     fitness: "fitness",
+    built_in: "built_in",
     general: "general"
   }
 

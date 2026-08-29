@@ -13,7 +13,7 @@ module Services
   class Workspace < Service
     kind :workspace
     icon "workspace.png"
-    category :automation
+    category :built_in
 
     config_field :workspace_ids, array: true
 
