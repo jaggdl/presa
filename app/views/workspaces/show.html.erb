@@ -127,29 +127,45 @@
   <% end %>
 
   <% if @available_services.any? %>
-    <div data-controller="add-service" class="mt-4">
-      <button type="button" data-action="add-service#toggle" data-add-service-target="button"
-              class="w-full flex items-center justify-center gap-2 rounded-md px-3.5 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 font-medium cursor-pointer">
+    <div data-controller="add-service">
+      <button type="button" data-action="add-service#open"
+              class="w-full flex items-center justify-center gap-2 py-2 text-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 font-medium cursor-pointer">
         <%= icon "plus", class: "size-4" %>
         Add service
       </button>
 
-      <div data-add-service-target="list" class="hidden mt-2">
-        <% @available_services.each do |service| %>
-          <%= button_to workspace_workspace_services_path(@workspace, service_id: service.id), method: :post, class: "w-full text-left block border-b border-zinc-800 hover:bg-zinc-800/50 transition" do %>
-            <span class="flex items-center gap-3 px-2 py-2">
-              <span class="relative flex-shrink-0">
-                <%= service_icon(service, size: :md) %>
+      <%= render "shared/dialog", controller: "add-service", id: "add-service-dialog", width_class: "w-[28rem]" do %>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-xl">Add service</h3>
+          <button type="button" data-action="add-service#close" class="text-zinc-400 hover:text-zinc-200 transition" aria-label="Close">
+            <%= icon "x", class: "size-5" %>
+          </button>
+        </div>
+
+        <div class="relative mb-3">
+          <%= icon "search", class: "size-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" %>
+          <input type="search" data-add-service-target="input" data-action="input->add-service#filter"
+                 placeholder="Search services"
+                 class="w-full pl-9 pr-3 py-2 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 focus:outline-blue-600 placeholder-zinc-500">
+        </div>
+
+        <div class="overflow-y-auto h-72 -mx-6 px-6">
+          <% @available_services.each do |service| %>
+            <%= button_to workspace_workspace_services_path(@workspace, service_id: service.id), method: :post, class: "w-full text-left block border-b border-zinc-800 hover:bg-zinc-800/50 transition", data: { add_service_target: "row", search: "#{service.name.downcase} #{service.kind.downcase}" } do %>
+              <span class="flex items-center gap-3 py-2">
+                <span class="relative flex-shrink-0">
+                  <%= service_icon(service, size: :md) %>
+                </span>
+                <span class="flex-1 min-w-0">
+                  <span class="block text-zinc-100"><%= service.name %></span>
+                  <span class="block text-xs text-zinc-500"><%= service.kind %></span>
+                </span>
+                <%= icon "plus", class: "size-4 shrink-0 text-zinc-500" %>
               </span>
-              <span class="flex-1 min-w-0">
-                <span class="block text-zinc-100"><%= service.name %></span>
-                <span class="block text-xs text-zinc-500"><%= service.kind %></span>
-              </span>
-              <%= icon "plus", class: "size-4 shrink-0 text-zinc-500" %>
-            </span>
+            <% end %>
           <% end %>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </div>
   <% end %>
 

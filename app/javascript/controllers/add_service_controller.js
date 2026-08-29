@@ -1,12 +1,32 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Toggles visibility of an "Add service" button vs the available-services list.
+// Manages the "Add service" modal that lists the available services for a
+// workspace. The modal is a native <dialog>; open/close lives here, and the
+// search input filters the list rows.
 export default class extends Controller {
-  static targets = ["button", "list"]
+  static targets = ["dialog", "input", "row"]
 
-  toggle() {
-    const showing = !this.listTarget.classList.contains("hidden")
-    this.listTarget.classList.toggle("hidden", showing)
-    this.buttonTarget.classList.toggle("hidden", !showing)
+  open() {
+    this.dialogTarget.showModal()
+    this.inputTarget.value = ""
+    this.filter("")
+  }
+
+  close() {
+    this.dialogTarget.close()
+  }
+
+  // Close the modal when the user clicks on the backdrop (outside the panel).
+  backdrop(event) {
+    if (event.target === this.dialogTarget) this.close()
+  }
+
+  // Filter the service rows by the search term against name and kind.
+  filter(event) {
+    const term = (event === "" ? "" : event.currentTarget?.value ?? "").trim().toLowerCase()
+    this.rowTargets.forEach((row) => {
+      const haystack = row.dataset.search.toLowerCase()
+      row.classList.toggle("hidden", !haystack.includes(term))
+    })
   }
 }
