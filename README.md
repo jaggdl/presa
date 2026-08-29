@@ -1,5 +1,7 @@
 # Presa
 
+<img src="app/assets/images/presa-icon.png" alt="Presa" width="96" align="right" />
+
 Presa is a **configurable [MCP](https://modelcontextprotocol.io) proxy that also exposes an agent skill**. Your external AI clients connect to it like any MCP server, or follow the plain-HTTP bot skill, and Presa proxies each request to whichever backend tools you've configured under a **workspace** — backed by your **services**.
 
 ```
