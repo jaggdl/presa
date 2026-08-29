@@ -22,18 +22,33 @@ class Services::NanoBananaTest < ActiveSupport::TestCase
     assert services(:nano_banana).valid?
   end
 
-  test "exposes the generate and edit tools" do
+  test "exposes the generate, edit and list_models tools" do
     kinds = ApplicationTool.expose_for(services(:nano_banana)).map(&:kind)
     assert_includes kinds, "generate_image"
     assert_includes kinds, "edit_image"
     assert_includes kinds, "list_models"
   end
 
-  test "defaults to the flash model and validates model ids" do
-    service = services(:nano_banana)
+  test "defaults to the flash model" do
     assert_equal "gemini-3.1-flash-image", Services::NanoBanana::DEFAULT_MODEL
+  end
 
-    assert_raises(RuntimeError) { service.generate_image("x", model: "not-a-model") }
+  test "list_models returns image model ids from the API" do
+    service = services(:nano_banana)
+    response = Object.new
+    response.define_singleton_method(:success?) { true }
+    response.define_singleton_method(:body) do
+      JSON.generate(models: [
+        { "name" => "models/gemini-3.1-flash-image" },
+        { "name" => "models/gemini-3-pro-image" },
+        { "name" => "models/gemini-2.0-flash" }
+      ])
+    end
+    Faraday.singleton_class.send(:define_method, :get) { |_url, _params = nil, &_block| response }
+
+    assert_equal %w[gemini-3.1-flash-image gemini-3-pro-image], service.list_models
+  ensure
+    Faraday.singleton_class.send(:undef_method, :get)
   end
 
   test "url uses the requested model" do

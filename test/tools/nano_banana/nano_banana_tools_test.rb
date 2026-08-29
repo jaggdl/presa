@@ -26,7 +26,7 @@ class NanoBananaToolsTest < ActiveSupport::TestCase
 
     def list_models
       @calls << { method: :list_models }
-      [ { id: "gemini-3.1-flash-image", label: "Nano Banana 2", default: true } ]
+      [ "gemini-3.1-flash-image", "gemini-3-pro-image" ]
     end
   end
 
@@ -68,7 +68,7 @@ class NanoBananaToolsTest < ActiveSupport::TestCase
     result = tool.call
 
     assert_equal [ { method: :list_models } ], fake.calls
-    assert_equal [ { id: "gemini-3.1-flash-image", label: "Nano Banana 2", default: true } ], result
+    assert_equal [ "gemini-3.1-flash-image", "gemini-3-pro-image" ], result
   end
 
   test "edit_image calls the service with the prompt and image uri" do
