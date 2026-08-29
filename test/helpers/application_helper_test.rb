@@ -23,4 +23,18 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "", render_markdown(nil)
     assert_equal "", render_markdown("   ")
   end
+
+  test "tool_weight_level classifies tool counts into three levels" do
+    low = tool_weight_level(0)
+    assert_equal "Low", low[:label]
+    assert_equal "leaf", low[:icon]
+
+    moderate = tool_weight_level(30)
+    assert_equal "Moderate", moderate[:label]
+    assert_equal "activity", moderate[:icon]
+
+    high = tool_weight_level(80)
+    assert_equal "High", high[:label]
+    assert_equal "flame", high[:icon]
+  end
 end

@@ -104,6 +104,19 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_select "textarea[name='workspace[description]']"
   end
 
+  test "show renders workspace stats row" do
+    sign_in_as @user
+    workspace = workspaces(:one)
+
+    get workspace_path(workspace)
+
+    assert_response :success
+    assert_select "div.text-sm", text: "Errors in 24h"
+    assert_select "div.text-sm", text: "Allowed tools"
+    assert_select "div.text-sm", text: "Clients"
+    assert_select "div.text-sm", text: "Invocations in 24h"
+  end
+
   test "show does not expose another user's workspace" do
     sign_in_as @user
 

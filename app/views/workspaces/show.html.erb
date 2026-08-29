@@ -49,6 +49,42 @@
     </div>
   </div>
 
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+    <div class="rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+      <div class="flex items-center gap-2">
+        <%= icon "wrench", class: "size-5 text-zinc-400" %>
+        <span class="text-2xl font-bold"><%= @allowed_tools_count %></span>
+        <% weight = tool_weight_level(@allowed_tools_count) %>
+        <span class="flex items-center gap-1 text-xs <%= weight[:text] %>" title="Tool weight">
+          <%= icon weight[:icon], class: "size-3.5" %>
+          <%= weight[:label] %>
+        </span>
+      </div>
+      <div class="text-sm text-zinc-500 mt-1">Allowed tools</div>
+    </div>
+    <div class="rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+      <div class="flex items-center gap-2">
+        <%= icon "activity", class: "size-5 text-zinc-400" %>
+        <span class="text-2xl font-bold"><%= @workspace.invocation_count %></span>
+      </div>
+      <div class="text-sm text-zinc-500 mt-1">Invocations in 24h</div>
+    </div>
+    <div class="rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+      <div class="flex items-center gap-2">
+        <%= icon "circle-alert", class: "size-5 text-zinc-400" %>
+        <span class="text-2xl font-bold"><%= @workspace.error_count %></span>
+      </div>
+      <div class="text-sm text-zinc-500 mt-1">Errors in 24h</div>
+    </div>
+    <div class="rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+      <div class="flex items-center gap-2">
+        <%= icon "users", class: "size-5 text-zinc-400" %>
+        <span class="text-2xl font-bold"><%= @workspace.api_token_count %></span>
+      </div>
+      <div class="text-sm text-zinc-500 mt-1">Clients</div>
+    </div>
+  </div>
+
   <h2 class="font-bold text-2xl mt-10">Services</h2>
 
   <% if @linked_services.any? %>

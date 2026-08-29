@@ -21,6 +21,15 @@ module WorkspaceStats
     tool_invocations.where("tool_invocations.created_at >= ?", since).count
   end
 
+  # Number of failed (error) tool invocations recorded for this workspace
+  # since `since`.
+  def error_count(since: 24.hours.ago)
+    tool_invocations
+      .where(status: "error")
+      .where("tool_invocations.created_at >= ?", since)
+      .count
+  end
+
   class_methods do
     # Decorates each workspace in `relation` with its invocation count since
     # `since`, using a single grouped query instead of one per workspace.

@@ -26,6 +26,20 @@ module ApplicationHelper
 
   private
 
+  # Classifies how loaded a workspace is by the number of allowed tools, so a
+  # single "read the thermometer" glance conveys whether a workspace has few,
+  # a reasonable number, or far too many tools. Returns the icon name, Tailwind
+  # text color, and a human label for the level.
+  def tool_weight_level(count)
+    if count >= 80
+      { icon: "flame",   label: "High",     text: "text-red-400" }
+    elsif count >= 30
+      { icon: "activity", label: "Moderate", text: "text-amber-400" }
+    else
+      { icon: "leaf",    label: "Low",      text: "text-emerald-400" }
+    end
+  end
+
   # Formats a tool invocation's arguments JSON hash as a compact, readable
   # "key: value" string, so rows show "movieId: 5, query: dune" instead of raw
   # JSON syntax. Strings are quoted to make empty strings and spaces visible.

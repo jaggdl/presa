@@ -41,6 +41,9 @@ class WorkspacesController < ApplicationController
     # Prefetch remote tool lists in parallel so per-service enabled-tool counts
     # don't trigger a serial MCP discovery round-trip per service.
     Services::Mcp.warm_remote_tools(@linked_services)
+    @allowed_tools_count = @ws_links.values.sum do |join|
+      join.enabled_tool_count(ApplicationTool.expose_for(join.service))
+    end
     @tool_invocations = ToolInvocation.for_workspace(@workspace).recent(50).includes(:service, :api_token)
     @share_code = @workspace.share_code
     @skill_url = bots_skill_url
