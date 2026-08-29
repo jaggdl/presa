@@ -32,6 +32,7 @@ module Services
     kind :mcp
     icon "mcp.png"
     category :general
+    tags :mcp
 
     config_field :url, required: true
     config_field :headers, default: "{}", textarea: true

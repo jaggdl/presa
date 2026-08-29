@@ -1,0 +1,6 @@
+<span class="mt-1 flex flex-wrap items-center gap-1">
+  <span class="text-[10px] -ml-1 rounded-full border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-zinc-400"><%= entity.category.humanize %></span>
+  <% entity.tags.each do |tag| %>
+    <span class="text-[10px] rounded-full border border-blue-700/50 bg-blue-950/40 px-2 py-0.5 text-blue-400"><%= tag %></span>
+  <% end %>
+</span>

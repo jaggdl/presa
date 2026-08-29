@@ -5,11 +5,7 @@
     <% @kinds.each do |kind| %>
       <% klass = Service.class_for_kind(kind) %>
       <%= link_to new_kind_service_services_path(kind), class: "relative flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
-        <%= service_icon(klass.new, size: :lg) %>
-        <span class="flex-1 min-w-0">
-          <span class="block truncate font-medium text-zinc-100"><%= kind.humanize %></span>
-          <span class="inline-block mt-1 -ml-1 text-[10px] rounded-full border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-zinc-400"><%= klass.category.humanize %></span>
-        </span>
+        <%= render "services/header", service: klass.new %>
         <%= icon "plus", class: "size-6 text-zinc-500" %>
       <% end %>
     <% end %>

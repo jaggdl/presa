@@ -11,6 +11,7 @@ class Service < ApplicationRecord
   class_attribute :config_icon, default: nil
   class_attribute :config_icon_invert, default: false
   class_attribute :config_category, default: nil
+  class_attribute :config_tags, default: []
 
   # Domain categories, declared per service implementation. A virtual attribute
   # (no column): each subclass's class-level `category` DSL sets the default,
@@ -67,6 +68,16 @@ class Service < ApplicationRecord
     def category(value = nil)
       self.config_category = value.to_s if value
       config_category || "general"
+    end
+
+    # Declares search/grouping tags for this service kind, e.g.
+    # `tags :mcp, :self_hosted`. Tags are inherited by subclasses (so tagging
+    # `Mcp` marks every MCP preset) unless the subclass declares its own.
+    def tags(*values)
+      if values.any?
+        self.config_tags = (config_tags + values.flatten.compact).map(&:to_s).uniq
+      end
+      config_tags
     end
 
     # The Markdown description for this service kind, read from
@@ -155,6 +166,11 @@ class Service < ApplicationRecord
   # Whether the icon must be inverted to read on a dark background.
   def invert_icon?
     self.class.config_icon_invert
+  end
+
+  # The tags declared for this service kind.
+  def tags
+    self.class.tags
   end
 
   def config

@@ -6,10 +6,7 @@
 
   <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-10">
     <div>
-      <div class="inline-flex items-center text-zinc-300">
-        <%= service_icon(@service, size: :lg) %>
-        <span class="ml-2 capitalize"><%= @service.kind.humanize %></span>
-      </div>
+      <%= render "services/header", service: @service %>
 
       <% if @service.description.present? %>
         <div class="mt-3">

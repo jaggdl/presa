@@ -1,0 +1,7 @@
+<div class="flex items-center gap-3 flex-1 min-w-0 text-zinc-300">
+  <%= service_icon(service, size: :lg) %>
+  <div class="min-w-0">
+    <span class="block truncate font-medium capitalize text-zinc-100"><%= service.kind.humanize %></span>
+    <%= render "services/pills", entity: service %>
+  </div>
+</div>
