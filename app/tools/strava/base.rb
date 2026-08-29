@@ -1,43 +1,20 @@
 # frozen_string_literal: true
 
-require "faraday"
-require "json"
-
 module Strava
-  # Abstract base for all Strava tools. Not exposed directly. Resolves the
-  # bound OAuth service's live access token (refreshing it if needed) and
-  # issues authorized requests against the Strava v3 REST API.
+  # Abstract base for all Strava tools. Not exposed directly. HTTP transport
+  # and OAuth bearer-token injection live on the service (composed via
+  # `Oauth::Client`); this base only shapes requests to the Strava v3 REST API.
   class Base < ApplicationTool
     service_kind :strava
     abstract_tool true
 
-    STRAVA_API = "https://www.strava.com/api/v3"
-
-    # Overridable in tests to inject a fake Faraday connection.
-    def conn
-      @conn ||= Faraday.new(url: STRAVA_API) do |faraday|
-        faraday.request :json
-        faraday.response :json, content_type: /\bjson$/
-        faraday.adapter Faraday.default_adapter
-        faraday.options.timeout = 30
-        faraday.options.open_timeout = 10
-      end
-    end
-
     private
 
     # GET against the Strava API, returning the parsed JSON body. `path` is
-    # relative to STRAVA_API's base (e.g. "athlete"); a leading slash would
-    # make Faraday drop the base path and hit the marketing site.
+    # relative to the service's API base (e.g. "athlete"); a leading slash
+    # would make Faraday drop the base path and hit the marketing site.
     def strava_get(path, params: {})
-      conn.get(path) do |req|
-        req.headers["Authorization"] = "Bearer #{authorized_token}"
-        req.params.update(params)
-      end.body
-    end
-
-    def authorized_token
-      service.authorized_token
+      service.client.get(path, params: params)
     end
   end
 end

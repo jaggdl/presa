@@ -13,5 +13,6 @@ module Services
 
     self.oauth_provider = :strava
     self.oauth_scope = "activity:read_all,profile:read_all"
+    self.oauth_api_base_url = "https://www.strava.com/api/v3"
   end
 end
