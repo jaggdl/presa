@@ -32,7 +32,7 @@
             </td>
             <td class="py-2 text-right pr-2">
               <span class="inline-flex items-center justify-end gap-2 text-xs text-zinc-500">
-                <%= render "shared/workspace_count_badge", title: "Linked workspaces", count: service.workspaces.count, label: "workspace" %>
+                <%= render "shared/workspace_count_badge", title: "Linked workspaces", count: service.workspaces.size, label: "workspace" %>
                 <span><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
               </span>
             </td>
