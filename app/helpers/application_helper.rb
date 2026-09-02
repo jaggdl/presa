@@ -24,24 +24,6 @@ module ApplicationHelper
     content_tag(:div, raw(html), class: "prose prose-invert prose-zinc max-w-none")
   end
 
-  # A short plain-text preview of a service kind's Markdown description, for
-  # card layouts. Strips formatting/link markup, collapses whitespace, and
-  # clamps the length to a word boundary.
-  def service_description_preview(service, limit: 100)
-    text = service.description.to_s
-    return nil if text.blank?
-
-    preview = text
-      .gsub(/^\s*#.*$/m, "")
-      .gsub(/\*\*([^*]+)\*\*/, '\1')
-      .gsub(/\*([^*]+)\*/, '\1')
-      .gsub(/\[([^\]]*)\]\([^)]*\)/, '\1')
-      .gsub(/`([^`]*)`/, '\1')
-      .gsub(/\s+/, " ")
-      .strip
-    preview.presence&.truncate(limit, separator: " ")
-  end
-
   private
 
   # Classifies how loaded a workspace is by the number of allowed tools, so a

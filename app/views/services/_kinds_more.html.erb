@@ -1,0 +1,11 @@
+<div id="kinds-more" class="mt-6">
+  <% if show_more %>
+    <%= form_with url: services_path, method: :get, data: { turbo_stream: true } do |form| %>
+      <%= form.hidden_field :q, value: q %>
+      <%= form.hidden_field :offset, value: offset %>
+      <button type="submit" class="w-full block text-sm text-zinc-400 hover:text-zinc-200 transition cursor-pointer font-medium py-2 rounded-md border border-zinc-800 hover:bg-zinc-900">
+        Show more
+      </button>
+    <% end %>
+  <% end %>
+</div>

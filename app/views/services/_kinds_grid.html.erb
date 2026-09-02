@@ -1,0 +1,14 @@
+<% if local_assigns[:append] %>
+  <% kinds.each do |kind| %>
+    <%= render "services/kind_card", kind: kind %>
+  <% end %>
+<% else %>
+  <div id="kinds-grid" class="<%= kinds.any? ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8" : "mt-8" %>">
+    <% kinds.each do |kind| %>
+      <%= render "services/kind_card", kind: kind %>
+    <% end %>
+    <% if kinds.empty? && q.present? %>
+      <p class="text-zinc-500">No services match &quot;<%= q %>&quot;.</p>
+    <% end %>
+  </div>
+<% end %>

@@ -18,6 +18,44 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", text: "Prod"
   end
 
+  test "index limits kind cards to the first page" do
+    get services_path
+    assert_response :success
+    assert_select "a[href$='/new']", count: Service::KINDS_PER_PAGE
+    assert_select "#kinds-more button", text: "Show more", count: 1
+  end
+
+  test "index filters kind cards by search term" do
+    get services_path, params: { q: "github" }
+    assert_response :success
+    assert_select "a[href$='/new']", count: 1
+    assert_select "span", text: "Github"
+    refute_match(/Show more/, response.body)
+  end
+
+  test "index turbo streams the filtered grid on search" do
+    get services_path, params: { q: "github" }, headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+    assert_match(/text\/vnd\.turbo-stream/, response.content_type)
+    assert_match(/turbo-stream action="replace"/, response.body)
+    assert_match(/kinds-grid/, response.body)
+    assert_includes response.body, "Github"
+  end
+
+  test "index paginates kind cards past the first page" do
+    get services_path, params: { offset: Service::KINDS_PER_PAGE }
+    assert_response :success
+    assert_select "a[href$='/new']", count: Service.kinds.length - Service::KINDS_PER_PAGE
+  end
+
+  test "index appends cards on show more via turbo stream" do
+    get services_path, params: { offset: Service::KINDS_PER_PAGE }, headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+    assert_match(/turbo-stream action="append"/, response.body)
+    assert_match(/target="kinds-grid"/, response.body)
+    refute_match(/turbo-stream action="replace" [^>]*kinds-grid/, response.body)
+  end
+
   test "index does not crash when a service's MCP endpoint is unreachable" do
     service = @user.teams.first.services.create!(name: "Broken", type: "Services::Mcp",
                                      config: { url: "https://example.com/broken", headers: "{}" })

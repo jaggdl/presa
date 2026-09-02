@@ -1,0 +1,19 @@
+<% klass = Service.class_for_kind(kind) %>
+<% card = klass.new %>
+<%= link_to new_kind_service_services_path(kind), class: "relative flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
+  <div class="flex items-start gap-3 min-w-0 flex-1 pr-2">
+    <span class="relative">
+      <%= service_icon(card, size: :lg) %>
+      <% card.tags.each do |tag| %>
+        <span class="pill pill--subtle absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap"><%= tag %></span>
+      <% end %>
+    </span>
+    <div class="min-w-0 flex-1">
+      <span class="block truncate font-medium capitalize text-zinc-100"><%= card.display_name %></span>
+      <% if preview = card.description_preview %>
+        <p class="mt-1 text-xs leading-relaxed text-zinc-500 line-clamp-2"><%= preview %></p>
+      <% end %>
+    </div>
+  </div>
+  <%= icon "plus", class: "size-6 text-zinc-500 shrink-0" %>
+<% end %>

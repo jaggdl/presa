@@ -3,11 +3,27 @@ class ServicesController < ApplicationController
 
   def index
     @services = Service.with_invocation_counts(Current.team.services.includes(:workspaces).order(:type, :name))
-    # Available service kinds a user can add, MCP first then alphabetical.
-    @kinds = Service.kinds.sort_by { |kind| [ kind == "mcp" ? 0 : 1, kind ] }
     # Prefetch remote tool lists in parallel so the per-row tool counts don't
     # trigger a serial MCP discovery round-trip per service.
     Services::Mcp.warm_remote_tools(@services)
+
+    @q = params[:q].to_s.strip
+    @offset = [ params[:offset].to_i, 0 ].max
+    matching_kinds = Service.search_kinds(term: @q)
+    @kinds = matching_kinds.drop(@offset).first(Service::KINDS_PER_PAGE)
+    @show_more = (@offset + @kinds.length) < matching_kinds.length
+
+    respond_to do |format|
+      format.turbo_stream do
+        grid_action = @offset.zero? ? "replace" : "append"
+        render turbo_stream: [
+          turbo_stream.public_send(grid_action, "kinds-grid", partial: "services/kinds_grid", locals: { kinds: @kinds, q: @q, append: !@offset.zero? }),
+          turbo_stream.replace("kinds-more", partial: "services/kinds_more",
+                               locals: { q: @q, offset: @offset + @kinds.length, show_more: @show_more })
+        ]
+      end
+      format.html
+    end
   end
 
   def new

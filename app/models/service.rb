@@ -1,4 +1,9 @@
 class Service < ApplicationRecord
+  include Describable
+
+  # The number of kinds shown per page in the services index grid.
+  KINDS_PER_PAGE = 12
+
   belongs_to :team
   has_many :workspace_services, dependent: :destroy
   has_many :workspaces, through: :workspace_services
@@ -124,6 +129,29 @@ class Service < ApplicationRecord
       concrete_service_classes.find { |klass| klass.kind == kind && offerable?(klass) }
     end
 
+    # All offerable kinds, MCP first then alphabetical.
+    def ordered_kinds
+      kinds.sort_by { |kind| [ kind == "mcp" ? 0 : 1, kind ] }
+    end
+
+    # Kinds whose display name, tags, category, or description match `term`
+    # (case-insensitive). With a blank term every kind matches, so callers can
+    # use this as the single source for the add-a-service picker.
+    def search_kinds(term: nil)
+      query = term.to_s.strip.downcase
+      return ordered_kinds if query.empty?
+
+      kinds.select do |kind|
+        klass = class_for_kind(kind)
+        next false unless klass
+
+        card = klass.new
+        haystack = [ card.display_name, card.tags.join(" "), card.category, card.description_plain ].compact.join(" ").downcase
+        haystack.include?(query)
+      end
+    end
+
+    # The number of kinds shown per page in the services index grid.
     def config_field(name, required: false, secret: false, default: nil, textarea: false, array: false)
       self.config_fields = config_fields.merge(name.to_sym => { required: required, secret: secret, default: default, textarea: textarea, array: array })
     end

@@ -1,30 +1,19 @@
 <div class="mx-auto md:w-3/4 w-full">
-  <h1 class="font-bold text-4xl">Services</h1>
-
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-    <% @kinds.each do |kind| %>
-      <% klass = Service.class_for_kind(kind) %>
-      <%= link_to new_kind_service_services_path(kind), class: "relative flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
-        <div class="flex items-start gap-3 min-w-0 flex-1 pr-2">
-          <div class="flex flex-col items-center shrink-0">
-            <span class="relative">
-              <%= service_icon(klass.new, size: :lg) %>
-              <% klass.new.tags.each do |tag| %>
-                <span class="pill pill--subtle absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap"><%= tag %></span>
-              <% end %>
-            </span>
-          </div>
-          <div class="min-w-0 flex-1">
-            <span class="block truncate font-medium capitalize text-zinc-100"><%= klass.new.display_name %></span>
-            <% if preview = service_description_preview(klass.new) %>
-              <p class="mt-1 text-xs leading-relaxed text-zinc-500 line-clamp-2"><%= preview %></p>
-            <% end %>
-          </div>
-        </div>
-        <%= icon "plus", class: "size-6 text-zinc-500 shrink-0" %>
-      <% end %>
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="font-bold text-4xl">Services</h1>
+    <%= form_with url: services_path, method: :get, data: { controller: "services-search", turbo_stream: true } do |form| %>
+      <div class="relative w-full max-w-xs">
+        <%= icon "search", class: "size-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" %>
+        <%= form.search_field :q, value: params[:q], autocomplete: "off",
+              data: { services_search_target: "input", action: "input->services-search#submit" },
+              placeholder: "Search services",
+              class: "w-full pl-9 pr-3 py-2 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 focus:outline-blue-600 placeholder-zinc-500" %>
+      </div>
     <% end %>
   </div>
+
+  <%= render "services/kinds_grid", kinds: @kinds, q: @q %>
+  <%= render "services/kinds_more", q: @q, offset: @offset + @kinds.length, show_more: @show_more %>
 
   <% if @services.any? %>
     <h2 class="font-bold text-2xl mt-10">Configured services</h2>
