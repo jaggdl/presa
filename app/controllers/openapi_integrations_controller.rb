@@ -37,6 +37,7 @@ class OpenapiIntegrationsController < ApplicationController
     @entity = build_kind(definition)
 
     if @entity.save
+      @entity.enqueue_icon_fetch!
       matching_kinds = Service.search_kinds(term: params[:q].to_s)
       @kinds = matching_kinds.first(Service::KINDS_PER_PAGE)
       flash.now[:notice] = "Integration '#{@entity.title}' added. Create a service from the picker."

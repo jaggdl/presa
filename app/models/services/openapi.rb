@@ -126,6 +126,17 @@ module Services
       api_title.presence || super
     end
 
+    # The kind's attached icon (downloaded from the base URL host) when present,
+    # falling back to the generic placeholder. Returns a path `image_tag` can
+    # render without needing an absolute host.
+    def icon
+      if openapi_kind&.icon&.attached?
+        Rails.application.routes.url_helpers.rails_blob_path(openapi_kind.icon, only_path: true)
+      else
+        super
+      end
+    end
+
     # The kind's spec-derived description (cards/show header); legacy rows fall
     # back to the class-level docs description.
     def description

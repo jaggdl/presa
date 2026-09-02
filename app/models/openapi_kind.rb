@@ -10,9 +10,12 @@
 # Definition/namespace-level defaults live here (title, default base URL,
 # health-check defaults, extra-credential definitions); the per-service values
 # (credential fills, base URL override, health overrides) live on the service's
-# own encrypted `config`.
+# own encrypted `config`. An icon for the kind (and its services) is fetched
+# from the base URL host and stored via Active Storage.
 class OpenapiKind < ApplicationRecord
   belongs_to :team
+
+  has_one_attached :icon
 
   # Services of this kind. Destroy is restricted while instances exist so an
   # onboarded spec can't be dropped out from under live tools.
@@ -80,6 +83,13 @@ class OpenapiKind < ApplicationRecord
   def description
     definition["description"].to_s.presence ||
       "#{operation_count} operations across #{tag_count} tag#{"s" unless tag_count == 1}"
+  end
+
+  # Kicks off a background job that fetches this kind's icon from its base URL
+  # host and attaches it. Runs async so a slow/unavailable icon host never
+  # blocks the wizard; a failed fetch simply leaves the generic placeholder.
+  def enqueue_icon_fetch!
+    FetchOpenapiKindIconJob.perform_later(id) if base_url.present? && !icon.attached?
   end
 
   private
