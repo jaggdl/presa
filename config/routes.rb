@@ -41,6 +41,11 @@ Rails.application.routes.draw do
   post "openapi/parse", to: "openapi_integrations#parse", as: :openapi_parse
   post "openapi/kinds", to: "openapi_integrations#create_kind", as: :openapi_create_kind
 
+  # Registry presets (checked-in service presets under registry/): installing a
+  # preset creates the actual service kind in the DB (an `OpenapiKind` for
+  # openapi presets) and redirects to its new-service page.
+  post "registry/:type/:name/install", to: "registry#install", as: :install_registry_preset
+
   # OAuth browser dance. `start` bounces the user to the provider; `callback`
   # receives the authorization code. A single global callback keeps the
   # registered provider redirect_uri constant; the target service + client

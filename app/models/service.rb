@@ -95,6 +95,14 @@ class Service < ApplicationRecord
       config_tags
     end
 
+    # Whether this kind is a checked-in registry preset (e.g. an OpenAPI preset
+    # that has no backing Ruby subclass nor created-by-the-user OpenapiKind
+    # yet). Preset cards render as static tiles until their creation flow is
+    # wired up.
+    def registry_preset?
+      false
+    end
+
     # The Markdown description for this service kind, read from
     # `docs/services/<kind>.md` when present. A leading top-level heading used
     # as a doc title is dropped from the rendered description.
@@ -115,7 +123,8 @@ class Service < ApplicationRecord
 
     def kinds
       concrete_service_classes.filter_map { |klass| klass.kind if offerable?(klass) } +
-        Services::Openapi.virtual_kinds
+        Services::Openapi.virtual_kinds +
+        Registry::Openapi.kinds
     end
 
     # A kind is offerable when its class declares config fields (plain services
@@ -128,7 +137,8 @@ class Service < ApplicationRecord
 
     def class_for_kind(kind)
       concrete_service_classes.find { |klass| klass.kind == kind && offerable?(klass) } ||
-        Services::Openapi.virtual_class_for(kind)
+        Services::Openapi.virtual_class_for(kind) ||
+        Registry::Openapi.virtual_class_for(kind)
     end
 
     # All offerable kinds, MCP first then alphabetical.

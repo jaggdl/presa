@@ -1,6 +1,9 @@
 <% klass = Service.class_for_kind(kind) %>
 <% card = klass.new %>
-<%= link_to new_kind_service_services_path(kind), class: "relative flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
+<% preset = klass.registry_preset? %>
+<% card_class = "relative flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 w-full text-left" %>
+<% card_class += preset ? " hover:bg-zinc-800 transition cursor-pointer" : " hover:bg-zinc-800 transition" %>
+<% content = capture do %>
   <div class="flex items-start gap-3 min-w-0 flex-1 pr-2">
     <span class="relative">
       <%= service_icon(card, size: :lg) %>
@@ -15,5 +18,14 @@
       <% end %>
     </div>
   </div>
-  <%= icon "plus", class: "size-6 text-zinc-500 shrink-0" %>
+  <%= icon(preset ? "download" : "plus", class: "size-6 #{preset ? "text-zinc-500" : "text-zinc-500"} shrink-0") %>
+<% end %>
+<% if preset %>
+  <%= button_to install_registry_preset_path(type: "openapi", name: kind), method: :post, class: card_class do %>
+    <%= content %>
+  <% end %>
+<% else %>
+  <%= link_to new_kind_service_services_path(kind), class: card_class do %>
+    <%= content %>
+  <% end %>
 <% end %>

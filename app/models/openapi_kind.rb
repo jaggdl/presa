@@ -78,10 +78,12 @@ class OpenapiKind < ApplicationRecord
     list.is_a?(Array) ? list : []
   end
 
-  # Card/subheader description: the spec's own description when present, else a
-  # short spec-derived summary.
+  # Card/subheader description: a stored (wizard-entered or preset) description
+  # wins; otherwise the spec's own description, else a short spec-derived
+  # summary.
   def description
-    definition["description"].to_s.presence ||
+    read_attribute(:description).to_s.strip.presence ||
+      definition["description"].to_s.presence ||
       "#{operation_count} operations across #{tag_count} tag#{"s" unless tag_count == 1}"
   end
 
