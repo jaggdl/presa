@@ -27,9 +27,9 @@
               <div class="text-xs text-zinc-500"><%= service.kind %></div>
             </div>
           </div>
-          <span class="inline-flex items-center justify-end gap-2 text-xs text-zinc-500">
+          <span class="inline-flex items-center justify-end gap-1.5 shrink-0">
             <%= render "shared/workspace_count_badge", title: "Linked workspaces", count: service.workspaces.size, label: "workspace" %>
-            <span><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
+            <span class="pill"><%= icon "activity", class: "size-3" %><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
           </span>
         </div>
       <% end %>

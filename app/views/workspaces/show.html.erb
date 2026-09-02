@@ -178,7 +178,7 @@
             </div>
           </div>
           <div class="flex items-center justify-end gap-3">
-            <span class="text-xs text-zinc-500"><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
+            <span class="pill"><%= icon "activity", class: "size-3" %><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
             <span class="relative z-10">
               <%= button_to workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Remove this service from the workspace?" } }, "aria-label": "Remove service" do %>
                 <%= icon "unlink", class: "size-5" %>

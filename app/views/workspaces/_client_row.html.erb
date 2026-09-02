@@ -29,8 +29,8 @@
           <% end %>
         </span>
       </span>
-      <span class="block text-xs text-zinc-500">
-        <%= pluralize(api_token.invocation_count, "invocation") %> in 24h
+      <span class="block">
+        <span class="pill"><%= icon "activity", class: "size-3" %><%= pluralize(api_token.invocation_count, "invocation") %> in 24h</span>
       </span>
     </div>
   </div>
