@@ -65,8 +65,7 @@ class OpenapiIntegrationsController < ApplicationController
     raw, root = Openapi::Parser.parse(source: source, input: input)
     Openapi::Parser.validate!(raw)
 
-    overrides = { "base_url" => params[:base_url].to_s.strip }
-    definition = Openapi::Generator.generate(root, source_url: (source == "url" ? input : nil), overrides: overrides)
+    definition = Openapi::Generator.generate(root, source_url: (source == "url" ? input : nil))
     [ definition, source ]
   end
 
@@ -96,30 +95,7 @@ class OpenapiIntegrationsController < ApplicationController
       base_url: base_url,
       spec_url: definition["spec_url"],
       definition: definition,
-      health_op: integration["health_op"].to_s.strip.presence,
-      health_identity: integration["health_identity"].to_s.strip.presence,
-      extra_credentials: extra_credentials_params
+      health_op: integration["health_op"].to_s.strip.presence
     )
-  end
-
-  # "+ Add method" rows: name/location (header/query/cookie) for extra
-  # credentials applied to every operation. These are *definitions* stored on
-  # the kind; each service fills its own value on its page. Cred keys are
-  # index-based so a re-render (invalid form) keeps the same field names.
-  def extra_credentials_params
-    rows = (params.dig(:integration, :extra_credentials) || [])
-    rows = rows.is_a?(Array) ? rows : []
-    rows.filter_map.with_index do |row, index|
-      row = row.is_a?(ActionController::Parameters) ? row.to_unsafe_h : (row.is_a?(Hash) ? row : {})
-      name = row["name"].to_s.strip
-      next if name.blank?
-
-      {
-        "name" => name,
-        "param_name" => name,
-        "in" => row["in"].to_s.presence || "header",
-        "cred_key" => "cred_extra_#{index}"
-      }
-    end
   end
 end

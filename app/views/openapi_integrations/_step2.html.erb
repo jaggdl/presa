@@ -23,7 +23,7 @@
     </div>
   </div>
 
-  <%= form_with url: openapi_create_kind_path, method: :post, class: "contents", data: { controller: "openapi-step2", openapi_step2_operations_value: operations_json(definition) } do |form| %>
+  <%= form_with url: openapi_create_kind_path, method: :post, class: "contents" do |form| %>
     <%= hidden_field_tag :draft_token, local_assigns[:token] %>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3">
@@ -58,13 +58,6 @@
       </div>
     <% end %>
 
-    <details class="my-3 text-sm">
-      <summary class="cursor-pointer text-zinc-400 hover:text-zinc-200">Spec overrides</summary>
-      <p class="text-xs text-zinc-500 mt-2 pb-2">
-        Advanced overrides are not supported yet; the integration exposes every operation from the spec.
-      </p>
-    </details>
-
     <div class="my-4">
       <span class="block text-sm text-zinc-400">How does this API authenticate?</span>
 
@@ -75,12 +68,6 @@
             <span class="text-xs text-zinc-500 font-mono"><%= auth_send_hint(slot) %></span>
           </div>
         <% end %>
-
-        <div class="pt-1 space-y-1" data-openapi-step2-target="extraAuth"></div>
-
-        <div class="pt-1">
-          <button type="button" data-action="openapi-step2#addMethod" class="text-xs text-blue-500 hover:underline">+ Add method</button>
-        </div>
 
         <p class="text-xs text-zinc-500 pt-1">Credentials aren't entered yet — add the integration first, then connect an account on its page.</p>
       </div>

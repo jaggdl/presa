@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_130000) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -76,7 +76,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_120000) do
     t.json "definition"
     t.text "description"
     t.json "extra_credentials", default: []
-    t.string "health_identity"
     t.string "health_op"
     t.string "namespace", null: false
     t.string "spec_url"
