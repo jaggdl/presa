@@ -163,41 +163,35 @@
   <h2 class="font-bold text-2xl">Services</h2>
 
   <% if @linked_services.any? %>
-    <table class="w-full text-left mt-4">
-      <tbody>
-        <% @linked_services.each do |service| %>
-          <tr class="border-b border-zinc-800 transition">
-            <td class="py-2 pl-2 pr-2 rounded-l relative hover:bg-zinc-800/50 focus-within:bg-zinc-800/50">
+    <div class="mt-4">
+      <% @linked_services.each do |service| %>
+        <div class="relative flex items-center justify-between gap-3 py-2 pl-2 pr-2 rounded-lg border-b border-zinc-800 hover:bg-zinc-800/50 focus-within:bg-zinc-800/50 transition">
+          <% if join = @ws_links[service.id] %>
+            <%= link_to "", workspace_workspace_service_path(@workspace, join), class: "absolute inset-0", aria: { label: service.name } %>
+          <% end %>
+          <div class="flex items-center gap-3">
+            <span class="relative flex-shrink-0">
+              <%= service_icon(service, size: :md) %>
               <% if join = @ws_links[service.id] %>
-                <%= link_to "", workspace_workspace_service_path(@workspace, join), class: "absolute inset-0", aria: { label: service.name } %>
+                <%= render "shared/tool_count_badge", title: "Enabled tools", count: join.enabled_tool_count(ApplicationTool.expose_for(join.service)), label: "enabled" %>
               <% end %>
-              <div class="flex items-center gap-3">
-                <span class="relative flex-shrink-0">
-                  <%= service_icon(service, size: :md) %>
-                  <% if join = @ws_links[service.id] %>
-                    <%= render "shared/tool_count_badge", title: "Enabled tools", count: join.enabled_tool_count(ApplicationTool.expose_for(join.service)), label: "enabled" %>
-                  <% end %>
-                </span>
-                <div>
-                  <span class="block font-medium text-zinc-100"><%= service.name %></span>
-                  <div class="text-xs text-zinc-500"><%= service.kind %></div>
-                </div>
-              </div>
-            </td>
-            <td class="py-2 text-right pr-2">
-              <div class="flex items-center justify-end gap-3">
-                <span class="text-xs text-zinc-500"><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
-                <span>
-                  <%= button_to workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Remove this service from the workspace?" } }, "aria-label": "Remove service" do %>
-                    <%= icon "unlink", class: "size-5" %>
-                  <% end %>
-                </span>
-              </div>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+            </span>
+            <div>
+              <span class="block font-medium text-zinc-100"><%= service.name %></span>
+              <div class="text-xs text-zinc-500"><%= service.kind %></div>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3">
+            <span class="text-xs text-zinc-500"><%= pluralize(service.invocation_count, "invocation") %> in 24h</span>
+            <span class="relative z-10">
+              <%= button_to workspace_workspace_service_path(@workspace, service.id), method: :delete, class: "text-zinc-400 hover:text-red-400 transition", form: { data: { turbo_confirm: "Remove this service from the workspace?" } }, "aria-label": "Remove service" do %>
+                <%= icon "unlink", class: "size-5" %>
+              <% end %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+    </div>
   <% else %>
     <p class="text-zinc-500 mt-4">No services linked to this workspace.</p>
   <% end %>

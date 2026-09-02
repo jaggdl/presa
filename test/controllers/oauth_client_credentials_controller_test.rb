@@ -30,7 +30,7 @@ class OauthClientCredentialsControllerTest < ActionDispatch::IntegrationTest
   test "index lists the user's credentials" do
     get oauth_client_credentials_path
     assert_response :success
-    assert_select "td span", text: "Prod Google app"
+    assert_select "span", text: "Prod Google app"
     assert_select "div", text: "google"
   end
 
