@@ -145,4 +145,45 @@ module ApplicationHelper
       safe_join(stack)
     end
   end
+
+  # The OpenAPI integration wizard uses these (step2 renders them).
+
+  # Serialized operations (operation_id/label/response_fields) for the step-2
+  # health-check pickers (Stimulus repopulates the identity field per operation).
+  def operations_json(definition)
+    ops = definition["operations"] || []
+    ops.map do |op|
+      {
+        "operation_id" => op["operation_id"],
+        "label" => "#{op["method"]} #{op["path"]}",
+        "response_fields" => op["response_fields"] || []
+      }
+    end.to_json.html_safe
+  end
+
+  # A human string for how a scheme's credential is transmitted, e.g. "x-api-key: …".
+  def auth_send_hint(slot)
+    case slot["kind"].to_s
+    when "apikey"
+      name = slot["param_name"].to_s.presence || slot["name"].to_s
+      case slot["in"].to_s
+      when "query" then "#{name}= …"
+      when "cookie" then "Cookie: #{name}=…"
+      else "#{name}: …"
+      end
+    when "basic", "bearer"
+      slot["in_desc"].to_s.presence || "Authorization: …"
+    else
+      slot["in_desc"].to_s.presence || "…"
+    end
+  end
+
+  # Options for the health-check operation picker: method + path + summary.
+  def health_op_options(definition)
+    (definition["operations"] || []).map do |op|
+      label = "#{op["method"]} #{op["path"]}"
+      label += " — #{op["summary"]}" if op["summary"].present?
+      [ label, op["operation_id"] ]
+    end
+  end
 end

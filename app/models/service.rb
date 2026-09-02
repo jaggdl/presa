@@ -114,7 +114,8 @@ class Service < ApplicationRecord
     end
 
     def kinds
-      concrete_service_classes.filter_map { |klass| klass.kind if offerable?(klass) }
+      concrete_service_classes.filter_map { |klass| klass.kind if offerable?(klass) } +
+        Services::Openapi.virtual_kinds
     end
 
     # A kind is offerable when its class declares config fields (plain services
@@ -126,7 +127,8 @@ class Service < ApplicationRecord
     end
 
     def class_for_kind(kind)
-      concrete_service_classes.find { |klass| klass.kind == kind && offerable?(klass) }
+      concrete_service_classes.find { |klass| klass.kind == kind && offerable?(klass) } ||
+        Services::Openapi.virtual_class_for(kind)
     end
 
     # All offerable kinds, MCP first then alphabetical.

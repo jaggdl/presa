@@ -37,7 +37,12 @@ class ServicesController < ApplicationController
       return create_oauth_service
     end
 
-    @service = service_klass.new(team: Current.team, name: service_params[:name], config: service_config_params)
+    klass = service_klass
+    @service = if klass <= Services::Openapi && klass.openapi_kind
+      klass.openapi_kind.services.build(team: Current.team, name: service_params[:name], config: service_config_params)
+    else
+      klass.new(team: Current.team, name: service_params[:name], config: service_config_params)
+    end
 
     if @service.save
       redirect_to services_path, notice: "Service created."
@@ -51,6 +56,20 @@ class ServicesController < ApplicationController
   end
 
   def update
+    # OpenAPI services keep their spec/namespace on the kind; an update touches
+    # only the submitted per-service fields (credentials, base URL override,
+    # health pickers), merged so untouched slots stay stored.
+    if @service.is_a?(Services::Openapi)
+      config = @service.config.merge(service_config_params)
+      if @service.update(name: service_params[:name], config: config)
+        redirect_to services_path, notice: "Service updated."
+      else
+        @tools = ApplicationTool.expose_for(@service)
+        render :show, status: :unprocessable_entity
+      end
+      return
+    end
+
     if @service.update(name: service_params[:name], config: service_config_params)
       redirect_to services_path, notice: "Service updated."
     else
@@ -71,9 +90,17 @@ class ServicesController < ApplicationController
     klass = service_klass
     config = service_config_params
 
+    # OpenAPI integrations keep their spec + namespace in stored config; the
+    # connection form only carries credential slots, so probe with stored +
+    # submitted config merged.
+    if @service&.is_a?(Services::Openapi)
+      config = @service.config.merge(config)
+    end
+
     begin
-      klass.new(team: Current.team, name: service_params[:name], config: config).test_connection(config)
-      @connected = true
+      service = klass.new(team: Current.team, name: service_params[:name], config: config)
+      @connected = service.test_connection(config)
+      @health_label = service.health_label if service.respond_to?(:health_label)
     rescue StandardError => e
       @connected = false
       @message = e.message
@@ -142,11 +169,24 @@ class ServicesController < ApplicationController
     return {} unless params[:service].key?(:config)
 
     klass = @service&.class || service_klass
-    # Fields declared `array: true` (e.g. workspace_ids multi-select) are
-    # permitted as arrays; everything else is a scalar value.
+    openapi_kind = @service&.openapi_kind
+    openapi_kind ||= klass.openapi_kind if klass.respond_to?(:openapi_kind) && klass <= Services::Openapi
+
+    # OpenAPI services store their schema on the kind (security schemes + extra
+    # credentials), plus the per-service single-credential type chooser
+    # (cred_type/cred_name/cred_value), base URL override and health fields.
+    # Pre-kind rows fall back to their instance-derived schema.
+    if openapi_kind
+      schema = Services::Openapi.credential_schema(openapi_kind)
+      return params.require(:service).require(:config).permit(*schema.keys, :base_url, :health_op, :cred_type, :cred_name, :cred_value)
+    elsif @service&.is_a?(Services::Openapi)
+      return params.require(:service).require(:config).permit(*@service.config_schema.keys)
+    end
+
+    schema = klass.config_fields
     scalar_keys = []
     array_keys = []
-    klass.config_fields.each do |field, opts|
+    schema.each do |field, opts|
       opts[:array] ? array_keys << field.to_s : scalar_keys << field.to_s
     end
 

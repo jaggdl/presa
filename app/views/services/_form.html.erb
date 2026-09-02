@@ -62,6 +62,8 @@
       </div>
     <% end %>
   </div>
+<% elsif service.is_a?(Services::Openapi) %>
+  <%= render "services/openapi_form", service: service %>
 <% else %>
   <div class="my-5">
     <%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), method: (service.persisted? ? :patch : :post), class: "contents" do |form| %>

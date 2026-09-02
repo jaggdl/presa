@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_29_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_120000) do
   create_table "api_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -70,14 +70,44 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_120000) do
     t.index ["service_id"], name: "index_oauth_grants_on_service_id", unique: true
   end
 
+  create_table "openapi_kinds", force: :cascade do |t|
+    t.string "base_url"
+    t.datetime "created_at", null: false
+    t.json "definition"
+    t.text "description"
+    t.json "extra_credentials", default: []
+    t.string "health_identity"
+    t.string "health_op"
+    t.string "namespace", null: false
+    t.string "spec_url"
+    t.integer "team_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["team_id", "namespace"], name: "index_openapi_kinds_on_team_id_and_namespace", unique: true
+    t.index ["team_id"], name: "index_openapi_kinds_on_team_id"
+  end
+
+  create_table "rails_pulse_deployments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "finished_at"
+    t.text "metadata"
+    t.string "revision", null: false
+    t.datetime "started_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["revision"], name: "index_rails_pulse_deployments_on_revision"
+    t.index ["started_at"], name: "index_rails_pulse_deployments_on_started_at"
+  end
+
   create_table "services", force: :cascade do |t|
     t.json "config"
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.json "oauth"
+    t.integer "openapi_kind_id"
     t.integer "team_id", null: false
     t.string "type", null: false
     t.datetime "updated_at", null: false
+    t.index ["openapi_kind_id"], name: "index_services_on_openapi_kind_id"
     t.index ["team_id", "type", "name"], name: "index_services_on_team_id_and_type_and_name", unique: true
     t.index ["team_id"], name: "index_services_on_team_id"
   end
@@ -162,6 +192,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_120000) do
   add_foreign_key "oauth_client_credentials", "teams"
   add_foreign_key "oauth_grants", "oauth_client_credentials"
   add_foreign_key "oauth_grants", "services"
+  add_foreign_key "openapi_kinds", "teams"
+  add_foreign_key "services", "openapi_kinds"
   add_foreign_key "services", "teams"
   add_foreign_key "sessions", "users"
   add_foreign_key "team_memberships", "teams"

@@ -36,6 +36,11 @@ Rails.application.routes.draw do
     post "test_connection", action: "test_connection", on: :collection
   end
 
+  # OpenAPI integration wizard: step 1 parses a spec (URL or raw JSON/YAML),
+  # step 2 configures + saves it as a reusable kind (`openapi/kinds`).
+  post "openapi/parse", to: "openapi_integrations#parse", as: :openapi_parse
+  post "openapi/kinds", to: "openapi_integrations#create_kind", as: :openapi_create_kind
+
   # OAuth browser dance. `start` bounces the user to the provider; `callback`
   # receives the authorization code. A single global callback keeps the
   # registered provider redirect_uri constant; the target service + client

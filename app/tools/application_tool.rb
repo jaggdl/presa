@@ -53,9 +53,12 @@ class ApplicationTool < ActionTool::Base
     # Each bound class gets a unique MCP tool name and carries its service_id.
     #
     # For a remote-MCP service (Services::Mcp) there are no static handlers:
-    # one dynamic class is built per tool the remote endpoint advertises.
+    # one dynamic class is built per tool the remote endpoint advertises. The
+    # same applies to OpenAPI-generated services (Services::Openapi): one
+    # dynamic class per operation.
     def expose_for(service)
       return expose_remote_mcp(service) if service.is_a?(Services::Mcp)
+      return expose_openapi(service) if service.is_a?(Services::Openapi)
 
       handlers_for(service.kind).map do |handler|
         build_bound_handler(handler, service)
@@ -85,6 +88,39 @@ class ApplicationTool < ActionTool::Base
         klass.class_attribute :service_id, default: service.id
         klass
       end
+    end
+
+    # OpenAPI-generated services expose one tool per operation in the spec.
+    # Build a dynamic class per operation, named "<namespace>_<operation>" (with
+    # a service-name suffix when the workspace has several services of the same
+    # kind), carrying the persisted operation hash for execution.
+    def expose_openapi(service)
+      namespace = service.namespace
+      ops_by_name = service.operations.to_h { |op| [ "#{namespace}_#{op["name"]}", op ] }
+      service.openapi_tools.filter_map do |tool|
+        name = tool[:name] || tool["name"]
+        next if name.blank?
+
+        op = ops_by_name[name]
+        next unless op
+
+        display = openapi_tool_name(service, name)
+        klass = Class.new(Openapi::Base)
+        klass.tool_name(display)
+        klass.description(tool[:description] || tool["description"] || "")
+        klass.remote_tool_name = display
+        klass.remote_input_schema = tool[:inputSchema] || tool["inputSchema"] || {}
+        klass.remote_openapi_operation = op
+        klass.class_attribute :service_id, default: service.id
+        klass
+      end
+    end
+
+    # "<namespace>_<operation>", suffixed with the service name when needed to
+    # disambiguate multiple services of the same OpenAPI kind (mirrors
+    # `bound_tool_name` for static handlers).
+    def openapi_tool_name(service, base)
+      service_name_needed?(service) ? "#{base}_#{service.name.parameterize}" : base
     end
 
     # Copy the DSL state (schema, description, annotations, ...) that does not

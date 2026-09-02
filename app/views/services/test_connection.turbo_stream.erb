@@ -1,3 +1,3 @@
 <%= turbo_stream.replace "service-test-status" do %>
-  <%= render "status", connected: @connected, message: @message %>
+  <%= render "status", connected: @connected, message: @message, health_label: @health_label %>
 <% end %>

@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Widget API
+  version: "2.1"
+  description: Manage widgets across the fleet.
+servers:
+  - url: https://api.example.com/v2
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: wsid
+    basicAuth:
+      type: http
+      scheme: basic
+paths:
+  /widgets/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWidgetById
+      tags: [ widgets ]
+      summary: Get one widget
+      parameters:
+        - name: verbose
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: X-Request-Id
+          in: header
+          required: false
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ id ]
+                properties:
+                  id: { type: string }
+                  owner: { type: string }
+    delete:
+      operationId: deleteWidget
+      tags: [ widgets ]
+      security: []
+      responses:
+        "204":
+          description: Deleted
+  /widgets:
+    post:
+      operationId: createWidget
+      tags: [ widgets ]
+      summary: Create a widget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ name ]
+              properties:
+                name: { type: string }
+                tags: { type: array, items: { type: string } }
+                meta: { type: object, properties: { weight: { type: integer } } }
+      security:
+        - cookieAuth: []
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+  /health:
+    get:
+      operationId: healthCheck
+      tags: [ ops ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }

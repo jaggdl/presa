@@ -1,0 +1,84 @@
+<% if service.errors.any? %>
+  <div class="py-2 px-3 bg-red-950 mb-5 rounded-lg">
+    <h2 class="text-red-400 font-medium"><%= pluralize(service.errors.count, "error") %> prohibited this service from being saved:</h2>
+    <ul class="text-red-400 list-disc list-inside mt-2">
+      <% service.errors.each do |error| %>
+        <li><%= error.full_message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="my-5">
+  <%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), method: (service.persisted? ? :patch : :post), class: "contents" do |form| %>
+    <div class="my-5">
+      <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
+      <p class="text-xs text-zinc-600 mb-1">This instance of <%= service.display_name %> — e.g. "Prod" or "Staging".</p>
+      <%= form.text_field :name, placeholder: "e.g. Prod", autofocus: true, autocomplete: "off", class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+    </div>
+
+    <%= form.hidden_field :kind, value: service.kind %>
+
+    <%= form.fields_for :config do |cf| %>
+      <div class="my-5">
+        <%= cf.label :base_url, "Base URL (override)", class: "block text-sm text-zinc-400" %>
+        <%= cf.text_field :base_url, value: service.config[:base_url].presence || service.openapi_kind&.base_url,
+              placeholder: "https://api.example.com", autocomplete: "off",
+              class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900 placeholder-zinc-500" %>
+        <p class="text-xs text-zinc-600 mt-1">Defaults to the kind's base URL. Leave blank to use it.</p>
+      </div>
+
+      <div class="my-5">
+        <%= cf.label :health_op, "Health check operation", class: "block text-sm text-zinc-400" %>
+        <%= cf.select :health_op, health_op_options(service.definition),
+              { include_blank: "None — health check only", selected: service.health_check_operation },
+              { class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-2 py-2 mt-2 w-full bg-zinc-900 text-sm" } %>
+      </div>
+    </div>
+
+      <% candidates = service.credential_type_candidates %>
+      <% if candidates.any? %>
+        <% if candidates.length > 1 %>
+        <div class="my-5" data-controller="openapi-cred"
+             data-openapi-cred-name-by-type-value="<%= candidates.to_h { |c| [ c[:type], c[:name] ] }.to_json %>">
+          <%= cf.label :cred_type, "Credential type", class: "block text-sm text-zinc-400" %>
+          <p class="text-xs text-zinc-600 mb-1">The API's spec declares several schemes; pick how you authenticate.</p>
+          <%= cf.select :cred_type,
+                candidates.map { |c| [ c[:label], c[:type] ] },
+                { selected: service.credential_type },
+                { data: { openapi_cred_target: "type", action: "openapi-cred#sync" },
+                  class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-2 py-2 mt-2 w-full bg-zinc-900 text-sm" } %>
+          <%= hidden_field_tag "service[config][cred_name]", service.credential_name, data: { openapi_cred_target: "name" } %>
+          <p class="text-xs text-zinc-500 mt-2" data-openapi-cred-target="hint"><%= candidates.find { |c| c[:type] == service.credential_type }&.dig(:label) %></p>
+        </div>
+      <% else %>
+        <div class="my-5">
+          <%= cf.label :cred_type, "Credential", class: "block text-sm text-zinc-400" %>
+          <p class="text-xs text-zinc-600 mb-1">Sent as <span class="text-zinc-400"><%= candidates.first&.dig(:label).to_s.sub(/\A.*?— /, "") %></span> (inferred from the spec).</p>
+          <%= cf.hidden_field :cred_type, value: service.credential_type %>
+          <%= hidden_field_tag "service[config][cred_name]", service.credential_name %>
+        </div>
+      <% end %>
+
+      <div class="my-5">
+        <%= cf.label :cred_value, "Credential value", class: "block text-sm text-zinc-400" %>
+        <%= cf.password_field :cred_value, value: service.credential_value, placeholder: "••••••••", autocomplete: "new-password",
+              class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+      </div>
+      <% end %>
+    <% end %>
+
+    <div class="flex items-center justify-end gap-3">
+      <%= form.submit "Save service", class: "btn-primary" %>
+
+      <% if service.class.test_connection? %>
+        <button type="submit" name="test_connection" formaction="<%= test_connection_services_path %>" formmethod="post"
+                class="inline-block rounded-md border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-zinc-300 hover:bg-zinc-700">
+          Test connection
+        </button>
+      <% end %>
+    </div>
+
+    <div id="service-test-status"></div>
+  <% end %>
+</div>

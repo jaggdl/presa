@@ -78,3 +78,5 @@ gem "tailwindcss-rails", "~> 4.6"
 gem "rails_icons", "~> 1.9"
 
 gem "commonmarker", "~> 2.10"
+
+gem "openapi_parser", "~> 2.3"
