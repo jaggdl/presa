@@ -139,7 +139,7 @@ module ApplicationHelper
       end
       if extra.positive?
         stack << content_tag(:div, "+#{extra}",
-                             class: "inline-flex items-center justify-center h-5 rounded-full px-1.5 bg-zinc-700 border border-zinc-600 text-zinc-100 text-[10px]",
+                             class: "pill h-5 justify-center px-1.5",
                              style: "position: absolute; bottom: -4px; left: #{offset * (icons.length - 1) + tile - 20}px;")
       end
       safe_join(stack)

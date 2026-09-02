@@ -16,6 +16,16 @@ html {
   @apply inline-block text-center rounded-md px-3.5 py-2.5 bg-blue-950 hover:bg-blue-900 text-blue-100 border border-blue-800 font-medium cursor-pointer;
 }
 
+/* Small rounded status/count badges (tool counts, workspace counts, tags). */
+.pill {
+  @apply inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 text-[10px] leading-none whitespace-nowrap text-zinc-300;
+}
+
+/* Subdued variant for secondary tags. */
+.pill--subtle {
+  @apply border-zinc-800 bg-zinc-900 text-zinc-500;
+}
+
 /* Newly-streamed tool invocations hold a highlighted background, then fade
    back to the list's background. */
 @keyframes inv-flash {
