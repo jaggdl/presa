@@ -178,7 +178,7 @@ class ServicesController < ApplicationController
     # Pre-kind rows fall back to their instance-derived schema.
     if openapi_kind
       schema = Services::Openapi.credential_schema(openapi_kind)
-      return params.require(:service).require(:config).permit(*schema.keys, :base_url, :health_op, :cred_type, :cred_name, :cred_value)
+      return params.require(:service).require(:config).permit(*schema.keys, :base_url, :cred_type, :cred_name, :cred_value)
     elsif @service&.is_a?(Services::Openapi)
       return params.require(:service).require(:config).permit(*@service.config_schema.keys)
     end
