@@ -5,8 +5,23 @@
     <% @kinds.each do |kind| %>
       <% klass = Service.class_for_kind(kind) %>
       <%= link_to new_kind_service_services_path(kind), class: "relative flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition" do %>
-        <%= render "services/header", service: klass.new %>
-        <%= icon "plus", class: "size-6 text-zinc-500" %>
+        <div class="flex items-start gap-3 min-w-0 flex-1 pr-2">
+          <div class="flex flex-col items-center shrink-0">
+            <span class="relative">
+              <%= service_icon(klass.new, size: :lg) %>
+              <% klass.new.tags.each do |tag| %>
+                <span class="pill pill--subtle absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap"><%= tag %></span>
+              <% end %>
+            </span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <span class="block truncate font-medium capitalize text-zinc-100"><%= klass.new.display_name %></span>
+            <% if preview = service_description_preview(klass.new) %>
+              <p class="mt-1 text-xs leading-relaxed text-zinc-500 line-clamp-2"><%= preview %></p>
+            <% end %>
+          </div>
+        </div>
+        <%= icon "plus", class: "size-6 text-zinc-500 shrink-0" %>
       <% end %>
     <% end %>
   </div>
