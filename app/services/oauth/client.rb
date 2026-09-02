@@ -44,6 +44,13 @@ module Oauth
       request(:post, path, body: body, params: params)
     end
 
+    # POST against the API base URL with a raw (non-JSON) body and an explicit
+    # Content-Type, e.g. Gmail media uploads (`message/rfc822`). Returns the
+    # parsed JSON body.
+    def post_raw(path, raw:, content_type:, params: {})
+      request(:post, path, body: raw, content_type: content_type, params: params)
+    end
+
     # PATCH against the API base URL, sending `body` as JSON. Returns the
     # parsed JSON body.
     def patch(path, body:)
@@ -63,19 +70,21 @@ module Oauth
 
     private
 
-    def request(method, path, body: nil, params: {}, retries: 0)
+    def request(method, path, body: nil, content_type: nil, params: {}, retries: 0)
       response = conn.public_send(method, path) do |req|
         req.headers["Authorization"] = "Bearer #{@token_source.authorized_token}"
         req.headers.update(@default_headers) if @default_headers.any?
         req.params.update(params) if params.any?
-        req.headers["Content-Type"] = "application/json" if body
-        req.body = JSON.generate(body) if body
+        if body
+          req.headers["Content-Type"] = content_type || "application/json"
+          req.body = body.is_a?(String) ? body : JSON.generate(body)
+        end
       end
 
       return response.body unless response.status == 429 && retries < @max_retries
 
       sleep backoff_for(response, retries)
-      request(method, path, body: body, params: params, retries: retries + 1)
+      request(method, path, body: body, content_type: content_type, params: params, retries: retries + 1)
     end
 
     # Pause duration before retrying a 429. Honors the Retry-After header

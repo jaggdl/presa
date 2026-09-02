@@ -25,3 +25,18 @@ Once connected, the service's page shows its grant and lets you reconnect or cha
 - Tokens (client secret, access token, refresh token) are stored encrypted.
 - When the access token expires, Presa refreshes it automatically using the grant's refresh token. If a refresh/access fails (e.g. the grant is revoked), reconnect the service from its page.
 - Each service holds its *own* client credential and grant; different services can use the same or different Google clients.
+
+## Sending attachments
+
+The `send_message` tool accepts an optional `attachments` array; each entry has a `filename`, base64-encoded `content`, and optional `mime_type` (inferred from the file name when omitted):
+
+```json
+{
+  "to": "friend@example.com",
+  "subject": "Report",
+  "body": "See attached.",
+  "attachments": [{ "filename": "report.pdf", "content": "<base64>", "mime_type": "application/pdf" }]
+}
+```
+
+Messages with attachments (or plain messages over ~5 MB) are uploaded to Gmail's [`/upload` endpoint](https://developers.google.com/workspace/gmail/api/guides/uploads) with `uploadType=media` and `Content-Type: message/rfc822`, so the raw RFC 2822 bytes are transferred directly instead of being re-encoded base64 inside a JSON `raw` field. Smaller plain-text messages use the regular `messages.send` resource as before.
