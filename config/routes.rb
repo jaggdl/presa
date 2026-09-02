@@ -27,7 +27,7 @@ Rails.application.routes.draw do
 
   resources :workspaces do
     post :reset_bot_share_code, on: :member
-    resources :api_tokens, only: %i[ create destroy ]
+    resources :api_tokens, only: %i[ create update destroy ]
     resources :workspace_services, only: %i[ show create update destroy ]
     get :invocations, on: :member
   end

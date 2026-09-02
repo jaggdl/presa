@@ -71,4 +71,35 @@ class ApiTokensControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_not other_token.reload.revoked?
   end
+
+  test "update renames a token" do
+    sign_in_as @user
+    api_token = @workspace.api_tokens.create!(token_digest: "digest", name: "Cursor")
+
+    patch workspace_api_token_path(@workspace, api_token), params: { api_token: { name: "Windsurf" } }
+
+    assert_redirected_to workspace_path(@workspace)
+    assert_equal "Windsurf", api_token.reload.name
+  end
+
+  test "update with a blank name makes the token unnamed" do
+    sign_in_as @user
+    api_token = @workspace.api_tokens.create!(token_digest: "digest", name: "Cursor")
+
+    patch workspace_api_token_path(@workspace, api_token), params: { api_token: { name: "" } }
+
+    assert_redirected_to workspace_path(@workspace)
+    assert_nil api_token.reload.name
+  end
+
+  test "update does not rename another workspace's token" do
+    sign_in_as @user
+    other_workspace = workspaces(:two)
+    other_token = other_workspace.api_tokens.create!(token_digest: "digest", name: "Cursor")
+
+    patch workspace_api_token_path(other_workspace, other_token), params: { api_token: { name: "Windsurf" } }
+
+    assert_response :not_found
+    assert_equal "Cursor", other_token.reload.name
+  end
 end

@@ -12,7 +12,7 @@
         </span>
 
         <button type="button" data-action="inline-edit#edit" data-inline-edit-target="button" aria-label="Edit name"
-                class="opacity-0 group-hover:opacity-100 transition text-zinc-500 hover:text-zinc-200 rounded p-1" tabindex="0">
+                class="opacity-0 group-hover:opacity-100 transition text-zinc-500 hover:text-zinc-200 rounded p-1 ml-1" tabindex="0">
           <%= icon "pencil", class: "size-4" %>
         </button>
 
@@ -108,17 +108,13 @@
       </div>
     </div>
 
-    <table class="w-full text-left mt-2">
-      <tbody id="clients-table-body">
-        <% if @api_tokens.any? %>
-          <%= render partial: "client_row", collection: @api_tokens, as: :api_token, locals: { workspace: @workspace } %>
-        <% else %>
-          <tr id="clients-empty">
-            <td class="py-4 text-zinc-500">No clients connected yet.</td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+    <div id="clients-table-body" class="mt-2">
+      <% if @api_tokens.any? %>
+        <%= render partial: "client_row", collection: @api_tokens, as: :api_token, locals: { workspace: @workspace } %>
+      <% else %>
+        <div id="clients-empty" class="py-4 text-zinc-500">No clients connected yet.</div>
+      <% end %>
+    </div>
 
     <%= render "shared/dialog", controller: "clients" do %>
       <div class="flex items-center justify-between mb-4">

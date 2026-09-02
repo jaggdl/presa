@@ -10,6 +10,13 @@ class ApiTokensController < ApplicationController
     end
   end
 
+  def update
+    api_token = workspace.api_tokens.find(params[:id])
+    api_token.update(name: api_token_params[:name].presence)
+
+    redirect_to workspace_path(workspace), notice: "Client name updated."
+  end
+
   def destroy
     api_token = workspace.api_tokens.find(params[:id])
     api_token.revoke!
