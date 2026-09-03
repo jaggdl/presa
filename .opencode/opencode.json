@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "presa-orchestrator": {
+      "type": "remote",
+      "url": "{env:PRESA_BASE_URL}/mcp/sse",
+      "headers": {
+        "Authorization": "Bearer {env:PRESA_ORCHESTRATOR_TOKEN}"
+      }
+    },
+    "presa-implementer": {
+      "type": "remote",
+      "url": "{env:PRESA_BASE_URL}/mcp/sse",
+      "headers": {
+        "Authorization": "Bearer {env:PRESA_IMPLEMENTER_TOKEN}"
+      }
+    }
+  }
+}
