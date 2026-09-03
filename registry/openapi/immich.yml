@@ -17,8 +17,3 @@ description: |
   | `base_url` | No | No | `http://localhost:2283/api` | The server's API base URL as reachable from this app, e.g. `https://photos.example.com/api` or `http://<host>:2283/api`. |
 
   \* Required for every operation, including the health check. The health check (`GET /auth/status`) validates the API key.
-
-  ## Notes
-
-  - Health check: `GET /auth/status` (requires the API key).
-  - Most operations require an API key sent as a bearer token.

@@ -8,3 +8,12 @@ description: |
   # Radarr
 
   Self-hosted movie collection manager — search, add, and organize your movies, and manage the [Radarr](https://radarr.video) server through its API.
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes* | Yes | — | The API key for authenticated operations (issued from the Radarr web UI under **Settings → General**). |
+  | `base_url` | No | No | `http://localhost:7878` | The server's base URL as reachable from this app, e.g. `http://<host>:7878`. |
+
+  \* Required for every operation, including the health check. The health check (`GET /api/v3/system/status`) validates the API key.

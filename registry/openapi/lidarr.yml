@@ -8,3 +8,12 @@ description: |
   # Lidarr
 
   Self-hosted music collection manager — search, add, and organize your artists and albums, and manage the [Lidarr](https://lidarr.audio) server through its API.
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes* | Yes | — | The API key for authenticated operations (issued from the Lidarr web UI under **Settings → General**). |
+  | `base_url` | No | No | `http://localhost:8686` | The server's base URL as reachable from this app, e.g. `http://<host>:8686`. |
+
+  \* Required for every operation, including the health check. The health check (`GET /api/v1/system/status`) validates the API key.

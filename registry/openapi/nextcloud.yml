@@ -17,8 +17,3 @@ description: |
   | `base_url` | No | No | `http://localhost:8080` | The server's base URL as reachable from this app, e.g. `https://cloud.example.com` or `http://<host>:8080`. Do **not** append `/ocs/v2.php` or `/remote.php`. |
 
   \* Required for every operation, including the health check.
-
-  ## Notes
-
-  - The OCS v2 API typically requires an `OCS-APIRequest: true` header, handled automatically by the generated tools.
-  - Health check: `GET /ocs/v2.php/cloud/capabilities` (requires credentials).

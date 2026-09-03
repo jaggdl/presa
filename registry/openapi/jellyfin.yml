@@ -19,7 +19,3 @@ description: |
   |-------|----------|--------|---------|-------------|
   | `credential` | Yes | Yes | — | The API key issued from the Jellyfin dashboard under **Dashboard → API Keys** (sent as an `Authorization: <key>` header). |
   | `base_url` | No | No | `http://localhost:8096` | The server's base URL as reachable from this app, e.g. `http://<host>:8096`. |
-
-  ## Notes
-
-  - Health check: `GET /System/Info` (requires the API key).

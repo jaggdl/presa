@@ -8,3 +8,12 @@ description: |
   # Prowlarr
 
   Self-hosted indexer manager and proxy for the *arr apps — aggregate and configure your torrent and usenet indexers in one place, then expose them to [Sonarr, Radarr, and the rest](https://github.com/Prowlarr/Prowlarr) through its HTTP API.
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes* | Yes | — | The API key for authenticated operations (issued from the Prowlarr web UI under **Settings → General**). |
+  | `base_url` | No | No | `http://localhost:9696` | The server's base URL as reachable from this app, e.g. `http://<host>:9696`. |
+
+  \* Required for every operation, including the health check. The health check (`GET /api/v1/system/status`) validates the API key.
