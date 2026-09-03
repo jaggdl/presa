@@ -11,7 +11,7 @@ class ReadWorkspaceServicesToolTest < ActiveSupport::TestCase
 
   test "reports connected and addable services" do
     ws = workspaces(:one)
-    connected = services(:jellyfin)
+    connected = services(:seerr)
     addable = services(:places)
     tool = expose_workspace_tool("read_workspace_services", workspaces: [ ws ])
 

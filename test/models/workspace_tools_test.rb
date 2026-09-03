@@ -29,45 +29,45 @@ class WorkspaceToolsTest < ActiveSupport::TestCase
   end
 
   test "allowed_tools only exposes tools allowed for the workspace" do
-    join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: [ "resume_items" ])
+    join = workspace_services(:one_seerr)
+    join.update!(allowed_tools: [ "search" ])
     workspace = join.workspace
 
     names = workspace.allowed_tools.map(&:tool_key)
-    assert_includes names, "resume_items"
-    refute_includes names, "get_episodes"
+    assert_includes names, "search"
+    refute_includes names, "get_status"
   end
 
   test "find_allowed_tool finds by exposed name or returns nil" do
-    join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: [ "resume_items" ])
+    join = workspace_services(:one_seerr)
+    join.update!(allowed_tools: [ "search" ])
     workspace = join.workspace
 
     Current.workspace = workspace
-    name = workspace.allowed_tools.find { |t| t.tool_key == "resume_items" }.tool_name
+    name = workspace.allowed_tools.find { |t| t.tool_key == "search" }.tool_name
 
     assert_equal name, workspace.find_allowed_tool(name).tool_name
-    assert_nil workspace.find_allowed_tool("jellyfin_get_episodes")
+    assert_nil workspace.find_allowed_tool("seerr_get_status")
   ensure
     Current.workspace = nil
   end
 
   test "execute_tool_text raises UnknownTool for a forbidden tool" do
-    join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: [ "resume_items" ])
+    join = workspace_services(:one_seerr)
+    join.update!(allowed_tools: [ "search" ])
     workspace = join.workspace
 
     assert_raises(WorkspaceTools::UnknownTool) do
-      workspace.execute_tool_text("jellyfin_get_episodes", "{}")
+      workspace.execute_tool_text("seerr_get_status", "{}")
     end
   end
 
   test "execute_tool_text raises InvalidToolBody for malformed JSON" do
-    join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: [ "resume_items" ])
+    join = workspace_services(:one_seerr)
+    join.update!(allowed_tools: [ "search" ])
     workspace = join.workspace
     Current.workspace = workspace
-    name = workspace.allowed_tools.find { |t| t.tool_key == "resume_items" }.tool_name
+    name = workspace.allowed_tools.find { |t| t.tool_key == "search" }.tool_name
 
     assert_raises(WorkspaceTools::InvalidToolBody) do
       workspace.execute_tool_text(name, "{not json")

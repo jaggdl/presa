@@ -117,17 +117,17 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show lists the service's available tools" do
-    get service_path(services(:jellyfin))
+    get service_path(services(:seerr))
     assert_response :success
     assert_select "h2", text: "Tools"
-    assert_select "code", text: "jellyfin_next_up"
-    assert_select "code", text: "user_id"
+    assert_select "code", text: "seerr_search"
+    assert_select "code", text: "query"
   end
 
   test "show renders no-argument tools without error" do
-    get service_path(services(:jellyfin))
+    get service_path(services(:seerr))
     assert_response :success
-    assert_select "code", text: "jellyfin_get_system_info"
+    assert_select "code", text: "seerr_get_status"
     assert_select "p", text: "Accepts no arguments."
   end
 

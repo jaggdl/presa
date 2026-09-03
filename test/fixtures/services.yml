@@ -21,11 +21,6 @@ search_mcp:
   type: Services::Mcp
   name: Search
   config: <%= { url: "https://search.parallel.ai/mcp", headers: "{}" }.to_json %>
-jellyfin:
-  team: one
-  type: Services::Jellyfin
-  name: Jellyfin
-  config: <%= { api_key: "jellyfin_key", base_url: "https://jellyfin.example.com" }.to_json %>
 seerr:
   team: one
   type: Services::Seerr

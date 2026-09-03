@@ -12,7 +12,7 @@ class WorkplaceAdminToolsDisconnectServiceToolTest < ActiveSupport::TestCase
 
   test "removes a service from a managed workspace" do
     ws = workspaces(:one)
-    service = services(:jellyfin)
+    service = services(:seerr)
     tool = expose_workspace_tool("disconnect_service", workspaces: [ ws ])
 
     result = tool.call(workspace_id: ws.id, service_id: service.id)

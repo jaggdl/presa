@@ -22,7 +22,7 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "presa login"
     assert_includes response.body, "presa run"
     assert_includes response.body, "#{@base_url}/bots/client/install.sh" # base_url interpolated
-    refute_includes response.body, "jellyfin"
+    refute_includes response.body, "seerr"
     refute_includes response.body, "search_workflows"
     refute_includes response.body, "<your-presa-url>"
   end
@@ -60,16 +60,16 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /bots/tools lists the workspace's available tools as plain text" do
-    join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: [ "resume_items" ])
+    join = workspace_services(:one_seerr)
+    join.update!(allowed_tools: [ "search" ])
     token = ApiToken.issue!(workspace: @workspace, name: "bot")
 
     get bots_tools_path, headers: { "Authorization" => "Bearer #{token}" }
 
     assert_response :success
     assert_includes response.content_type, "text/plain"
-    assert_includes response.body, "jellyfin_resume_items"
-    refute_includes response.body, "jellyfin_get_episodes"
+    assert_includes response.body, "seerr_search"
+    refute_includes response.body, "seerr_get_status"
     refute_includes response.body, "Arguments:"
   end
 
@@ -90,11 +90,11 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /bots/tools/:tool is not found for a disallowed or unknown tool" do
-    join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: [ "resume_items" ])
+    join = workspace_services(:one_seerr)
+    join.update!(allowed_tools: [ "search" ])
     token = ApiToken.issue!(workspace: @workspace, name: "bot")
 
-    get bots_tool_path("jellyfin_get_episodes"), headers: { "Authorization" => "Bearer #{token}" }
+    get bots_tool_path("seerr_get_status"), headers: { "Authorization" => "Bearer #{token}" }
 
     assert_response :not_found
   end
@@ -106,8 +106,8 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /bots/workspace returns workspace name, services and tools" do
-    join = workspace_services(:one_jellyfin)
-    join.update!(allowed_tools: [ "resume_items" ])
+    join = workspace_services(:one_seerr)
+    join.update!(allowed_tools: [ "search" ])
     @workspace.update!(description: "A short blurb")
     token = ApiToken.issue!(workspace: @workspace, name: "bot")
 
