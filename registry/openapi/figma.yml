@@ -1,0 +1,19 @@
+title: Figma
+namespace: figma
+category: productivity
+spec_url: https://raw.githubusercontent.com/figma/rest-api-spec/refs/heads/main/openapi/openapi.yaml
+base_url: https://api.figma.com
+health_op: getMe
+description: |
+  # Figma
+
+  Collaborative interface design — read file contents and images, manage comments, components, styles, variables, and webhooks, and list projects and files through the [Figma REST API](https://developers.figma.com/docs/rest-api/).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | A Figma personal access token, created under **Account settings → Security → Personal access tokens** and sent as an `X-Figma-Token` header. |
+  | `base_url` | No | No | `https://api.figma.com` | The REST API base URL; the Figma API is hosted and does not offer self-hosted endpoints. |
+
+  The health check (`GET /v1/me`) validates the personal access token.
