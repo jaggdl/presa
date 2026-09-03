@@ -26,6 +26,23 @@ html {
   @apply border-zinc-800 bg-zinc-900 text-zinc-500;
 }
 
+/* Markdown-rendered tables (`.prose table`) can be wider than their flowing-text
+   column (e.g. a preset's config table with URL/description columns). Keep the
+   column size intact and let the table scroll horizontally within it instead of
+   bleeding past the column into its neighbors. */
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Cap the width of any single column so long values (URLs, prose) wrap in
+   place rather than pushing the table wider than its container. */
+.prose th,
+.prose td {
+  max-width: 24rem;
+}
+
 /* Newly-streamed tool invocations hold a highlighted background, then fade
    back to the list's background. */
 @keyframes inv-flash {
