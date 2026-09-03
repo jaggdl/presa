@@ -89,6 +89,7 @@ module Registry
         raw, root = ::Openapi::Parser.parse(source: "url", input: preset.spec_url)
         ::Openapi::Parser.validate!(raw)
         definition = ::Openapi::Generator.generate(root, source_url: preset.spec_url)
+        apply_credential_overrides!(definition, preset)
 
         OpenapiKind.new(
           team: team,
@@ -100,6 +101,24 @@ module Registry
           definition: definition,
           health_op: preset.health_op
         )
+      end
+
+      # Rewrites a security scheme's slot in the generated definition to match
+      # the preset's declared credential transmission, for specs whose scheme is
+      # wrong against the real server (e.g. Jellyfin's `Authorization` -> the
+      # actual `X-Emby-Token` header).
+      def apply_credential_overrides!(definition, preset)
+        override = preset.credential_override
+        return unless override
+
+        slot = definition.dig("security", override["scheme"])
+        return unless slot.is_a?(Hash)
+
+        slot["in"] = override["in"]
+        slot["param_name"] = override["param_name"] if override["param_name"].present?
+        slot["in_desc"] = override["param_name"] if override["param_name"].present?
+        slot["kind"] = "apikey"
+        slot["name"] ||= override["scheme"]
       end
 
       # Uses the preset's checked-in icon file in `registry/icons` as the kind's

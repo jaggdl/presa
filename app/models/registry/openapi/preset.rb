@@ -22,6 +22,27 @@ module Registry
       def health_op
         data["health_op"].to_s.presence
       end
+
+      # Optional credential-transmission override for specs whose declared
+      # scheme is wrong for the real server (e.g. Jellyfin's spec says
+      # `Authorization` but the server wants `X-Emby-Token`). YAML shape:
+      #
+      #   credential:
+      #     scheme: CustomAuthentication   # the security scheme to override
+      #     in: header                     # header | query | cookie
+      #     param_name: X-Emby-Token       # header/query/cookie name
+      #
+      # Applied at install by rewriting the scheme's slot in the definition.
+      def credential_override
+        cred = data["credential"]
+        return nil unless cred.is_a?(Hash)
+
+        scheme = cred["scheme"].to_s.presence
+        return nil if scheme.blank?
+
+        { "scheme" => scheme, "in" => cred["in"].to_s.presence || "header",
+          "param_name" => cred["param_name"].to_s.presence }
+      end
     end
   end
 end

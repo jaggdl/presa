@@ -4,6 +4,10 @@ category: media
 spec_url: https://api.jellyfin.org/openapi/jellyfin-openapi-stable.json
 base_url: http://localhost:8096
 health_op: GetSystemInfo
+credential:
+  scheme: CustomAuthentication
+  in: header
+  param_name: X-Emby-Token
 description: |
   # Jellyfin
 
