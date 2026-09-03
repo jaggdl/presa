@@ -90,8 +90,7 @@ services:
   web:
     image: jaggdl/presa
     restart: unless-stopped
-    ports:
-      - "7753:80"
+    network_mode: host
     environment:
       - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
       - BASE_URL=https://your-presa.instance.com
@@ -101,6 +100,12 @@ services:
 volumes:
   presa-production:
 ```
+
+> **Note on reaching the host:** `network_mode: host` shares the host's network, so
+> the container can reach local addresses such as `localhost` (e.g. a Jellyfin/Plex
+> instance or other backend service running on the same host). This makes the `ports:`
+> mapping unnecessary — the image listens directly on port `7753` (see `HTTP_PORT`
+> in the `Dockerfile`).
 
 ### Run it
 
