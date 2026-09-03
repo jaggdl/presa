@@ -76,7 +76,6 @@ module Registry
           klass.config_kind = preset.namespace
           klass.config_display_name = preset.title
           klass.config_category = preset.category
-          klass.config_tags = preset.tags
           klass.config_icon = preset.icon_filename.presence
           klass.define_singleton_method(:description) { preset.description.presence }
           klass.define_singleton_method(:registry_preset?) { true }

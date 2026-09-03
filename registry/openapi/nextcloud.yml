@@ -1,14 +1,9 @@
 title: Nextcloud
 namespace: nextcloud
 category: productivity
-tags:
-  - self_hosted
-  - cloud
-  - storage
-  - files
 spec_url: https://raw.githubusercontent.com/nextcloud/server/refs/heads/master/openapi.json
 base_url: http://localhost:8080
-health_op: core-get-status
+health_op: core-ocs-get-capabilities
 description: |
   # Nextcloud
 
@@ -21,9 +16,9 @@ description: |
   | `credential` | Yes* | Yes | — | The sign-in credential for authenticated operations. HTTP Basic requires `username:password`; Bearer accepts an app password or access token (prefer an app password when 2FA is enabled). |
   | `base_url` | No | No | `http://localhost:8080` | The server's base URL as reachable from this app, e.g. `https://cloud.example.com` or `http://<host>:8080`. Do **not** append `/ocs/v2.php` or `/remote.php`. |
 
-  \* Required to run authenticated operations. The health check (`GET /status.php`) works without credentials.
+  \* Required for every operation, including the health check.
 
   ## Notes
 
   - The OCS v2 API typically requires an `OCS-APIRequest: true` header, handled automatically by the generated tools.
-  - Health check: `GET /status.php` (unauthenticated).
+  - Health check: `GET /ocs/v2.php/cloud/capabilities` (requires credentials).

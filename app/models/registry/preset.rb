@@ -21,10 +21,6 @@ module Registry
       data["category"].to_s.presence || "general"
     end
 
-    def tags
-      Array(data["tags"]).map(&:to_s).compact_blank
-    end
-
     # Markdown description, same shape as `docs/services/*.md` (a leading
     # top-level heading is dropped when rendered).
     def description

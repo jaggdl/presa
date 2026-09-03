@@ -1,0 +1,21 @@
+title: Jellyfin
+namespace: jellyfin
+category: media
+spec_url: https://api.jellyfin.org/openapi/jellyfin-openapi-stable.json
+base_url: http://localhost:8096
+health_op: GetSystemInfo
+description: |
+  # Jellyfin
+
+  Self-hosted media server — browse and organize your movies, TV, and music libraries, and manage the [Jellyfin](https://jellyfin.org) server through its API.
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | The API key issued from the Jellyfin dashboard under **Dashboard → API Keys** (sent as an `Authorization: <key>` header). |
+  | `base_url` | No | No | `http://localhost:8096` | The server's base URL as reachable from this app, e.g. `http://<host>:8096`. |
+
+  ## Notes
+
+  - Health check: `GET /System/Info` (requires the API key).

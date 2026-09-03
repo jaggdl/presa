@@ -1,14 +1,9 @@
 title: Immich
 namespace: immich
 category: media
-tags:
-  - self_hosted
-  - photos
-  - gallery
-  - media
 spec_url: https://raw.githubusercontent.com/immich-app/immich/refs/heads/main/open-api/immich-openapi-specs.json
 base_url: http://localhost:2283/api
-health_op: pingServer
+health_op: getAuthStatus
 description: |
   # Immich
 
@@ -21,9 +16,9 @@ description: |
   | `credential` | Yes* | Yes | — | The API key for authenticated operations (issued from the Immich web UI under **Account → API Keys**). |
   | `base_url` | No | No | `http://localhost:2283/api` | The server's API base URL as reachable from this app, e.g. `https://photos.example.com/api` or `http://<host>:2283/api`. |
 
-  \* Required to run authenticated operations. The health check (`GET /server/ping`) works without credentials.
+  \* Required for every operation, including the health check. The health check (`GET /auth/status`) validates the API key.
 
   ## Notes
 
-  - Health check: `GET /server/ping` (unauthenticated).
+  - Health check: `GET /auth/status` (requires the API key).
   - Most operations require an API key sent as a bearer token.
