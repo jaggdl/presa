@@ -1,0 +1,10 @@
+title: Prowlarr
+namespace: prowlarr
+category: media
+spec_url: https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/src/Prowlarr.Api.V1/openapi.json
+base_url: http://localhost:9696
+health_op: get_system_status
+description: |
+  # Prowlarr
+
+  Self-hosted indexer manager and proxy for the *arr apps — aggregate and configure your torrent and usenet indexers in one place, then expose them to [Sonarr, Radarr, and the rest](https://github.com/Prowlarr/Prowlarr) through its HTTP API.

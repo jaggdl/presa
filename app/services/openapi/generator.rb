@@ -66,12 +66,14 @@ module Openapi
 
     # The effective base URL: an explicit override wins, else the first absolute
     # server, else a relative server joined onto the spec's origin, else nil
-    # (the user must supply one).
+    # (the user must supply one). Template servers (e.g. `{protocol}://{hostpath}`,
+    # common in the *arr specs) carry no concrete host and are skipped.
     def resolved_base_url
-      absolute = servers.find { |s| absolute_http?(s["url"]) }
+      concrete = servers.reject { |s| s["url"].to_s.match?(/[{}]/) }
+      absolute = concrete.find { |s| absolute_http?(s["url"]) }
       return absolute["url"].chomp("/") if absolute
 
-      candidate = servers.find { |s| s["url"].present? }
+      candidate = concrete.find { |s| s["url"].present? }
       return nil unless candidate
 
       origin = origin_from_source
@@ -86,7 +88,7 @@ module Openapi
       uri = URI(@source_url)
       return nil unless uri.host
 
-      "#{uri.scheme}://#{uri.host}#{":#{uri.port}" unless [80, 443].include?(uri.port.to_i)}"
+      "#{uri.scheme}://#{uri.host}#{":#{uri.port}" unless [ 80, 443 ].include?(uri.port.to_i)}"
     rescue URI::InvalidURIError
       nil
     end
@@ -168,7 +170,7 @@ module Openapi
             "method" => method.to_s.upcase,
             "path" => path_key,
             "operation_id" => op.operation_id.to_s,
-            "name" => slugify(op.operation_id.to_s.presence || "#{method}#{path_key}").presence || "operation",
+            "name" => fallback_operation_name(method, path_key, op.operation_id.to_s.presence),
             "summary" => op.summary.to_s.strip,
             "description" => (op.description.to_s.presence || op.summary.to_s).strip,
             "tags" => Array(op.tags),
@@ -379,6 +381,19 @@ module Openapi
         .gsub(/[^a-zA-Z0-9]+/, "_")
         .gsub(/\A_+|_+\z/, "")
         .downcase
+    end
+
+    # The operation's slugged identifier. Prefers a declared operationId; when
+    # the spec has none (e.g. the *arr family), falls back to slugging the
+    # method + path. In that fallback a leading API-version prefix
+    # (`/api/v1/...`, `/api/v3/...`) is stripped so tool names like
+    # `prowlarr_get_api_v1_search` become `prowlarr_get_search` — the version is
+    # noise, not part of the operation's identity.
+    def fallback_operation_name(method, path_key, operation_id)
+      return slugify(operation_id) if operation_id.present?
+
+      stripped = path_key.to_s.sub(%r{\A/api/v\d+/}, "")
+      slugify("#{method}/#{stripped}").presence || "operation"
     end
   end
 end

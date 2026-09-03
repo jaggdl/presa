@@ -1,0 +1,10 @@
+title: Radarr
+namespace: radarr
+category: media
+spec_url: https://raw.githubusercontent.com/Radarr/Radarr/develop/src/Radarr.Api.V3/openapi.json
+base_url: http://localhost:7878
+health_op: get_system_status
+description: |
+  # Radarr
+
+  Self-hosted movie collection manager — search, add, and organize your movies, and manage the [Radarr](https://radarr.video) server through its API.

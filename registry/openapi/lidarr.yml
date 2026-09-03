@@ -1,0 +1,10 @@
+title: Lidarr
+namespace: lidarr
+category: media
+spec_url: https://raw.githubusercontent.com/Lidarr/Lidarr/develop/src/Lidarr.Api.V1/openapi.json
+base_url: http://localhost:8686
+health_op: get_system_status
+description: |
+  # Lidarr
+
+  Self-hosted music collection manager — search, add, and organize your artists and albums, and manage the [Lidarr](https://lidarr.audio) server through its API.

@@ -201,8 +201,14 @@ module Services
       list.is_a?(Array) ? list : []
     end
 
+    # Looks up an operation by its stable identifier. Specs that ship no
+    # operationId (e.g. the *arr family) fall back to the generated slugified
+    # name (`slugify(method + path)`), which is unique per operation; matching
+    # on both keeps presets' `health_op` working regardless of which the spec
+    # provides.
     def operation(operation_id)
-      operations.find { |op| op["operation_id"].to_s == operation_id.to_s }
+      key = operation_id.to_s
+      operations.find { |op| op["operation_id"].to_s == key || op["name"].to_s == key }
     end
 
     def health_check_operation
@@ -268,7 +274,7 @@ module Services
       cache_key = [ "openapi_tools", (openapi_kind&.definition || config_spec).hash ]
       Rails.cache.fetch(cache_key, expires_in: DISCOVERY_TTL) do
         operations.filter_map do |op|
-          next if op["operation_id"] == health_check_operation
+          next if op["operation_id"] == health_check_operation || op["name"] == health_check_operation
 
           {
             "name" => "#{namespace}_#{op["name"]}",

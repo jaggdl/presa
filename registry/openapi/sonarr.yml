@@ -1,0 +1,10 @@
+title: Sonarr
+namespace: sonarr
+category: media
+spec_url: https://raw.githubusercontent.com/Sonarr/Sonarr/develop/src/Sonarr.Api.V3/openapi.json
+base_url: http://localhost:8989
+health_op: get_system_status
+description: |
+  # Sonarr
+
+  Self-hosted TV series collection manager — search, add, and organize your TV library, and manage the [Sonarr](https://sonarr.tv) server through its API.
