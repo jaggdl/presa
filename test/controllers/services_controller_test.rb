@@ -136,7 +136,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
     patch service_path(service), params: { service: { name: "Renamed", config: { api_token: "tok2", base_url: "https://api.github.com" } } }
 
-    assert_redirected_to services_path
+    assert_redirected_to service_path(service)
     assert_equal "Renamed", service.reload.name
   end
 

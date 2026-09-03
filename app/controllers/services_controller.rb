@@ -174,7 +174,7 @@ class ServicesController < ApplicationController
     return {} unless params[:service].key?(:config)
 
     klass = @service&.class || service_klass
-    openapi_kind = @service&.openapi_kind
+    openapi_kind = @service.openapi_kind if @service.is_a?(Services::Openapi)
     openapi_kind ||= klass.openapi_kind if klass.respond_to?(:openapi_kind) && klass <= Services::Openapi
 
     # OpenAPI services store their schema on the kind (security schemes + extra
