@@ -11,8 +11,8 @@ class ReadWorkspaceServicesToolTest < ActiveSupport::TestCase
 
   test "reports connected and addable services" do
     ws = workspaces(:one)
-    connected = services(:seerr)
-    addable = services(:places)
+    connected = services(:places)
+    addable = services(:google_calendar)
     tool = expose_workspace_tool("read_workspace_services", workspaces: [ ws ])
 
     result = tool.call(workspace_id: ws.id)

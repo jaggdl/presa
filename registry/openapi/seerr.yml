@@ -1,0 +1,19 @@
+title: Seerr
+namespace: seerr
+category: media
+spec_url: https://raw.githubusercontent.com/seerr-team/seerr/refs/heads/develop/seerr-api.yml
+base_url: http://localhost:5055/api/v1
+health_op: get_discover_movies
+description: |
+  # Seerr
+
+  Self-hosted media request manager for Plex and Jellyfin — discover movies and TV, manage requests, users, and issues through its API. Companion to the [Overseerr](https://overseerr.dev) ecosystem (a fork of [Jellyseerr](https://github.com/Fallenbagel/jellyseerr)).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes* | Yes | — | The API key for authenticated operations (generated from the Seerr web UI under **Settings → General**). |
+  | `base_url` | No | No | `http://localhost:5055/api/v1` | The server's base URL as reachable from this app, e.g. `http://<host>:5055/api/v1`. Leave the `/api/v1` suffix intact. |
+
+  \* Required for every operation, including the health check. The health check (`GET /discover/movies`) validates the API key.

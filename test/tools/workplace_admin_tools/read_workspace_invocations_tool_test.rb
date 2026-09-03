@@ -15,7 +15,7 @@ class ReadWorkspaceInvocationsToolTest < ActiveSupport::TestCase
     ApiToken.issue!(workspace: ws, name: "w-tox")
     ApiToken.issue!(workspace: ws_other, name: "other")
     ToolInvocation.record!(api_token: ws.api_tokens.active.take, service: services(:github_prod), tool_name: "github_list_issues_prod", arguments: {})
-    ToolInvocation.record!(api_token: ws.api_tokens.active.take, service: services(:seerr), tool_name: "seerr_search", arguments: {})
+    ToolInvocation.record!(api_token: ws.api_tokens.active.take, service: services(:places), tool_name: "places_text_search", arguments: {})
     ToolInvocation.record!(api_token: ws_other.api_tokens.active.take, tool_name: "other_tool", arguments: {})
 
     tool = expose_workspace_tool("read_workspace_invocations", workspaces: [ ws, ws_other ])
@@ -23,7 +23,7 @@ class ReadWorkspaceInvocationsToolTest < ActiveSupport::TestCase
 
     names = result[:invocations].map { |i| i[:tool_name] }
     assert_includes names, "github_list_issues_prod"
-    assert_includes names, "seerr_search"
+    assert_includes names, "places_text_search"
     assert_not_includes names, "other_tool"
   end
 end

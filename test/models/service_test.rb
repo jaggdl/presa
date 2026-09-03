@@ -3,7 +3,7 @@ require "test_helper"
 class ServiceTest < ActiveSupport::TestCase
   test "icon returns the declared brand image" do
     assert_equal "github.png", services(:github_prod).icon
-    assert_equal "seerr.png", services(:seerr).icon
+    assert_equal "places.png", services(:places).icon
   end
 
   test "icon falls back to placeholder when the kind has not declared one" do
@@ -34,17 +34,17 @@ class ServiceTest < ActiveSupport::TestCase
   end
 
   test "test_connection? is true only for kinds with a real connectivity probe" do
-    assert Services::Seerr.test_connection?, "seerr should support a connectivity probe"
+    assert Services::Places.test_connection?, "places should support a connectivity probe"
     assert Services::Mcp.test_connection?, "mcp should support a connectivity probe"
     assert_not Services::WorkplaceAdmin.test_connection?, "workplace admin has no connectivity probe"
     assert_not Services::Gmail.test_connection?, "OAuth services use the exchange, not a probe"
   end
 
   test "destroy removes linked tool invocations" do
-    service = services(:seerr)
+    service = services(:places)
     token = workspaces(:one).api_tokens.create!(name: "Test", token_digest: "digest")
 
-    service.tool_invocations.create!(api_token: token, tool_name: "seerr_other", arguments: {})
+    service.tool_invocations.create!(api_token: token, tool_name: "places_other", arguments: {})
 
     assert_difference -> { ToolInvocation.where(service_id: service.id).count }, -1 do
       service.destroy!

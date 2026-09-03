@@ -6,6 +6,6 @@ one_github_staging:
   workspace: one
   service: github_staging
 
-one_seerr:
+one_places:
   workspace: one
-  service: seerr
+  service: places

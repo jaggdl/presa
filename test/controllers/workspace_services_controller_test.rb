@@ -48,7 +48,7 @@ class WorkspaceServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update persists the allowed tool subset" do
-    join = workspace_services(:one_seerr)
+    join = workspace_services(:one_places)
     available = ApplicationTool.expose_for(join.service).map { |t| t.tool_key.to_s }
     subset = available.first(1)
 

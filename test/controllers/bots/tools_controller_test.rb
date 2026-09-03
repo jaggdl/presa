@@ -60,16 +60,16 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /bots/tools lists the workspace's available tools as plain text" do
-    join = workspace_services(:one_seerr)
-    join.update!(allowed_tools: [ "search" ])
+    join = workspace_services(:one_places)
+    join.update!(allowed_tools: [ "text_search" ])
     token = ApiToken.issue!(workspace: @workspace, name: "bot")
 
     get bots_tools_path, headers: { "Authorization" => "Bearer #{token}" }
 
     assert_response :success
     assert_includes response.content_type, "text/plain"
-    assert_includes response.body, "seerr_search"
-    refute_includes response.body, "seerr_get_status"
+    assert_includes response.body, "places_text_search"
+    refute_includes response.body, "places_nearby_search"
     refute_includes response.body, "Arguments:"
   end
 
@@ -90,11 +90,11 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /bots/tools/:tool is not found for a disallowed or unknown tool" do
-    join = workspace_services(:one_seerr)
-    join.update!(allowed_tools: [ "search" ])
+    join = workspace_services(:one_places)
+    join.update!(allowed_tools: [ "text_search" ])
     token = ApiToken.issue!(workspace: @workspace, name: "bot")
 
-    get bots_tool_path("seerr_get_status"), headers: { "Authorization" => "Bearer #{token}" }
+    get bots_tool_path("places_nearby_search"), headers: { "Authorization" => "Bearer #{token}" }
 
     assert_response :not_found
   end
@@ -106,8 +106,8 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /bots/workspace returns workspace name, services and tools" do
-    join = workspace_services(:one_seerr)
-    join.update!(allowed_tools: [ "search" ])
+    join = workspace_services(:one_places)
+    join.update!(allowed_tools: [ "text_search" ])
     @workspace.update!(description: "A short blurb")
     token = ApiToken.issue!(workspace: @workspace, name: "bot")
 

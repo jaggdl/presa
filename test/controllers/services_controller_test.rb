@@ -117,18 +117,18 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show lists the service's available tools" do
-    get service_path(services(:seerr))
+    get service_path(services(:places))
     assert_response :success
     assert_select "h2", text: "Tools"
-    assert_select "code", text: "seerr_search"
-    assert_select "code", text: "query"
+    assert_select "code", text: "places_text_search"
+    assert_select "code", text: "text_query"
   end
 
-  test "show renders no-argument tools without error" do
-    get service_path(services(:seerr))
+  test "show renders a tool's arguments without error" do
+    get service_path(services(:places))
     assert_response :success
-    assert_select "code", text: "seerr_get_status"
-    assert_select "p", text: "Accepts no arguments."
+    assert_select "code", text: "places_nearby_search"
+    assert_select "code", text: "latitude"
   end
 
   test "edit and update a service" do

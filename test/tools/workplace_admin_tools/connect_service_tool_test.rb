@@ -12,7 +12,7 @@ class WorkplaceAdminToolsConnectServiceToolTest < ActiveSupport::TestCase
 
   test "links a service to a managed workspace" do
     ws = workspaces(:one)
-    service = services(:places)
+    service = services(:google_calendar)
     tool = expose_workspace_tool("connect_service", workspaces: [ ws ])
 
     result = tool.call(workspace_id: ws.id, service_id: service.id)
@@ -23,7 +23,7 @@ class WorkplaceAdminToolsConnectServiceToolTest < ActiveSupport::TestCase
 
   test "is idempotent when already connected" do
     ws = workspaces(:one)
-    service = services(:seerr)
+    service = services(:places)
     tool = expose_workspace_tool("connect_service", workspaces: [ ws ])
 
     result = tool.call(workspace_id: ws.id, service_id: service.id)

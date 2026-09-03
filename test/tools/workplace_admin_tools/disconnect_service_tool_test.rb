@@ -12,7 +12,7 @@ class WorkplaceAdminToolsDisconnectServiceToolTest < ActiveSupport::TestCase
 
   test "removes a service from a managed workspace" do
     ws = workspaces(:one)
-    service = services(:seerr)
+    service = services(:places)
     tool = expose_workspace_tool("disconnect_service", workspaces: [ ws ])
 
     result = tool.call(workspace_id: ws.id, service_id: service.id)
@@ -23,6 +23,6 @@ class WorkplaceAdminToolsDisconnectServiceToolTest < ActiveSupport::TestCase
 
   test "raises when the service is not connected" do
     tool = expose_workspace_tool("disconnect_service", workspaces: [ workspaces(:one) ])
-    assert_raises(ArgumentError) { tool.call(workspace_id: workspaces(:one).id, service_id: services(:places).id) }
+    assert_raises(ArgumentError) { tool.call(workspace_id: workspaces(:one).id, service_id: services(:google_calendar).id) }
   end
 end
