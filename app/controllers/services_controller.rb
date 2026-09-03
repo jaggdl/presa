@@ -13,16 +13,21 @@ class ServicesController < ApplicationController
     @kinds = matching_kinds.drop(@offset).first(Service::KINDS_PER_PAGE)
     @show_more = (@offset + @kinds.length) < matching_kinds.length
 
-    respond_to do |format|
-      format.turbo_stream do
-        grid_action = @offset.zero? ? "replace" : "append"
-        render turbo_stream: [
-          turbo_stream.public_send(grid_action, "kinds-grid", partial: "services/kinds_grid", locals: { kinds: @kinds, q: @q, append: !@offset.zero? }),
-          turbo_stream.replace("kinds-more", partial: "services/kinds_more",
-                               locals: { q: @q, offset: @offset + @kinds.length, show_more: @show_more })
-        ]
-      end
-      format.html
+    # Only the as-you-type search ("Show more" carries offset, search carries q)
+    # asks for the grid-refresh stream. An unsafe form submission elsewhere
+    # (e.g. the edit form on /services/:id) follows its 302 back to bare /services
+    # with turbo-stream advertised in Accept; without gating on q/offset Rails
+    # would answer that navigation with this grid partial instead of a full page,
+    # so the redirect silently goes nowhere.
+    if request.format.turbo_stream? && (params.key?(:q) || params.key?(:offset))
+      grid_action = @offset.zero? ? "replace" : "append"
+      render turbo_stream: [
+        turbo_stream.public_send(grid_action, "kinds-grid", partial: "services/kinds_grid", locals: { kinds: @kinds, q: @q, append: !@offset.zero? }),
+        turbo_stream.replace("kinds-more", partial: "services/kinds_more",
+                             locals: { q: @q, offset: @offset + @kinds.length, show_more: @show_more })
+      ]
+    else
+      render :index
     end
   end
 
@@ -62,7 +67,7 @@ class ServicesController < ApplicationController
     if @service.is_a?(Services::Openapi)
       config = @service.config.merge(service_config_params)
       if @service.update(name: service_params[:name], config: config)
-        redirect_to services_path, notice: "Service updated."
+        redirect_to service_path(@service), notice: "Service updated."
       else
         @tools = ApplicationTool.expose_for(@service)
         render :show, status: :unprocessable_entity
@@ -71,7 +76,7 @@ class ServicesController < ApplicationController
     end
 
     if @service.update(name: service_params[:name], config: service_config_params)
-      redirect_to services_path, notice: "Service updated."
+      redirect_to service_path(@service), notice: "Service updated."
     else
       @tools = ApplicationTool.expose_for(@service)
       render :show, status: :unprocessable_entity
