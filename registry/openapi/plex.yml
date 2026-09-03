@@ -1,0 +1,19 @@
+title: Plex Media Server
+namespace: plex
+category: media
+spec_url: https://raw.githubusercontent.com/LukasParke/plex-api-spec/4d14672d62fbf4eb311f9c688bffaf019a08d663/plex-api-spec.yaml
+base_url: http://localhost:32400
+health_op: getServerInfo
+description: |
+  # Plex Media Server
+
+  Self-hosted media server — stream your movies, TV, and music libraries to any device, and manage the [Plex](https://www.plex.tv) server through its API (libraries, hubs, playback, metadata, and more).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes* | Yes | — | The Plex access token for authenticated operations (sent as an `X-Plex-Token` header; obtain one from plex.tv or from your PMS while signed in). |
+  | `base_url` | No | No | `http://localhost:32400` | The server's base URL as reachable from this app, e.g. `http://<host>:32400`. |
+
+  \* Required for most operations, including the health check. The health check (`GET /`) validates the token.
