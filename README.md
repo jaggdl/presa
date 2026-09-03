@@ -141,6 +141,8 @@ On the host itself you can connect via `localhost`:
 | -------------------- | ------------------------------------------------------------------ |
 | `RAILS_MASTER_KEY`   | Rails master key used to decrypt `config/credentials.yml.enc`. Must match the app's `config/master.key`; you can copy the repo's `config/master.key` into your deployment if you hold the seed. |
 | `BASE_URL`           | Public URL of the instance (e.g. `https://presa.example.com`). Used to build absolute links and signing. |
+| `HTTP_PORT`          | Port Thruster listens on. Defaults to `7753` (set in the `Dockerfile`). Mainly useful when running multiple instances on one host with `network_mode: host` — give each its own port (e.g. `7754`) so they don't collide. |
+| `MULTI_TENANT`      | Set to `true` to let any visitor sign up and provision their own team; default is a single-tenant install where only the first account can be created. |
 
 Persist the encrypted `storage/` (attachments and uploads) via the `presa-production`
 named volume, mounted at `/rails/storage`.
@@ -151,6 +153,8 @@ A minimal `.env` next to the compose file:
 RAILS_MASTER_KEY=<your key>
 BASE_URL=https://presa.example.com
 ```
+
+Only add `HTTP_PORT` or `MULTI_TENANT` (see table above) if you need them.
 
 ### Updating
 
