@@ -91,7 +91,14 @@ module Services
           klass.config_kind = kind.namespace
           klass.config_display_name = kind.title
           klass.config_category = :general
-          klass.class_attribute :openapi_kind, default: kind
+          # Resolve the kind lazily by namespace instead of capturing the record
+          # at build time: uninstalling + reinstalling a preset creates a fresh
+          # OpenapiKind, and a memoized class pointing at the old (deleted) kind
+          # would build services with a dangling openapi_kind_id whose lazy load
+          # is nil, surfacing as "Config spec is missing".
+          klass.define_singleton_method(:openapi_kind) do
+            OpenapiKind.find_by(namespace: kind.namespace)
+          end
           klass.define_singleton_method(:description) { openapi_kind&.description }
         end
       end
