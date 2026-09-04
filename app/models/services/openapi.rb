@@ -539,13 +539,15 @@ module Services
       credential_type.to_s == "oauth" && oauth_slot.present?
     end
 
-    # The OAuth scope set this instance's app credential is configured with
-    # (from the credential form), used to filter which of the spec's tools the
-    # service may actually call. Blank (nothing configured) means the generic
-    # scope is requested and no filtering applies.
+    # The OAuth scope set this instance can actually call with: the client
+    # credential's configured scope when set (that's what the authorize URL
+    # requests), otherwise the scopes the connected account's grant actually
+    # holds (what Google returned at consent). Blank (no grant / no scopes)
+    # means the generic scope is requested and no filtering applies.
     # Public: the service show page shows these to explain tool counts.
     def configured_oauth_scopes
       scope = oauth_grant&.oauth_client_credential&.scope.to_s
+      scope = oauth_grant&.scope.to_s if scope.blank?
       scope.split.map(&:strip).reject(&:blank?)
     end
 

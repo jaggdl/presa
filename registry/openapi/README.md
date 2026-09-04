@@ -33,8 +33,9 @@ registry/
 | `category`  | yes      | `Service` domain category shown on the card (e.g. `media`, `productivity`). |
 | `spec_url`  | yes      | URL of the OpenAPI 3.x document used to generate the kind's definition. |
 | `base_url`  | no       | Default base URL, used when a service doesn't override it. |
-| `health_op` | no       | Operation (by `operationId`) used for "Test connection". Prefer an **authenticated** operation so the credential is validated too. |
-| `credential`| no       | Credential-transmission override for specs whose declared scheme is wrong against the real server (see below). |
+| `health_op` | no | Operation (by `operationId`) used for "Test connection". Prefer an **authenticated** operation so the credential is validated too. |
+| `credential`| no | Credential-transmission override for specs whose declared scheme is wrong against the real server (see below). |
+| `oauth_provider` | no | Overrides the OAuth provider key for specs that declare an OAuth flow (see below). |
 | `description` | no     | Markdown description shown on the card / service header (same shape as `docs/services/*.md`; a leading top-level heading is dropped when rendered). |
 
 ## Example
@@ -79,6 +80,23 @@ At install the loader rewrites that scheme's slot in the generated definition
 (`definition["security"]["CustomAuthentication"]`) to use `param_name` in the
 given location, so the generated tools and health check send the credential
 correctly. Omit `credential` when the spec's scheme is already correct.
+
+## The `oauth_provider` override
+
+Kinds whose spec declares an OAuth flow get a provider keyed by their
+namespace (e.g. `figma`), so client credentials and the browser dance resolve
+like any other provider. When a spec's OAuth flow belongs to a provider this
+app already defines (Google, Spotify, Strava, Notion), a preset can share that
+provider's client credentials and icon instead of minting a namespace-local
+one:
+
+```yaml
+oauth_provider: google   # e.g. a specs.googleapis.com / youtubeAnalytics API
+```
+
+Defaults to the namespace when omitted. The spec's own scopes still drive the
+consent URL and per-operation tool filtering — only the client credentials and
+branding come from the shared provider.
 
 ## OAuth-capable specs
 

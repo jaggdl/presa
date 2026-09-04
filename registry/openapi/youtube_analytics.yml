@@ -1,0 +1,20 @@
+title: YouTube Analytics
+namespace: youtube_analytics
+category: productivity
+spec_url: https://api.apis.guru/v2/specs/googleapis.com/youtubeAnalytics/v2/openapi.json
+base_url: https://youtubeanalytics.googleapis.com
+oauth_provider: google
+health_op: youtubeAnalytics.groups.list
+description: |
+  # YouTube Analytics
+
+  YouTube Analytics API — query channel and content-owner performance reports (`reports.query`) and manage the groups and group items used to aggregate data across channels. See the [official documentation](https://developers.google.com/youtube/analytics).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | Google OAuth 2.0 credential. Register a Google Cloud OAuth client (callback URL `oauth_callback_url`) and connect via the OAuth flow, authorizing the `https://www.googleapis.com/auth/yt-analytics.readonly` scope (or `youtube.readonly`). |
+  | `base_url` | No | No | `https://youtubeanalytics.googleapis.com` | The YouTube Analytics REST API base URL; Google-hosted, no self-hosted equivalent. |
+
+  The health check (`GET /v2/groups`) validates the credential by listing the groups owned by the authenticated user.

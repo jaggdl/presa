@@ -23,6 +23,14 @@ module Registry
         data["health_op"].to_s.presence
       end
 
+      # Optional OAuth provider key override for kinds whose spec declares an
+      # OAuth scheme. Defaults to the namespace (a kind-local dynamic provider);
+      # set e.g. `google` so a Google-API kind shares the well-known provider's
+      # client credentials and icon instead of minting its own.
+      def oauth_provider
+        data["oauth_provider"].to_s.presence
+      end
+
       # Optional credential-transmission override for specs whose declared
       # scheme is wrong for the real server (e.g. Jellyfin's spec says
       # `Authorization` but the server wants `X-Emby-Token`). YAML shape:
