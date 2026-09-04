@@ -176,6 +176,7 @@ module Openapi
           "description" => entry["description"],
           "tags" => entry["tags"],
           "security" => entry["security"],
+          "security_requirements" => entry["security_requirements"],
           "args_schema" => entry["args_schema"],
           "body" => entry["body"],
           "response_fields" => entry["response_fields"]
@@ -198,6 +199,7 @@ module Openapi
             "description" => (op.description.to_s.presence || op.summary.to_s).strip,
             "tags" => Array(op.tags),
             "security" => effective_security(op),
+            "security_requirements" => effective_security_requirements(op),
             "args_schema" => args_schema(op, path_key),
             "body" => body_info(op),
             "response_fields" => response_fields(op)
@@ -210,6 +212,24 @@ module Openapi
       declared = op.raw_schema["security"]
       declared = declared.is_a?(Array) ? declared : global_security
       (declared || []).flat_map { |requirement| requirement.is_a?(Hash) ? requirement.keys : [] }.presence || []
+    end
+
+    # Per-operation security requirements with their OAuth scopes preserved:
+    # [{ "scheme" => "OAuth2", "scopes" => ["file_content:read", ...] }, ...].
+    # Operations may offer several security alternatives (e.g. Figma:
+    # PersonalAccessToken | PlanAccessToken | OAuth2:[scopes]); the scope
+    # lists let an OAuth-backed service instance filter its tools to what its
+    # credential's configured scopes can actually do.
+    def effective_security_requirements(op)
+      declared = op.raw_schema["security"]
+      declared = declared.is_a?(Array) ? declared : global_security
+      (declared || []).each_with_object([]) do |requirement, out|
+        next unless requirement.is_a?(Hash)
+
+        requirement.each do |scheme, scopes|
+          out << { "scheme" => scheme.to_s, "scopes" => Array(scopes).map(&:to_s) }
+        end
+      end
     end
 
     def global_security

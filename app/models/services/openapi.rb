@@ -320,9 +320,13 @@ module Services
     # Mirrors `Mcp#remote_tools`, cached per spec content.
     def openapi_tools
       cache_key = [ "openapi_tools", (openapi_kind&.definition || config_spec).hash ]
+      # The filtered tool set depends on the OAuth scope configuration, so it
+      # must be part of the cache key (a scope change must refilter).
+      cache_key << configured_oauth_scopes.sort.join(",") if oauth_method?
       Rails.cache.fetch(cache_key, expires_in: DISCOVERY_TTL) do
         operations.filter_map do |op|
           next if op["operation_id"] == health_check_operation || op["name"] == health_check_operation
+          next if oauth_method? && !oauth_operation_available?(op)
 
           {
             "name" => "#{namespace}_#{op["name"]}",
@@ -335,6 +339,9 @@ module Services
 
     def execute_operation(operation, arguments)
       raise "No operation to execute" unless operation
+      if oauth_method? && !oauth_operation_available?(operation)
+        raise ::Openapi::ApiError, "Operation #{operation["name"]} is not available under this service's configured OAuth scopes"
+      end
 
       args = arguments.to_h.with_indifferent_access
       path = "#{base_path}#{render_path(operation["path"], args)}"
@@ -523,10 +530,57 @@ module Services
       end
     end
 
+    public
+
     # Whether this service authenticates through the OAuth dance (an `oauth`
     # slot exists in the spec and the user chose the OAuth method).
+    # Public: the service show page and tool filtering rely on it.
     def oauth_method?
       credential_type.to_s == "oauth" && oauth_slot.present?
+    end
+
+    # The OAuth scope set this instance's app credential is configured with
+    # (from the credential form), used to filter which of the spec's tools the
+    # service may actually call. Blank (nothing configured) means the generic
+    # scope is requested and no filtering applies.
+    # Public: the service show page shows these to explain tool counts.
+    def configured_oauth_scopes
+      scope = oauth_grant&.oauth_client_credential&.scope.to_s
+      scope.split.map(&:strip).reject(&:blank?)
+    end
+
+    # Per-operation OAuth scope alternatives: [[scope, ...], ...] — one entry
+    # per security requirement that references an OAuth scheme slot. Empty
+    # when the operation has no OAuth gate (e.g. public or manual-scheme-only
+    # operations).
+    def oauth_required_scopes(op)
+      Array(op["security_requirements"]).filter_map do |req|
+        slot = security_slots[req["scheme"].to_s]
+        next if slot.nil? || slot["kind"].to_s != "oauth"
+
+        Array(req["scopes"]).map(&:to_s)
+      end
+    end
+
+    # A tool is available when the operation can actually be called with this
+    # instance's OAuth credential:
+    #   * public operations (no security requirements) are always usable;
+    #   * operations gated only on non-OAuth schemes (API key / basic, e.g.
+    #     Figma's PlanAccessToken-only endpoints) can't be authenticated via
+    #     the bearer grant and are hidden;
+    #   * OAuth-gated operations are available when one of their OAuth scope
+    #     alternatives is covered by the credential's configured scopes (or,
+    #     with no scopes configured, the app's full granted scope applies).
+    def oauth_operation_available?(op)
+      alternatives = oauth_required_scopes(op)
+      requirements = Array(op["security_requirements"])
+      return true if requirements.empty?
+
+      return false if alternatives.empty?
+
+      return true if configured_oauth_scopes.empty?
+
+      alternatives.any? { |required| (required - configured_oauth_scopes).empty? }
     end
 
     # Maps the chosen credential type to an outbound header/query/cookie.

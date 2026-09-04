@@ -10,6 +10,17 @@
 
       <h2 class="font-bold text-2xl mt-10">Tools</h2>
 
+      <% if @service.is_a?(Services::Openapi) && @service.respond_to?(:oauth_method?) && @service.oauth_method? %>
+        <p class="text-sm text-zinc-500 mt-1 mb-3">
+          <% if @service.configured_oauth_scopes.any? %>
+            <%= pluralize(@tools.length, "tool") %> available under the configured OAuth scopes
+            (<code class="text-zinc-400"><%= @service.configured_oauth_scopes.join(" ") %></code>).
+          <% else %>
+            Showing all <%= pluralize(@service.operation_count, "operation") %><%= @service.health_check_operation.present? ? " (excluding the health check)" : "" %>.
+          <% end %>
+        </p>
+      <% end %>
+
       <% if @service.respond_to?(:remote_tools_error) && @service.remote_tools_error.present? %>
         <div class="py-3 px-4 rounded-lg border border-red-500/30 bg-red-950/40 text-red-400 text-sm">
           Couldn't reach this service's MCP endpoint: <%= h @service.remote_tools_error.message %>
