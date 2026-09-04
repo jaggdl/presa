@@ -26,12 +26,6 @@ nano_banana:
   type: Services::NanoBanana
   name: Nano Banana
   config: <%= { api_key: "gemini_test_key" }.to_json %>
-gmail:
-  team: one
-  type: Services::Gmail
-  name: Gmail
-  config: {}
-
 google_analytics:
   team: one
   type: Services::GoogleAnalytics

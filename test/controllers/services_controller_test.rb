@@ -112,7 +112,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show hides the redirect URL and add-client prompts for a connected OAuth service" do
-    get service_path(services(:gmail))
+    get service_path(services(:google_calendar))
     assert_response :success
     refute_includes response.body, "Add an OAuth client"
     assert_match(/● Connected/, response.body)
@@ -186,7 +186,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "new loads existing OAuth clients for an OAuth service" do
-    get new_kind_service_services_path("gmail")
+    get new_kind_service_services_path("calendar")
     assert_response :success
     assert_select "select[name=oauth_client_credential_id]"
     assert_select "option", text: "Prod Google app"
@@ -197,7 +197,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     newest = oauth_client_credentials(:google_credential).team.oauth_client_credentials.create!(
       provider: "google", name: "Newest app", client_id: "cid_newest", client_secret: "secret_newest"
     )
-    get new_kind_service_services_path("gmail")
+    get new_kind_service_services_path("calendar")
     assert_response :success
     assert_select "select[name=oauth_client_credential_id] option[value=#{newest.id}][selected]"
     refute_select "select[name=oauth_client_credential_id] option[value=#{oauth_client_credentials(:google_credential).id}][selected]"
@@ -211,7 +211,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   test "create for an OAuth service redirects to the provider with an existing client" do
     assert_no_difference -> { @user.services.count } do
       post services_path, params: {
-        service: { name: "My Gmail", kind: "gmail" },
+        service: { name: "My Google Calendar", kind: "calendar" },
         oauth_client_credential_id: oauth_client_credentials(:google_credential).id
       }
     end
@@ -223,7 +223,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_difference -> { @user.oauth_client_credentials.count }, 1 do
       assert_no_difference -> { @user.services.count } do
         post services_path, params: {
-          service: { name: "My Gmail", kind: "gmail" },
+          service: { name: "My Google Calendar", kind: "calendar" },
           oauth_client_credential_id: "new",
           oauth_client_credential: { name: "New app", client_id: "new_cid", client_secret: "new_secret" }
         }
@@ -238,7 +238,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   test "create for an OAuth service renders the form when no client is chosen" do
     assert_no_difference -> { @user.services.count } do
-      post services_path, params: { service: { name: "My Gmail", kind: "gmail" } }
+      post services_path, params: { service: { name: "My Google Calendar", kind: "calendar" } }
     end
 
     assert_response :unprocessable_entity

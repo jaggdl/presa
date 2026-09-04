@@ -3,7 +3,7 @@ require "test_helper"
 class OauthControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:one)
-    @service = services(:gmail)
+    @service = services(:google_calendar)
     @credential = oauth_client_credentials(:google_credential)
     sign_in_as @user
   end
@@ -40,8 +40,8 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
         { "access_token" => "exchanged_access", "refresh_token" => "exchanged_refresh", "expires_in" => 3600 }
       end
     end
-    actual = Services::Gmail.method(:exchange_factory)
-    Services::Gmail.define_singleton_method(:exchange_factory) { fake_exchange }
+    actual = Services::GoogleCalendar.method(:exchange_factory)
+    Services::GoogleCalendar.define_singleton_method(:exchange_factory) { fake_exchange }
 
     state = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base).generate(
       { "service_id" => @service.id, "oauth_client_credential_id" => @credential.id },
@@ -53,7 +53,7 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
       get oauth_callback_path, params: { code: "good_code", state: state }
     end
 
-    Services::Gmail.define_singleton_method(:exchange_factory, &actual)
+    Services::GoogleCalendar.define_singleton_method(:exchange_factory, &actual)
 
     assert_redirected_to service_path(@service)
     grant = @service.reload.oauth_grant
@@ -69,7 +69,7 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "start redirects to the provider when creating a new service (kind and name only)" do
-    get oauth_start_path(kind: "gmail", name: "My Gmail", oauth_client_credential_id: @credential.id)
+    get oauth_start_path(kind: "calendar", name: "My Google Calendar", oauth_client_credential_id: @credential.id)
 
     assert_redirected_to %r{https://accounts.google.com/o/oauth2/v2/auth}
     url = URI(response.location)
@@ -89,11 +89,11 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
         { "access_token" => "new_service_access", "refresh_token" => "new_service_refresh", "expires_in" => 3600 }
       end
     end
-    actual = Services::Gmail.method(:exchange_factory)
-    Services::Gmail.define_singleton_method(:exchange_factory) { fake_exchange }
+    actual = Services::GoogleCalendar.method(:exchange_factory)
+    Services::GoogleCalendar.define_singleton_method(:exchange_factory) { fake_exchange }
 
     state = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base).generate(
-      { "kind" => "gmail", "name" => "My Gmail", "oauth_client_credential_id" => @credential.id },
+      { "kind" => "calendar", "name" => "My Google Calendar", "oauth_client_credential_id" => @credential.id },
       expires_in: 10.minutes,
       purpose: "oauth_start"
     )
@@ -102,11 +102,11 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
       get oauth_callback_path, params: { code: "good_code", state: state }
     end
 
-    Services::Gmail.define_singleton_method(:exchange_factory, &actual)
+    Services::GoogleCalendar.define_singleton_method(:exchange_factory, &actual)
 
-    service = @user.services.where(name: "My Gmail").first!
+    service = @user.services.where(name: "My Google Calendar").first!
     assert_redirected_to service_path(service)
-    assert_equal Services::Gmail, service.class
+    assert_equal Services::GoogleCalendar, service.class
     assert_equal "new_service_access", service.oauth_grant.access_token
     assert_equal @credential, service.oauth_grant.oauth_client_credential
   end
@@ -117,11 +117,11 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
         raise Oauth::Error, "invalid_grant"
       end
     end
-    actual = Services::Gmail.method(:exchange_factory)
-    Services::Gmail.define_singleton_method(:exchange_factory) { fake_exchange }
+    actual = Services::GoogleCalendar.method(:exchange_factory)
+    Services::GoogleCalendar.define_singleton_method(:exchange_factory) { fake_exchange }
 
     state = ActiveSupport::MessageVerifier.new(Rails.application.secret_key_base).generate(
-      { "kind" => "gmail", "name" => "My Gmail", "oauth_client_credential_id" => @credential.id },
+      { "kind" => "calendar", "name" => "My Google Calendar", "oauth_client_credential_id" => @credential.id },
       expires_in: 10.minutes,
       purpose: "oauth_start"
     )
@@ -130,7 +130,7 @@ class OauthControllerTest < ActionDispatch::IntegrationTest
       get oauth_callback_path, params: { code: "bad_code", state: state }
     end
 
-    Services::Gmail.define_singleton_method(:exchange_factory, &actual)
+    Services::GoogleCalendar.define_singleton_method(:exchange_factory, &actual)
     assert_redirected_to services_path
   end
 end

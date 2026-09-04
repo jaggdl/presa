@@ -2,7 +2,7 @@
 
 module Services
   # Google Analytics, backed by Google OAuth2 (per-service BYO client), the
-  # same provider flow as Gmail. The user adds a Google OAuth client credential
+  # same provider flow as Google Calendar. The user adds a Google OAuth client credential
   # and authorizes their account with the analytics.readonly scope; the service
   # then exposes GA4 tools (account/property lookup and Data API reports)
   # carrying the acquired grant's token.

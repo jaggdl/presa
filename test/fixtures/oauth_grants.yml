@@ -1,13 +1,3 @@
-gmail_grant:
-  service: gmail
-  oauth_client_credential: google_credential
-  provider: google
-  access_token: fresh_access
-  refresh_token: refresh_1
-  token_type: Bearer
-  scope: https://www.googleapis.com/auth/gmail.readonly
-  expires_at: <%= 2.hours.from_now %>
-
 google_analytics_grant:
   service: google_analytics
   oauth_client_credential: google_credential

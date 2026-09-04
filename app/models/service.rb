@@ -129,7 +129,7 @@ class Service < ApplicationRecord
 
     # A kind is offerable when its class declares config fields (plain services
     # and the generic MCP server) or its own machine kind (OAuth leaves like
-    # Gmail, MCP presets like Parallel). Abstract bases (Service, OauthService)
+    # Google Calendar, MCP presets like Parallel). Abstract bases (Service, OauthService)
     # declare neither and so are never offerable.
     def offerable?(klass)
       klass.config_fields.present? || klass.config_kind.present?
