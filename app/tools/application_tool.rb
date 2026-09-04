@@ -95,8 +95,7 @@ class ApplicationTool < ActionTool::Base
     # a service-name suffix when the workspace has several services of the same
     # kind), carrying the persisted operation hash for execution.
     def expose_openapi(service)
-      namespace = service.namespace
-      ops_by_name = service.operations.to_h { |op| [ "#{namespace}_#{op["name"]}", op ] }
+      ops_by_name = service.operations.to_h { |op| [ service.tool_name_for(op["name"]), op ] }
       service.openapi_tools.filter_map do |tool|
         name = tool[:name] || tool["name"]
         next if name.blank?

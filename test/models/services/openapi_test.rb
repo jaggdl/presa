@@ -63,6 +63,37 @@ class Services::OpenapiTest < ActiveSupport::TestCase
     assert_includes names, "widgets_create_widget"
   end
 
+  test "tool names drop a namespace-shaped lead-in from the operation slug" do
+    gmail = build_service(namespace: "gmail")
+    assert_equal "gmail_users_get_profile", gmail.tool_name_for("gmail_users_get_profile")
+    assert_equal "gmail_users_get_profile", gmail.tool_name_for("users_get_profile")
+    # A similar-looking but unrelated lead-in is kept.
+    assert_equal "gmail_gmailbox_print", gmail.tool_name_for("gmailbox_print")
+
+    ytr = build_service(namespace: "youtube_reporting")
+    assert_equal "youtube_reporting_jobs_list", ytr.tool_name_for("youtubereporting_jobs_list")
+    assert_equal "youtube_reporting_jobs_list", ytr.tool_name_for("youtube_reporting_jobs_list")
+    assert_equal "youtube_reporting_jobs_list", ytr.tool_name_for("jobs_list")
+  end
+
+  test "expose_for resolves the deduped tool name back to its operation" do
+    service = build_service(namespace: "gmail")
+    service.save!
+    ops = [
+      { "method" => "GET", "path" => "/users/me/profile", "operation_id" => "gmail.users.getProfile",
+        "name" => "gmail_users_get_profile", "summary" => "", "description" => "",
+        "tags" => [], "security" => {}, "security_requirements" => [], "args_schema" => { "type" => "object", "properties" => {} } }
+    ]
+    service.define_singleton_method(:operations) { ops }
+    classes = ApplicationTool.expose_for(service)
+
+    assert_equal 1, classes.size
+    tool = classes.first
+    assert_equal "gmail_users_get_profile", tool.tool_name
+    assert_equal "gmail_users_get_profile", tool.remote_tool_name
+    assert_equal ops.first, tool.remote_openapi_operation
+  end
+
   test "expose_for builds bound openapi tool classes" do
     service = build_service
     service.save!

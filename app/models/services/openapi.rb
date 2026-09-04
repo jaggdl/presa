@@ -316,6 +316,32 @@ module Services
       end
     end
 
+    # The namespaced tool name for an operation. When the operation's slug
+    # already leads with the namespace — exact tokens (Gmail's
+    # `gmail.users.getProfile` → `gmail_users_get_profile`) or a
+    # separator-variant of it (YouTube Reporting's `youtubereporting.jobs.list`
+    # → `youtubereporting_jobs_list` next to namespace `youtube_reporting`) —
+    # the duplicated lead-in is dropped, so the tool is `gmail_users_...` /
+    # `youtube_reporting_jobs_list` rather than
+    # `gmail_gmail_users_...` / `youtube_reporting_youtubereporting_jobs_list`.
+    def tool_name_for(op_name)
+      base = op_name.to_s
+      ns = namespace.to_s
+      return "#{ns}_#{base}" if ns.blank? || base.blank?
+
+      ns_tokens = ns.split("_")
+      op_tokens = base.split("_")
+      ns_joined = ns_tokens.join
+
+      stripped = if op_tokens.length > ns_tokens.length && op_tokens.first(ns_tokens.length) == ns_tokens
+        op_tokens.drop(ns_tokens.length).join("_")
+      elsif op_tokens.length > 1 && op_tokens.first == ns_joined
+        op_tokens.drop(1).join("_")
+      end
+
+      stripped ? "#{ns}_#{stripped}" : "#{ns}_#{base}"
+    end
+
     # Descriptor list for the generated tools: [{name, description, inputSchema}].
     # Mirrors `Mcp#remote_tools`, cached per spec content.
     def openapi_tools
@@ -329,7 +355,7 @@ module Services
           next if oauth_method? && !oauth_operation_available?(op)
 
           {
-            "name" => "#{namespace}_#{op["name"]}",
+            "name" => tool_name_for(op["name"]),
             "description" => tool_description(op),
             "inputSchema" => op["args_schema"] || {}
           }
