@@ -10,7 +10,7 @@
 # - `Registry::Openapi`       OpenAPI preset loader (registry/openapi/*.yml)
 #   - `Registry::Openapi::Preset`   OpenAPI-specific preset, adds OpenapiKind fields
 module Registry
-  ICON_EXTENSIONS = %w[jpg jpeg png svg webp ico gif].freeze
+  ICON_EXTENSIONS = %w[png jpg jpeg webp gif ico].freeze
 
   class << self
     def root

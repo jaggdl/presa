@@ -8,7 +8,7 @@ kind's definition, persists the `OpenapiKind`, and redirects to its
 new-service page.
 
 Adding a service is just dropping a `<namespace>.yml` here (and, ideally, an
-icon at `registry/icons/<namespace>.jpg`). The loader (`Registry::Openapi`)
+icon at `registry/icons/<namespace>.png`). The loader (`Registry::Openapi`)
 does the rest — no Ruby subclass needed.
 
 ## File layout
@@ -21,7 +21,7 @@ registry/
 │   └── nextcloud.yml
 └── icons/
     ├── immich.png
-    └── jellyfin.jpg
+    └── jellyfin.png
 ```
 
 ## Fields
@@ -56,11 +56,12 @@ description: |
 ## Icon
 
 Icons live in `registry/icons/` and are resolved by convention —
-`registry/icons/<namespace>.<ext>` — so the YAML doesn't name its own asset.
-Any of `jpg jpeg png svg webp ico gif` works (square, ~1024px recommended).
-On install the checked-in file is attached to the kind via Active Storage
-(rather than downloaded from the base URL host, which may be unreachable from
-the app for self-hosted presets).
+`registry/icons/<namespace>.<ext>` (raster only) — so the YAML doesn't name
+its own asset. Send **raster** images only (`png jpg jpeg webp gif ico`, square,
+~1024px recommended); vector formats like SVG are not supported. On install the
+checked-in file is attached to the kind via Active Storage (rather than
+downloaded from the base URL host, which may be unreachable from the app for
+self-hosted presets).
 
 ## The `credential` override
 
