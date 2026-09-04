@@ -29,9 +29,12 @@ module Oauth
         response_type: "code",
         client_id: client_id,
         redirect_uri: redirect_uri,
-        scope: scope,
         state: state
       }
+      # Omit `scope` when there is none to request (Figma grants the scopes the
+      # app is configured with when the param is absent); some providers reject
+      # an empty scope value outright.
+      params[:scope] = scope if scope.present?
       params = params.merge(access_type: "offline", prompt: "consent") if google_params
       "#{uri}?#{URI.encode_www_form(params)}"
     end

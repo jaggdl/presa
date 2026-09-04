@@ -68,7 +68,10 @@ module OauthProvider
         uri: provider.authorize_uri,
         client_id: client.client_id,
         redirect_uri: redirect_uri,
-        scope: oauth_scope,
+        # The client's registered app scopes win when set (providers like
+        # Figma reject authorize requests asking for scopes the app isn't
+        # configured with); otherwise the kind's declared scope is used.
+        scope: client.scope.presence || oauth_scope,
         state: state,
         # OpenAPI-kind providers follow their spec's OAuth flow verbatim;
         # the Google-family extras must not leak into a strict provider's
