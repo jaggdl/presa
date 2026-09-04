@@ -24,6 +24,8 @@ module Services
   # kind, so multiple services of a kind share a form but keep independent
   # secrets.
   class Openapi < Service
+    include OauthProvider
+
     DISCOVERY_TTL = 5.minutes
 
     belongs_to :openapi_kind, optional: true, inverse_of: :services
@@ -100,6 +102,19 @@ module Services
             OpenapiKind.find_by(namespace: kind.namespace)
           end
           klass.define_singleton_method(:description) { openapi_kind&.description }
+
+          # Kinds whose spec declares an OAuth scheme are OAuth services too,
+          # under a provider key matching the namespace (so client credentials,
+          # the credentials index, and the browser dance resolve like any other
+          # provider). Non-OAuth kinds declare no provider. `oauth_scope` is
+          # the spec's primary OAuth scheme's scope keys, space-joined for the
+          # consent URL — same shape as the static services (e.g. Gmail).
+          klass.define_singleton_method(:oauth_provider) { openapi_kind&.oauth_provider }
+          klass.define_singleton_method(:oauth_scope) do
+            slot = openapi_kind&.oauth_slot
+            scopes = slot && slot["scopes"].is_a?(Hash) ? slot["scopes"].keys : []
+            scopes.join(" ")
+          end
         end
       end
     end
@@ -195,6 +210,15 @@ module Services
       security.is_a?(Hash) ? security : {}
     end
 
+    # The primary OAuth scheme slot of the spec (the first `oauth`-kind slot),
+    # or nil. Drives the OAuth connect flow and bearer-token injection for this
+    # service; the kind is the source of truth, with a legacy fallback to the
+    # embedded spec for pre-kind rows.
+    def oauth_slot
+      openapi_kind&.oauth_slot ||
+        security_slots.find { |_name, slot| slot["kind"].to_s == "oauth" }&.last
+    end
+
     # Extra "add a method"-style credentials: [{name,in,param_name,cred_key}].
     # Their *definitions* live on the kind (shared by every service); their
     # *values* are per-service under the matching `cred_key` in `config`.
@@ -247,9 +271,14 @@ module Services
 
     # Distinct transmission options derived from the spec's security schemes:
     # [{ type:, name:, label: }]. `name` is the header/query/cookie name for
-    # API-key-style schemes (nil for bearer/basic).
+    # API-key-style schemes (nil for bearer/basic). When the spec declares an
+    # OAuth scheme it is surfaced first — connecting an account is the richer
+    # auth than pasting a key, so specs that declare both (e.g. Figma) default
+    # to the OAuth flow.
     def credential_type_candidates
-      security_slots.each_value.filter_map { |slot| candidate_for_slot(slot) }.uniq
+      list = security_slots.each_value.filter_map { |slot| candidate_for_slot(slot) }.uniq
+      oauth, rest = *list.partition { |c| c[:type] == "oauth" }
+      oauth + rest
     end
 
     def primary_credential_candidate
@@ -258,6 +287,8 @@ module Services
 
     def candidate_for_slot(slot)
       case slot["kind"].to_s
+      when "oauth"
+        { type: "oauth", name: nil, label: "OAuth — connect and authorize with #{api_title}" }
       when "basic"
         { type: "basic", name: nil, label: "HTTP Basic — Authorization: Basic user:password" }
       when "apikey"
@@ -319,6 +350,13 @@ module Services
       # fields) but keeps base_url/spec/namespace intact for the probe.
       submitted = normalize_config(config)
       cfg = normalize_config(self.config).merge(submitted)
+
+      # OAuth services are connected via the grant, not a pasted credential;
+      # the probe validates the grant (refresh on demand) and then runs the
+      # health operation with the granted token.
+      if cfg[:cred_type].to_s == "oauth"
+        validate_oauth_connection!(cfg)
+      end
 
       operation_id = cfg[:health_op].to_s.presence || health_check_operation
 
@@ -446,10 +484,18 @@ module Services
       value.is_a?(Array) ? value.join(",") : value
     end
 
-    # Applies the operation's declared security schemes. A single per-service
-    # credential (type chooser + value) covers the request when set; otherwise
-    # the legacy per-scheme slots are tried in order (first present wins).
+    # Applies the operation's declared security schemes. When the service is set
+    # up as OAuth (cred_type == "oauth", from a spec OAuth scheme), every
+    # request carries the grant's bearer token, refreshed on demand. Otherwise
+    # a single per-service credential (type chooser + value) covers the request
+    # when set; the legacy per-scheme slots are tried in order (first present
+    # wins) as a fallback.
     def apply_auth(op, query, headers, cookies)
+      if oauth_method?
+        headers["Authorization"] = "Bearer #{authorized_token}"
+        return
+      end
+
       value = credential_value
       if value.present?
         apply_credential_type(credential_type, value, query, headers, cookies)
@@ -465,6 +511,12 @@ module Services
 
         apply_slot(slot, value, query, headers, cookies)
       end
+    end
+
+    # Whether this service authenticates through the OAuth dance (an `oauth`
+    # slot exists in the spec and the user chose the OAuth method).
+    def oauth_method?
+      credential_type.to_s == "oauth" && oauth_slot.present?
     end
 
     # Maps the chosen credential type to an outbound header/query/cookie.
@@ -597,6 +649,9 @@ module Services
     end
 
     def validate_required_credentials!(cfg)
+      # OAuth services authenticate via their grant; nothing to validate here.
+      return if oauth_selected?(cfg)
+
       # Single-credential path (spec declares schemes the user fills via
       # cred_type/cred_value on the form): only the value must be present.
       if credential_type_candidates.any?
@@ -612,6 +667,7 @@ module Services
 
     def validate_operation_credentials!(op, cfg)
       return if op["security"].to_a.empty?
+      return if oauth_selected?(cfg)
 
       # Any spec-declared scheme is satisfied by the single credential.
       if credential_type_candidates.any?
@@ -626,6 +682,20 @@ module Services
       return if missing.empty?
 
       raise "#{missing.map(&:humanize).join(", ")} #{missing.one? ? "is" : "are"} required to run #{op["operation_id"]}"
+    end
+
+    # Ensures an OAuth service can produce a valid token before the health
+    # probe runs: the grant must exist and its (possibly expired) access token
+    # must refresh. Raises `Oauth::Error` on a missing/unrefreshable grant,
+    # which the controller surfaces as a failed connection.
+    def validate_oauth_connection!(cfg)
+      raise Oauth::Error, "This service uses OAuth — connect it first" unless oauth_grant.present?
+
+      authorized_token
+    end
+
+    def oauth_selected?(cfg)
+      cfg[:cred_type].to_s == "oauth"
     end
 
     def success?(response)
