@@ -1,6 +1,6 @@
 title: YouTube Analytics
 namespace: youtube_analytics
-category: analytics
+category: productivity
 spec_url: https://api.apis.guru/v2/specs/googleapis.com/youtubeAnalytics/v2/openapi.json
 base_url: https://youtubeanalytics.googleapis.com
 health_op: youtubeAnalytics.groups.list
