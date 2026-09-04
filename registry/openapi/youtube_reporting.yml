@@ -1,5 +1,5 @@
 title: YouTube Reports
-namespace: youtubereporting
+namespace: youtube_reporting
 category: productivity
 spec_url: https://api.apis.guru/v2/specs/googleapis.com/youtubereporting/v1/openapi.json
 base_url: https://youtubereporting.googleapis.com
