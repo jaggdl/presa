@@ -3,6 +3,7 @@ namespace: youtube_analytics
 category: productivity
 spec_url: https://api.apis.guru/v2/specs/googleapis.com/youtubeAnalytics/v2/openapi.json
 base_url: https://youtubeanalytics.googleapis.com
+oauth_provider: google
 health_op: youtubeAnalytics.groups.list
 description: |
   # YouTube Analytics

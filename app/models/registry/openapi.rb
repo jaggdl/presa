@@ -100,7 +100,8 @@ module Registry
           base_url: preset.base_url.presence || definition["base_url"].to_s.presence,
           spec_url: preset.spec_url,
           definition: definition,
-          health_op: preset.health_op
+          health_op: preset.health_op,
+          oauth_provider: preset.oauth_provider
         )
       end
 

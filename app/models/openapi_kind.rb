@@ -84,11 +84,18 @@ class OpenapiKind < ApplicationRecord
     security_slots.find { |_name, slot| slot["kind"].to_s == "oauth" }&.last
   end
 
-  # The OAuth provider key for services of this kind (the namespace), or nil
-  # when the spec declares no OAuth flow. Registered as a dynamic provider on
-  # Oauth::Base so client credentials, icons, and the browser dance resolve.
+  # The OAuth provider key for services of this kind, or nil when the spec
+  # declares no OAuth flow. Defaults to the namespace — registered as a dynamic
+  # provider on Oauth::Base so client credentials, icons, and the browser dance
+  # resolve — unless a preset overrides it (e.g. `oauth_provider: google` for a
+  # Google-API spec), in which case the kind shares the well-known provider's
+  # client credentials, consent URL extras, and icon instead of minting its own.
+  # The override only applies to kinds whose spec actually declares an OAuth
+  # scheme; a non-OAuth kind has no provider regardless.
   def oauth_provider
-    oauth_slot.present? ? namespace : nil
+    return nil unless oauth_slot.present?
+
+    read_attribute(:oauth_provider).presence || namespace
   end
 
   def extra_credentials
