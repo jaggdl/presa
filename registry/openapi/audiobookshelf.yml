@@ -1,0 +1,19 @@
+title: Audiobookshelf
+namespace: audiobookshelf
+category: media
+spec_url: https://raw.githubusercontent.com/advplyr/audiobookshelf/master/docs/openapi.json
+base_url: http://localhost:13378
+health_op: getLibraries
+description: |
+  # Audiobookshelf
+
+  Self-hosted audiobook and podcast server — manage your libraries, books, podcasts, and users through its API, with first-class support for saving reading progress across devices.
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes* | Yes | — | The Audiobookshelf token for authenticated operations (copy it from the web UI under **Settings → Users** or via the API; sent as an `Authorization: Bearer <token>` header). |
+  | `base_url` | No | No | `http://localhost:13378` | The server's base URL as reachable from this app, e.g. `http://<host>:13378`. |
+
+  \* Required for every operation except the book-author image endpoint, including the health check. The health check (`GET /api/libraries`) validates the token.
