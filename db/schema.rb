@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_223830) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_190000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -100,6 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_223830) do
 
   create_table "openapi_kinds", force: :cascade do |t|
     t.string "base_url"
+    t.string "category", default: "general", null: false
     t.datetime "created_at", null: false
     t.json "definition"
     t.text "description"

@@ -21,7 +21,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   test "index limits kind cards to the first page" do
     get services_path
     assert_response :success
-    assert_select "a[href$='/new']", count: Service::KINDS_PER_PAGE
+    assert_select "#kinds-grid a[href$='/new'], #kinds-grid button", count: Service::KINDS_PER_PAGE
     assert_select "#kinds-more button", text: "Show more", count: 1
   end
 
@@ -45,7 +45,8 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   test "index paginates kind cards past the first page" do
     get services_path, params: { offset: Service::KINDS_PER_PAGE }
     assert_response :success
-    assert_select "a[href$='/new']", count: Service.kinds.length - Service::KINDS_PER_PAGE
+    expected = [ Service.kinds.length - Service::KINDS_PER_PAGE, Service::KINDS_PER_PAGE ].min
+    assert_select "#kinds-grid a[href$='/new'], #kinds-grid button", count: expected
   end
 
   test "index appends cards on show more via turbo stream" do
@@ -64,6 +65,17 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     get services_path
     assert_response :success
     assert_select "span", text: "Broken"
+  end
+
+  test "new page for an openapi preset kind labels its category, not General" do
+    with_openapi_fetcher do
+      Registry::Openapi.install("figma", team: @user.teams.first)
+    end
+
+    get new_kind_service_services_path("figma")
+    assert_response :success
+    assert_select "span.pill", text: "Productivity"
+    refute_match(/General/, response.body)
   end
 
   test "new renders the form" do
@@ -220,5 +232,15 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
+  end
+
+  private
+
+  def with_openapi_fetcher(replacement = File.read(Rails.root.join("test/support/openapi/widget_api.yml")))
+    original = Openapi::Parser.method(:fetch)
+    Openapi::Parser.define_singleton_method(:fetch) { |_url| replacement }
+    yield
+  ensure
+    Openapi::Parser.define_singleton_method(:fetch, original)
   end
 end
