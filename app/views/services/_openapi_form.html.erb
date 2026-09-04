@@ -15,7 +15,11 @@
 <% turbo_disabled = oauth_chosen && !service.persisted? %>
 <% oauth_dance = oauth_available && !service.persisted? %>
 
-<div class="my-5" <%= oauth_dance ? %(data-controller="oauth-client") : "" %>>
+<% if oauth_dance %>
+  <div class="my-5" data-controller="oauth-client">
+<% else %>
+  <div class="my-5">
+<% end %>
   <%= form_with model: service, scope: :service, url: (service.persisted? ? service_path(service) : services_path), method: (service.persisted? ? :patch : :post), class: "contents", data: (turbo_disabled ? { turbo: false } : {}) do |form| %>
     <div class="my-5">
       <%= form.label :name, "Name", class: "block text-sm text-zinc-400" %>
