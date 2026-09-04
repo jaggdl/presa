@@ -13,7 +13,7 @@
       <% if @service.is_a?(Services::Openapi) && @service.respond_to?(:oauth_method?) && @service.oauth_method? %>
         <p class="text-sm text-zinc-500 mt-1 mb-3">
           <% if @service.configured_oauth_scopes.any? %>
-            <%= pluralize(@tools.length, "tool") %> available under the configured OAuth scopes
+            Showing <%= pluralize(@tools.length, "tool") %> under this service's OAuth scopes
             (<code class="text-zinc-400"><%= @service.configured_oauth_scopes.join(" ") %></code>).
           <% else %>
             Showing all <%= pluralize(@service.operation_count, "operation") %><%= @service.health_check_operation.present? ? " (excluding the health check)" : "" %>.
