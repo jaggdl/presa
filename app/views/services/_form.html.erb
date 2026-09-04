@@ -33,7 +33,7 @@
         <div class="my-5">
           <label class="block text-sm text-zinc-400">OAuth client</label>
           <%= select_tag :oauth_client_credential_id,
-                options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id]),
+                options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id].presence || @clients.last&.id),
                 id: "oauth_client_credential_select",
                 include_blank: "Choose a #{provider_name} OAuth client…",
                 class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",

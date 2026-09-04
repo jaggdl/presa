@@ -47,7 +47,8 @@
 
       <% if candidates.any? %>
         <div class="my-5" data-controller="openapi-cred"
-             data-openapi-cred-name-by-type-value="<%= candidates.to_h { |c| [ c[:type], c[:name] ] }.to_json %>">
+             data-openapi-cred-name-by-type-value="<%= candidates.to_h { |c| [ c[:type], c[:name] ] }.to_json %>"
+             data-openapi-cred-dance-value="<%= oauth_dance %>">
           <% if candidates.length > 1 %>
             <%= cf.label :cred_type, "Credential type", class: "block text-sm text-zinc-400" %>
             <p class="text-xs text-zinc-600 mb-1">The API's spec declares several schemes; pick how you authenticate.</p>
@@ -72,7 +73,7 @@
               <% provider_name = service.provider.presence&.humanize || "the provider" %>
               <label class="block text-sm text-zinc-400">OAuth client</label>
               <%= select_tag :oauth_client_credential_id,
-                    options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id]),
+                    options_for_select(@clients.map { |c| [ c.name, c.id ] } + [ [ "Create a new client…", "new" ] ], params[:oauth_client_credential_id].presence || @clients.last&.id),
                     id: "oauth_client_credential_select",
                     include_blank: "Choose a #{provider_name} OAuth client…",
                     class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900",
@@ -94,9 +95,10 @@
     <% end %>
 
     <div class="flex items-center justify-end gap-3">
-      <% if turbo_disabled %>
+      <div data-openapi-cred-oauth-actions <%= turbo_disabled ? "" : "hidden" %>>
         <%= form.submit "Continue to sign in", class: "btn-primary" %>
-      <% else %>
+      </div>
+      <div data-openapi-cred-manual-actions <%= turbo_disabled ? "hidden" : "" %>>
         <%= form.submit "Save service", class: "btn-primary" %>
 
         <% if service.class.test_connection? %>
@@ -105,7 +107,7 @@
             Test connection
           </button>
         <% end %>
-      <% end %>
+      </div>
     </div>
 
     <div id="service-test-status"></div>

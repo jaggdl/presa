@@ -193,6 +193,16 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     refute_select "option", text: "Notion integration"
   end
 
+  test "new preselects the team's most recent OAuth client for the provider" do
+    newest = oauth_client_credentials(:google_credential).team.oauth_client_credentials.create!(
+      provider: "google", name: "Newest app", client_id: "cid_newest", client_secret: "secret_newest"
+    )
+    get new_kind_service_services_path("gmail")
+    assert_response :success
+    assert_select "select[name=oauth_client_credential_id] option[value=#{newest.id}][selected]"
+    refute_select "select[name=oauth_client_credential_id] option[value=#{oauth_client_credentials(:google_credential).id}][selected]"
+  end
+
   test "new does not crash for a non-OAuth service" do
     get new_kind_service_services_path("github")
     assert_response :success
