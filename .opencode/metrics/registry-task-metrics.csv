@@ -1,0 +1,5 @@
+measured_at,run_id,commit,branch,session,agent,model,cost,tokens_in,tokens_out,tokens_reasoning,cache_read,cache_write,duration_sec,in_chars,out_chars
+2026-09-04T04:28:13Z,run_36b361c227dd,db23c186ca72cb09e063f9e657713149cd493d8d,master,ses_f956f74efffezT5rlZSM16x01m,registry-orchestrator,~deepseek/deepseek-v4-flash-latest,0.032875382,228771,10241,5408,1456384,0,1420,686313,30723
+2026-09-04T04:28:13Z,run_36b361c227dd,db23c186ca72cb09e063f9e657713149cd493d8d,master,ses_f95686929ffeRwoq45Pcd1nLjM,registry-implementer,~deepseek/deepseek-v4-flash-latest,0.008527318,18659,5859,4145,461056,0,186,55977,17577
+2026-09-04T04:28:13Z,run_36b361c227dd,db23c186ca72cb09e063f9e657713149cd493d8d,master,ses_f956480e0ffeQQnv18x0br8OFH,registry-tester,~deepseek/deepseek-v4-flash-latest,0.014615012,204178,2279,3336,269824,0,150,612534,6837
+2026-09-04T04:28:13Z,run_36b361c227dd,db23c186ca72cb09e063f9e657713149cd493d8d,master,ses_f955f4bc5ffezwzgPupnGL9R3o,registry-tester,~deepseek/deepseek-v4-flash-latest,0.005738096,101832,898,3101,512,0,370,305496,2694
