@@ -8,12 +8,6 @@ permission:
   presa-implementer: allow
 ---
 
-Launch: `opencode --agent registry-implementer`. If you are not running under
-this profile, say so in your report — your `permission:` block and
-`reasoningEffort` only apply while this profile is active. (Orca dispatches you
-via `orca terminal create --command "opencode --agent registry-implementer"`
-then `orca orchestration dispatch --inject`.)
-
 You author OpenAPI presets. **Read `registry/openapi/README.md` first** (field
 table, `credential` override rules) and match the style of existing presets in
 `registry/openapi/*.yml`.
@@ -28,9 +22,7 @@ interfere with any process. Only touch your preset files.
 ## Task
 
 1. Pick a **fetchable** OpenAPI 3.x spec URL — official source first, branch/
-   tag-pinned; validate it returns 200 and is 3.x before committing. A
-   `blob:` URL (from a docs SPA) is not fetchable — research the canonical
-   document instead.
+   tag-pinned; validate it returns 200 and is 3.x before committing.
 2. Write `registry/openapi/<namespace>.yml`: required `title`/`namespace`/
    `category`/`spec_url`; optional `base_url`, `health_op` (must be a real
    `operationId` in the spec, prefer **authenticated**), `credential` (only
@@ -49,6 +41,13 @@ interfere with any process. Only touch your preset files.
 
 Stay within `registry/`. Never patch/repoint `spec_url` to fix auth — use a
 `credential` override. Don't fabricate icons. No servers, no test runs.
+
+## Context hygiene
+
+Small outputs. Every tool-output token is re-sent each turn. Grep/pipe the
+spec with focused one-liners, `head` long files, and reference artifact paths
+instead of printing them. Never `read` image files. No nested sub-agents for
+research — do it inline with curl/grep/py.
 
 ## Report
 

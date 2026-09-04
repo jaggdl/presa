@@ -55,6 +55,33 @@ if measure_header.split(",").first != "session"
   lines.unshift(measure_header) # unexpected format; keep everything verbatim
 end
 
+# Sanity checks against expected roles.
+EXPECTED_AGENTS = %w[registry-orchestrator registry-implementer registry-tester].freeze
+db_path = `opencode db path`.strip
+db_path = nil if db_path.empty? || !File.exist?(db_path)
+
+rows = {}
+if db_path
+  lines.each do |r|
+    sid = r.split(",")[0]
+    out = `sqlite3 "#{db_path}" "SELECT agent FROM session WHERE id='#{sid}'" 2>/dev/null`.strip
+    rows[sid] = out.empty? ? nil : out
+  end
+end
+
+warnings = []
+if rows.empty?
+  warnings << "no session rows to sanity-check (opencode db not reachable)"
+else
+  rows.each do |sid, agent|
+    warnings << "- session #{sid}: agent=#{agent.inspect} not in {#{EXPECTED_AGENTS.join(', ')}}" unless EXPECTED_AGENTS.include?(agent)
+  end
+  counts = rows.values.compact.group_by(&:itself).transform_values(&:count)
+  counts.each { |a, n| warnings << "- agent #{a.inspect} appears #{n}x (expected 1 per role)" if n > 1 && EXPECTED_AGENTS.include?(a) }
+  warnings << "- sessions without a recorded agent (measurement may be incomplete)" if rows.values.any?(&:nil?)
+end
+warn "SANITY:\n#{warnings.join("\n")}" unless warnings.empty?
+
 # Column order sanity: measured output must align with HEADER after the 4
 # prepended fields (measured_at, run_id, commit, branch).
 expected_tail = HEADER.drop(4).join(",")

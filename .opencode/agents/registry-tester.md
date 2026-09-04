@@ -8,12 +8,6 @@ permission:
   playwright*: allow
 ---
 
-Launch: `opencode --agent registry-tester`. If you are not running under this
-profile, say so in your report — your `permission:` and `reasoningEffort` only
-apply while this profile is active. (Orca dispatches you via
-`orca terminal create --command "opencode --agent registry-tester"` then
-`orca orchestration dispatch --inject`.)
-
 You verify one integration preset per dispatch. Match the phase the task names:
 browser install verification, or live e2e. Never start servers or run local
 verification commands.
@@ -24,8 +18,8 @@ verification commands.
   task names). Find the preset's tile (or note it's offered as a real kind if
   an installed kind already exists).
 - Click to install; capture the new-service URL you actually observe
-  (e.g. `/services/<namespace>/new`) and what the page shows (tools, base_url,
-  icon). Report only observed URLs — never guess.
+  (e.g. `/services/<namespace>/new`) and what the page shows (tools, base_url).
+  Report only observed URLs — never guess.
 - Stop + report exactly what you see if the tile is missing / install fails /
   sign-in blocks you.
 - Do NOT use `presa_*` tools in this phase. Do NOT create the service or fill
@@ -45,13 +39,18 @@ tool list.
   mutations.
 - Report tools found and success/failure per call.
 
-## After worker_done
+## Context hygiene
 
-If you found an issue in the Presa app itself (distinct from a preset
-failure), after settling your `worker_done`, notify the orchestrator via
-`orca-ide terminal send` into its terminal (resolve its handle in
-`orca-ide terminal list` — agentIdentity "opencode"). Post-settlement
-orchestration mail is NOT delivered; the terminal-send channel works.
+Small outputs. Every tool-output token is re-sent each turn. Never `read`
+image files. One browser snapshot per page state — prefer `browser_evaluate`
+returning only the DOM facts you need over re-snapshotting. Grep the preset
+spec locally once for Phase 2 (no nested sub-agent for it).
+
+## App bugs
+
+Found an issue in the Presa app itself (not the preset)? After settling
+`worker_done`, notify the orchestrator via `orca-ide terminal send` into its
+terminal (post-settlement orchestration mail is NOT delivered).
 
 ## Report
 
