@@ -38,6 +38,13 @@ class ServicesController < ApplicationController
   end
 
   def create
+    # An OpenAPI service created via the OAuth method bounces to the provider
+    # (like OAuthService kinds) instead of saving a row up-front; the row is
+    # built in the OAuth callback after a successful exchange.
+    if openapi_oauth_create?
+      return create_oauth_service(cred_type: "oauth")
+    end
+
     if service_klass <= OauthService
       return create_oauth_service
     end
@@ -102,8 +109,15 @@ class ServicesController < ApplicationController
       config = @service.config.merge(config)
     end
 
+    # When probing a persisted OpenAPI service, reuse its stored OAuth grant
+    # (the probe is a fresh transient instance with no grant of its own).
+    persisted = Current.team.services.find_by(id: params[:id]) if params[:id].present?
+
     begin
       service = klass.new(team: Current.team, name: service_params[:name], config: config)
+      if persisted&.is_a?(Services::Openapi) && persisted.oauth_grant.present?
+        service.oauth_grant = persisted.oauth_grant
+      end
       @connected = service.test_connection(config)
       @health_label = service.health_label if service.respond_to?(:health_label)
     rescue StandardError => e
@@ -117,8 +131,10 @@ class ServicesController < ApplicationController
   # OAuth services aren't created up-front. The form carries a name and an
   # OAuth client choice; we create the client credential (if a new one was
   # entered) and hand off to the OAuth dance. The service row is only created
-  # in the OAuth callback after a successful exchange.
-  def create_oauth_service
+  # in the OAuth callback after a successful exchange. `cred_type` (e.g.
+  # "oauth") is carried in the signed state for OpenAPI services, which record
+  # their chosen auth method in config; OAuthService kinds ignore it.
+  def create_oauth_service(cred_type: nil)
     klass = service_klass
     @service = klass.new(name: service_params[:name])
     load_oauth_clients
@@ -134,7 +150,18 @@ class ServicesController < ApplicationController
       return render(:new, status: :unprocessable_entity)
     end
 
-    redirect_to oauth_start_path(kind: klass.kind, name: @service.name, oauth_client_credential_id: credential.id)
+    start_params = { kind: klass.kind, name: @service.name, oauth_client_credential_id: credential.id }
+    start_params[:cred_type] = cred_type if cred_type.present?
+    redirect_to oauth_start_path(start_params)
+  end
+
+  # True when the submitted form asks to create an OpenAPI service via OAuth
+  # (spec declares an OAuth scheme and the user picked the OAuth method).
+  def openapi_oauth_create?
+    klass = service_klass
+    klass <= Services::Openapi &&
+      klass.oauth_provider.present? &&
+      params.dig(:service, :config, :cred_type).to_s == "oauth"
   end
 
   # Resolves the client credential the form selected: an existing one (owned by
@@ -144,6 +171,9 @@ class ServicesController < ApplicationController
       Current.team.oauth_client_credentials.find_by(id: params[:oauth_client_credential_id])
     elsif params[:oauth_client_credential].present?
       cred_params = params.require(:oauth_client_credential).permit(:name, :client_id, :client_secret)
+      if (scope = params.dig(:oauth_client_credential, :scope)).present?
+        cred_params = cred_params.merge(scope: Array(scope))
+      end
       return nil if cred_params[:name].blank? || cred_params[:client_id].blank? || cred_params[:client_secret].blank?
 
       provider = service_klass.respond_to?(:oauth_provider) ? service_klass.oauth_provider.to_s : "google"

@@ -46,6 +46,42 @@
           class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
   </div>
 
+  <% scope_options = oauth_scope_options(credential) %>
+  <% selected_scopes = Array(credential.scope.to_s.split).map(&:strip) %>
+
+  <% if scope_options.empty? %>
+    <div class="my-5">
+      <%= form.label :scope, "Scopes (optional)", class: "block text-sm text-zinc-400" %>
+      <%= form.text_field :scope,
+            placeholder: "e.g. file_content:read file_metadata:read",
+            autocomplete: "off",
+            class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900 text-sm" %>
+      <p class="text-xs text-zinc-500 mt-1">Space-separated. Leave blank to use the API's declared scopes; set it to exactly the scopes your app is configured for (some providers, e.g. Figma, reject requests asking for scopes the app doesn't have).</p>
+    </div>
+  <% else %>
+    <div class="my-5">
+      <%= form.label :scope, "Scopes", class: "block text-sm text-zinc-400" %>
+      <div class="mt-2 max-h-56 overflow-y-auto rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5">
+        <%# Hidden empty entry so unchecking every box clears the stored scope
+            (checkboxes only submit checked values). %>
+        <input type="hidden" name="oauth_client_credential[scope][]" value="">
+        <% scope_options.each do |key, desc| %>
+          <label class="flex items-start gap-2 py-1.5 text-sm text-zinc-300">
+            <%= check_box_tag "oauth_client_credential[scope][]", key, selected_scopes.include?(key),
+                  class: "mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-700 text-blue-600 focus:outline-blue-600" %>
+            <span class="min-w-0">
+              <code class="text-zinc-200"><%= key %></code>
+              <% if desc.present? %>
+                <span class="block text-xs text-zinc-500"><%= desc %></span>
+              <% end %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+      <p class="text-xs text-zinc-500 mt-1">Check the scopes your app is configured with. Leave unchecked to use the API's declared scopes — some providers, e.g. Figma, reject requests asking for scopes the app doesn't have.</p>
+    </div>
+  <% end %>
+
   <div class="my-6">
     <span class="block text-sm text-zinc-400">Add this as the redirect URI in your <%= provider_name %> app</span>
     <div class="mt-2"><%= render "shared/copy_block", content: oauth_callback_url %></div>

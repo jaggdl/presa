@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_175816) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -76,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_190000) do
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.string "provider", null: false
+    t.string "scope"
     t.integer "team_id", null: false
     t.datetime "updated_at", null: false
     t.index ["provider", "client_id"], name: "index_oauth_client_credentials_on_provider_and_client_id", unique: true

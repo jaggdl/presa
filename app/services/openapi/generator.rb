@@ -132,11 +132,34 @@ module Openapi
         { "kind" => "apikey", "name" => token, "param_name" => definition["name"].to_s,
           "in" => definition["in"].to_s.presence || "header", "in_desc" => definition["name"].to_s }
       when "oauth2", "openIdConnect"
-        { "kind" => "bearer", "name" => token, "in_desc" => "OAuth token" }
+        oauth_slot(name, definition) || { "kind" => "bearer", "name" => token, "in_desc" => "OAuth token" }
       else
         { "kind" => "apikey", "name" => token, "param_name" => token.underscore,
           "in" => "header", "in_desc" => token }
       end
+    end
+
+    # An OAuth scheme with a usable authorization-code flow (both
+    # authorizationUrl and tokenUrl) becomes an `oauth` slot: the service can
+    # run the full browser OAuth dance against these endpoints instead of
+    # requiring a manually pasted bearer token. Flows without a concrete
+    # redirect-style flow (e.g. a bare OIDC `openIdConnectUrl` or implicit
+    # flows) degrade to a plain bearer slot — there is no consent URL to drive.
+    def oauth_slot(name, definition)
+      flows = definition["flows"]
+      flow = flows.is_a?(Hash) ? flows["authorizationCode"] : nil
+      return nil unless flow.is_a?(Hash)
+      return nil if flow["authorizationUrl"].to_s.blank? || flow["tokenUrl"].to_s.blank?
+
+      {
+        "kind" => "oauth",
+        "name" => name.to_s,
+        "in_desc" => "OAuth",
+        "authorization_url" => flow["authorizationUrl"].to_s,
+        "token_url" => flow["tokenUrl"].to_s,
+        "refresh_url" => flow["refreshUrl"].to_s.presence,
+        "scopes" => flow["scopes"].is_a?(Hash) ? flow["scopes"] : {}
+      }
     end
 
     def operations
@@ -153,6 +176,7 @@ module Openapi
           "description" => entry["description"],
           "tags" => entry["tags"],
           "security" => entry["security"],
+          "security_requirements" => entry["security_requirements"],
           "args_schema" => entry["args_schema"],
           "body" => entry["body"],
           "response_fields" => entry["response_fields"]
@@ -175,6 +199,7 @@ module Openapi
             "description" => (op.description.to_s.presence || op.summary.to_s).strip,
             "tags" => Array(op.tags),
             "security" => effective_security(op),
+            "security_requirements" => effective_security_requirements(op),
             "args_schema" => args_schema(op, path_key),
             "body" => body_info(op),
             "response_fields" => response_fields(op)
@@ -187,6 +212,24 @@ module Openapi
       declared = op.raw_schema["security"]
       declared = declared.is_a?(Array) ? declared : global_security
       (declared || []).flat_map { |requirement| requirement.is_a?(Hash) ? requirement.keys : [] }.presence || []
+    end
+
+    # Per-operation security requirements with their OAuth scopes preserved:
+    # [{ "scheme" => "OAuth2", "scopes" => ["file_content:read", ...] }, ...].
+    # Operations may offer several security alternatives (e.g. Figma:
+    # PersonalAccessToken | PlanAccessToken | OAuth2:[scopes]); the scope
+    # lists let an OAuth-backed service instance filter its tools to what its
+    # credential's configured scopes can actually do.
+    def effective_security_requirements(op)
+      declared = op.raw_schema["security"]
+      declared = declared.is_a?(Array) ? declared : global_security
+      (declared || []).each_with_object([]) do |requirement, out|
+        next unless requirement.is_a?(Hash)
+
+        requirement.each do |scheme, scopes|
+          out << { "scheme" => scheme.to_s, "scopes" => Array(scopes).map(&:to_s) }
+        end
+      end
     end
 
     def global_security

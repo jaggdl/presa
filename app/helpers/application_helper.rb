@@ -100,6 +100,21 @@ module ApplicationHelper
                 class: "inline-flex items-center justify-center shrink-0 p-2.5 bg-zinc-900 rounded-lg border border-zinc-700"
   end
 
+  # Scope choices for the OAuth credential form, as [key, description] pairs
+  # drawn from the spec's OAuth flow. Only OpenAPI-kind providers
+  # (Oauth::Base::Dynamic) declare a scope list; static providers (Google,
+  # Spotify, ...) have no canonical list, so their credential form keeps the
+  # plain text field. Returns [] when there is nothing to pick from.
+  def oauth_scope_options(credential)
+    provider = Oauth::Base.for_provider(credential.provider.to_s)
+    return [] unless provider.is_a?(Oauth::Base::Dynamic)
+
+    scopes = provider.scopes
+    return [] unless scopes.is_a?(Hash) && scopes.any?
+
+    scopes.map { |key, desc| [ key.to_s, desc.to_s ] }
+  end
+
   # Render a service's brand icon, as declared on the model, padded and framed
   # with a subtle border so it reads as a tile. `size` picks one of four fixed
   # presets; `:md` is the default.

@@ -22,6 +22,16 @@ class OauthClientCredential < ApplicationRecord
     Oauth::Base.for_provider(provider)&.icon || "placeholder.png"
   end
 
+  def scope=(value)
+    # The scopes multi-select submits an array; store space-separated (the
+    # form authorize requests use a single space-joined scope string).
+    if value.is_a?(Array)
+      super(value.reject(&:blank?).map(&:to_s).map(&:strip).uniq.join(" "))
+    else
+      super(value)
+    end
+  end
+
   # A safe, fixed-length placeholder in place of the real secret for display.
   def masked_secret
     "••••••••"

@@ -6,9 +6,6 @@ require "json"
 require "uri"
 
 module Oauth
-  # Raised on OAuth token/refresh failures that aren't a redirect-worthy prompt.
-  class Error < StandardError; end
-
   # Builds provider authorize URLs and performs the token endpoint calls
   # (code→tokens exchange and refresh_token→access_token). Hand-rolled on
   # Faraday, mirroring the codebase's `Mcp::Client`.
@@ -21,17 +18,24 @@ module Oauth
     def initialize(connection: nil)
       @connection = connection
     end
-    # The URL to bounce the browser to for user consent.
-    def authorize_url(uri:, client_id:, redirect_uri:, scope:, state:)
+    # The URL to bounce the browser to for user consent. The Google-style
+    # `access_type=offline` + `prompt=consent` extras are sent by default (they
+    # coax a refresh token from the Google/Spotify/Strava family); providers
+    # that reject unknown params (e.g. OpenAPI kinds whose spec's OAuth flow is
+    # strict) opt out with `google_params: false` and get only the standard
+    # authorization-code params.
+    def authorize_url(uri:, client_id:, redirect_uri:, scope:, state:, google_params: true)
       params = {
         response_type: "code",
         client_id: client_id,
         redirect_uri: redirect_uri,
-        scope: scope,
-        state: state,
-        access_type: "offline",
-        prompt: "consent"
+        state: state
       }
+      # Omit `scope` when there is none to request (Figma grants the scopes the
+      # app is configured with when the param is absent); some providers reject
+      # an empty scope value outright.
+      params[:scope] = scope if scope.present?
+      params = params.merge(access_type: "offline", prompt: "consent") if google_params
       "#{uri}?#{URI.encode_www_form(params)}"
     end
 

@@ -80,6 +80,34 @@ At install the loader rewrites that scheme's slot in the generated definition
 given location, so the generated tools and health check send the credential
 correctly. Omit `credential` when the spec's scheme is already correct.
 
+## OAuth-capable specs
+
+Some specs declare real OAuth flows (`oauth2` / `openIdConnect` schemes with
+an `authorizationCode` flow carrying an `authorizationUrl` + `tokenUrl`) —
+Figma, for example, declares both an OAuth2 scheme and personal-access-token
+schemes. A preset needs no extra YAML for these: the generator turns such a
+scheme into an `oauth` security slot, and the service offers the full browser
+OAuth dance alongside any manual credential schemes the spec declares.
+
+- **One provider per kind.** When several schemes are OAuth-capable (Figma's
+  `OAuth2` + `OrgOAuth2`), the first in spec order is the kind's OAuth
+  *provider* (keyed by the namespace, e.g. `figma`), and the rest stay
+  unreachable as connect flows.
+- **Per-instance method choice.** A service of an OAuth-capable kind picks one
+  auth method on its form — "OAuth — connect and authorize…" or a manual
+  scheme (API key / bearer / basic). Choosing OAuth routes creation through the
+  standard OAuth dance (`/oauth/start` → provider consent → `/oauth/callback`):
+  the user registers an OAuth *client* for the provider (BYO, on the team),
+  the code is exchanged for a grant, and tools send `Authorization: Bearer
+  <token>`, refreshed on demand.
+- **Client credentials.** The provider key matches the namespace, so create the
+  BYO client through the same credentials UI (or inline on the service form)
+  with the single global callback URL `oauth_callback_url` as the redirect URI.
+  The grant is per service; the client is shared across services of the kind.
+- **Manual fallback stays available.** Specs that declare both an OAuth flow
+  and API-key schemes (Figma) keep the key option; a service can switch
+  between methods at any time. Specs with OAuth only are OAuth-only.
+
 ## Notes
 
 - The `definition` payload is generated from `spec_url` at install time; it is

@@ -75,6 +75,22 @@ class OpenapiKind < ApplicationRecord
     security.is_a?(Hash) ? security : {}
   end
 
+  # The primary OAuth scheme slot (the first scheme with a usable
+  # authorization-code flow), or nil when the spec declares no OAuth.
+  # OAuth is offered once per kind (single provider, Option A): when several
+  # schemes are OAuth-capable (e.g. Figma's `OAuth2` + `OrgOAuth2`) the first
+  # in spec order wins and the rest stay unreachable as connect flows.
+  def oauth_slot
+    security_slots.find { |_name, slot| slot["kind"].to_s == "oauth" }&.last
+  end
+
+  # The OAuth provider key for services of this kind (the namespace), or nil
+  # when the spec declares no OAuth flow. Registered as a dynamic provider on
+  # Oauth::Base so client credentials, icons, and the browser dance resolve.
+  def oauth_provider
+    oauth_slot.present? ? namespace : nil
+  end
+
   def extra_credentials
     list = read_attribute(:extra_credentials)
     list.is_a?(Array) ? list : []

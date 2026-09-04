@@ -6,12 +6,15 @@ class OauthController < ApplicationController
   #   * reconnect an existing service:  ?service_id=&oauth_client_credential_id=
   #   * create a new service via OAuth: ?kind=&name=&oauth_client_credential_id=
   # Builds a signed state and bounces the user to the provider's consent screen.
+  # `cred_type` is carried through for OpenAPI services (their auth method is
+  # recorded in config when the row is created in the callback); static OAuth
+  # kinds ignore it.
   def start
     credential = Current.team.oauth_client_credentials.find(params[:oauth_client_credential_id])
 
     if params[:service_id].present?
       service = Current.team.services.find(params[:service_id])
-      raise ActiveRecord::RecordNotFound unless service.is_a?(OauthService)
+      raise ActiveRecord::RecordNotFound unless oauth_service?(service)
 
       state = oauth_verifier.generate(
         { "service_id" => service.id, "oauth_client_credential_id" => credential.id },
@@ -24,6 +27,7 @@ class OauthController < ApplicationController
         {
           "kind" => klass.kind,
           "name" => params[:name].to_s.presence,
+          "cred_type" => params[:cred_type].to_s.presence,
           "oauth_client_credential_id" => credential.id
         },
         expires_in: STATE_TTL, purpose: "oauth_start"
@@ -64,7 +68,7 @@ end
 
   def reconnect_existing!(state, credential)
     service = Current.team.services.find(state["service_id"])
-    raise ActiveRecord::RecordNotFound unless service.is_a?(OauthService)
+    raise ActiveRecord::RecordNotFound unless oauth_service?(service)
 
     service.acquire_credentials!(code: params[:code], redirect_uri: oauth_callback_url, client_credential: credential)
     redirect_to service_path(service), notice: "Connected #{provider_label(service)}."
@@ -75,18 +79,44 @@ end
     name = state["name"].to_s.presence
     raise "Service name can't be blank" if name.blank?
 
-    service = klass.new(team: Current.team, name: name)
+    # OpenAPI virtual classes are anonymous (STI type comes from the concrete
+    # Services::Openapi row), so build through the kind's association — the
+    # same path the plain create flow uses. OAuthService kinds are concrete.
+    service = if klass <= Services::Openapi
+      klass.openapi_kind.services.build(team: Current.team, name: name)
+    else
+      klass.new(team: Current.team, name: name)
+    end
+    # OpenAPI services record their auth method in config; the OAuth flow fixes
+    # it to "oauth" so the created row authenticates via the grant.
+    service.config = { "cred_type" => state["cred_type"] } if state["cred_type"].present?
+
     tokens = service.exchange_tokens(code: params[:code], redirect_uri: oauth_callback_url, client_credential: credential)
     service.store_grant!(tokens: tokens, client_credential: credential)
     service.save!
     redirect_to service_path(service), notice: "Service created and connected."
   end
 
+  # A service whose client credential was linked through the OAuth flow: a
+  # static OAuthService kind, or an OpenAPI service whose spec declares an
+  # OAuth scheme.
+  def oauth_service?(service)
+    service.is_a?(OauthService) ||
+      (service.is_a?(Services::Openapi) && service.oauth_slot.present?)
+  end
+
   def service_class_for_kind(kind)
     klass = Service.class_for_kind(kind)
-    raise ActiveRecord::RecordNotFound unless klass && klass <= OauthService
+    raise ActiveRecord::RecordNotFound unless class_oauth?(klass)
 
     klass
+  end
+
+  def class_oauth?(klass)
+    return false unless klass
+    return true if klass <= OauthService
+
+    klass <= Services::Openapi && klass.oauth_provider.present?
   end
 
   def oauth_verifier
