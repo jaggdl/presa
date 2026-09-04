@@ -6,7 +6,7 @@ require "json"
 module Oauth
   # Composed outbound HTTP client for OAuth-backed services. Transport,
   # bearer-token injection, and rate-limit retry live here — on the service,
-  # not the tool base — so every OAuth tool family (Gmail, Google Analytics,
+  # not the tool base — so every OAuth tool family (Google Analytics,
   # Google Calendar, Strava, Spotify, ...) stops duplicating a Faraday
   # connection built against its own API base. A service composes a client per
   # API base URL, passing itself as the token source (its `authorized_token`

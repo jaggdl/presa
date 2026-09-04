@@ -2,7 +2,7 @@
 
 module Oauth
   # Google OAuth provider endpoints and brand icon, composed by Googles-backed
-  # services (Gmail, Sheets, ...) and Google OAuth client credentials.
+  # services (Calendar, Sheets, ...) and Google OAuth client credentials.
   class Google < Base
     key :google
     icon "google.png"

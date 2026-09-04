@@ -1,5 +1,5 @@
 ---
-description: Coordinates registry preset work — dispatches implementer, then tester, reviews, hands off, e2e-verifies.
+description: Coordinates registry preset work — dispatches implementer, reviews, hands off for install/config, then e2e-verifies via tester.
 mode: all
 reasoningEffort: low
 permission:
@@ -26,24 +26,32 @@ orca orchestration dispatch --task <task_id> --to <handle> --inject --json
 Keep dispatch specs LEAN — the profile carries the role; the spec only adds
 this-task facts (service, namespace, spec URL leads, verified checklist).
 
+**Recall a role = reuse the same subagent.** When a role needs another
+dispatch (iterate review fixes with the implementer, a second e2e pass, etc.),
+do NOT spawn a fresh terminal — dispatch the new task to the same existing
+handle: `orca orchestration dispatch --task <new_task_id> --to <handle> --inject --json`
+(reuse the terminal's `agentTerminalHandle` / `handle` from its create
+response). Only the e2e tester is a deliberate fresh session, because a fresh
+session sees the new service's tools in the MCP list.
+
 ## Workflow
 
 1. **Scope**: check `registry/openapi/` for an existing `<namespace>.yml`.
 2. **Implement**: task → implementer (Orca orchestration thread). Wait
    `worker_done`.
-3. **Test**: task → tester, **Phase 1** browser install verification at
-   `https://presa-dev.jaggdl.com` (no run commands locally). Wait `worker_done`.
-4. **Review** the preset yourself against `registry/openapi/README.md`:
+3. **Review** the preset yourself against `registry/openapi/README.md`:
    required fields + sane `category`; `health_op` is a real, preferably
    authenticated `operationId` in the fetched spec; `credential` override only
    when the spec's scheme is wrong (`in` ∈ header|query|cookie); definition NOT
    hand-edited; icon resolvable by convention. Iterate with the implementer on
    failures.
-5. **Hand off**: report the new-service URL so the human creates the service
-   with their credentials and adds it to a workspace.
-6. **e2e**: after the human confirms, dispatch a FRESH tester (fresh session
-   sees the new service's tools) for live `presa_*` tool checks. Wait + review.
-7. **Report**.
+4. **Hand off**: tell the human to INSTALL the preset and CONFIGURE the service
+   (their credentials, add it to a workspace); report the new-service URL.
+   No automated install/browser verification step.
+5. **e2e**: after the human confirms, dispatch a FRESH tester (fresh session
+   sees the new service's tools) for live `presa_*` tool checks — a FEW safe
+   read-only calls, not the whole surface. Wait + review.
+6. **Report**.
 
 ## Guardrails
 

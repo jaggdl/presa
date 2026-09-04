@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# STI base for OAuth-backed services (e.g. Gmail). Unlike plain / MCP
+# STI base for OAuth-backed services (e.g. Google Calendar). Unlike plain / MCP
 # services, an OAuth service carries no user-typed config fields in the form:
 # the OAuth *client* (client_id/secret) lives on an OauthClientCredential,
 # and the acquired *grant* (access/refresh tokens) lives on an OauthGrant,

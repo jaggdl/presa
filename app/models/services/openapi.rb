@@ -108,7 +108,7 @@ module Services
           # the credentials index, and the browser dance resolve like any other
           # provider). Non-OAuth kinds declare no provider. `oauth_scope` is
           # the spec's primary OAuth scheme's scope keys, space-joined for the
-          # consent URL — same shape as the static services (e.g. Gmail).
+          # consent URL — same shape as the static services (e.g. Google Calendar).
           klass.define_singleton_method(:oauth_provider) { openapi_kind&.oauth_provider }
           klass.define_singleton_method(:oauth_scope) do
             slot = openapi_kind&.oauth_slot

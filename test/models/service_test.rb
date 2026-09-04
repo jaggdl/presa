@@ -37,7 +37,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert Services::Places.test_connection?, "places should support a connectivity probe"
     assert Services::Mcp.test_connection?, "mcp should support a connectivity probe"
     assert_not Services::WorkplaceAdmin.test_connection?, "workplace admin has no connectivity probe"
-    assert_not Services::Gmail.test_connection?, "OAuth services use the exchange, not a probe"
+    assert_not Services::GoogleCalendar.test_connection?, "OAuth services use the exchange, not a probe"
   end
 
   test "destroy removes linked tool invocations" do

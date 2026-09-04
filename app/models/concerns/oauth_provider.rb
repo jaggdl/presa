@@ -2,8 +2,8 @@
 
 require "active_support/concern"
 
-# OAuth-backed service behaviour, shared by `OauthService` subclasses (Gmail,
-# Notion, Strava, ...) and OpenAPI-generated services whose spec declares an
+# OAuth-backed service behaviour, shared by `OauthService` subclasses (Google
+# Calendar, Notion, Strava, ...) and OpenAPI-generated services whose spec declares an
 # OAuth scheme (`Services::Openapi`). Unlike plain / MCP services, an
 # OAuth-backed service carries no user-typed config fields for auth: the
 # OAuth *client* (client_id/secret) lives on an OauthClientCredential, and
@@ -25,7 +25,7 @@ module OauthProvider
     class_attribute :oauth_scope, default: nil
 
     # The service kind's API base URL for its tools' requests, e.g.
-    # "https://gmail.googleapis.com". Kinds whose tools hit multiple APIs
+    # "https://www.googleapis.com/calendar/v3". Kinds whose tools hit multiple APIs
     # (Google Analytics' Admin + Data APIs) pass a `base_url:` to `#client`
     # instead of (or in addition to) declaring this.
     class_attribute :oauth_api_base_url, default: nil
