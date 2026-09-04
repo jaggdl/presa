@@ -1,0 +1,20 @@
+title: YouTube Reports
+namespace: youtubereporting
+category: productivity
+spec_url: https://api.apis.guru/v2/specs/googleapis.com/youtubereporting/v1/openapi.json
+base_url: https://youtubereporting.googleapis.com
+oauth_provider: google
+health_op: youtubereporting.jobs.list
+description: |
+  # YouTube Reports
+
+  YouTube Reporting API — create and manage reporting jobs (`jobs.create`, `jobs.list`) that export YouTube Analytics data as scheduled report media, then download the generated reports (`jobs.reports.list`, `media.download`). See the [official documentation](https://developers.google.com/youtube/reporting).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | Google OAuth 2.0 credential. Register a Google Cloud OAuth client (callback URL `oauth_callback_url`) and connect via the OAuth flow, authorizing the `https://www.googleapis.com/auth/yt-analytics.readonly` scope (or `yt-analytics-monetary.readonly` for revenue data). |
+  | `base_url` | No | No | `https://youtubereporting.googleapis.com` | The YouTube Reporting REST API base URL; Google-hosted, no self-hosted equivalent. |
+
+  The health check (`GET /v1/jobs`) validates the credential by listing the reporting jobs owned by the authenticated user.
