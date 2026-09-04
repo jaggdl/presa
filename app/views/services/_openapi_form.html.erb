@@ -28,6 +28,13 @@
     </div>
 
     <%= form.hidden_field :kind, value: service.kind %>
+    <%# Carry the persisted id so the test-connection probe can attach the
+        service's stored OAuth grant (otherwise it'd probe a grant-less
+        transient instance). Ignored by the normal save/update paths, which
+        route on the id. %>
+    <% if service.persisted? %>
+      <input type="hidden" name="id" value="<%= service.id %>">
+    <% end %>
 
     <%= form.fields_for :config do |cf| %>
       <div class="my-5">

@@ -109,8 +109,15 @@ class ServicesController < ApplicationController
       config = @service.config.merge(config)
     end
 
+    # When probing a persisted OpenAPI service, reuse its stored OAuth grant
+    # (the probe is a fresh transient instance with no grant of its own).
+    persisted = Current.team.services.find_by(id: params[:id]) if params[:id].present?
+
     begin
       service = klass.new(team: Current.team, name: service_params[:name], config: config)
+      if persisted&.is_a?(Services::Openapi) && persisted.oauth_grant.present?
+        service.oauth_grant = persisted.oauth_grant
+      end
       @connected = service.test_connection(config)
       @health_label = service.health_label if service.respond_to?(:health_label)
     rescue StandardError => e
