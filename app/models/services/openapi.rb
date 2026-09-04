@@ -90,7 +90,7 @@ module Services
         Class.new(self).tap do |klass|
           klass.config_kind = kind.namespace
           klass.config_display_name = kind.title
-          klass.config_category = :general
+          klass.config_category = kind.category.presence || :general
           # Resolve the kind lazily by namespace instead of capturing the record
           # at build time: uninstalling + reinstalling a preset creates a fresh
           # OpenapiKind, and a memoized class pointing at the old (deleted) kind

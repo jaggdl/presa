@@ -32,6 +32,8 @@ class OpenapiKind < ApplicationRecord
   validates :namespace, presence: true,
                         format: { with: /\A[a-z0-9_]+\z/, message: "may only contain a-z, 0-9 and underscore" },
                         uniqueness: { scope: :team_id }
+  validates :category, inclusion: { in: ->(_) { Service.categories.values },
+                                    message: "%{value} is not a valid category" }
   validate :base_url_is_http
 
   # `name` aliases the display title so the wizard/service forms can treat a

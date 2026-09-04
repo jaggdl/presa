@@ -95,6 +95,7 @@ module Registry
           team: team,
           title: preset.title,
           namespace: preset.namespace,
+          category: preset.category,
           description: preset.description,
           base_url: preset.base_url.presence || definition["base_url"].to_s.presence,
           spec_url: preset.spec_url,
