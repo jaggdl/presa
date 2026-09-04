@@ -60,8 +60,8 @@ module OauthProvider
     # Builds a provider authorize URL for an arbitrary client credential.
     # Used both for reconnecting an existing service (via `authorize_url`)
     # and for the new-service flow, where no service exists yet.
-    def authorize_url_for(client:, redirect_uri:, state:)
-      provider = Oauth::Base.for_provider(oauth_provider)
+    def authorize_url_for(client:, redirect_uri:, state:, oauth_provider: nil)
+      provider = Oauth::Base.for_provider(oauth_provider || self.oauth_provider)
       raise "OAuth provider not configured" unless provider
 
       Oauth::Exchange.new.authorize_url(
@@ -95,6 +95,14 @@ module OauthProvider
   # The provider name (e.g. "google", or the kind's namespace for OpenAPI
   # services) for this service kind.
   def provider
+    oauth_provider_key
+  end
+
+  # The OAuth provider key for this *instance* — derived from the class by
+  # default. OpenAPI services override it to resolve from their kind (STI
+  # instances are the base `Services::Openapi` class, which declares no
+  # provider on its own).
+  def oauth_provider_key
     self.class.oauth_provider.to_s
   end
 
@@ -135,16 +143,23 @@ module OauthProvider
   # The OAuth provider definition (Oauth::Google, Oauth::Spotify, a Dynamic
   # for OpenAPI kinds, ...) for this service kind.
   def provider_class
-    self.class.provider_class
+    Oauth::Base.for_provider(oauth_provider_key)
   end
 
   # The provider authorize URL that bounces the user to consent for this
-  # service, using the client credential already linked to its grant.
+  # service, using the client credential already linked to its grant. The
+  # provider key is resolved per instance and passed explicitly when it
+  # differs from the class's own (OpenAPI services are the base STI class,
+  # whose class-level provider is nil); subclasses that override
+  # `authorize_url_for` with their own signature (e.g. Notion) keep getting
+  # exactly their params.
   def authorize_url(redirect_uri:, state:)
     client = oauth_client_credential
     raise "No OAuth client credential connected to this service" unless client
 
-    self.class.authorize_url_for(client: client, redirect_uri: redirect_uri, state: state)
+    kwargs = { client: client, redirect_uri: redirect_uri, state: state }
+    kwargs[:oauth_provider] = oauth_provider_key if oauth_provider_key != self.class.oauth_provider.to_s
+    self.class.authorize_url_for(**kwargs)
   end
 
   # Exchanges an authorization `code` for token fields without persisting
@@ -170,7 +185,7 @@ module OauthProvider
 
     grant = oauth_grant || build_oauth_grant
     grant.oauth_client_credential = client_credential
-    grant.provider = self.class.oauth_provider.to_s
+    grant.provider = oauth_provider_key
     grant.access_token = access
     grant.refresh_token = tokens["refresh_token"]
     grant.token_type = tokens["token_type"]

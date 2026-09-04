@@ -219,6 +219,16 @@ module Services
         security_slots.find { |_name, slot| slot["kind"].to_s == "oauth" }&.last
     end
 
+    # The OAuth provider key for this instance. Services are persisted (and
+    # built through the kind's association) as the base `Services::Openapi`
+    # STI class, which declares no provider — the key lives on the kind (and
+    # on the anonymous per-kind subclass only while the picker/form instantiate
+    # through it). Resolve from the kind so the callback's exchange, refresh,
+    # and the reconnect UI all find the provider.
+    def oauth_provider_key
+      self.class.oauth_provider.presence || openapi_kind&.oauth_provider.to_s
+    end
+
     # Extra "add a method"-style credentials: [{name,in,param_name,cred_key}].
     # Their *definitions* live on the kind (shared by every service); their
     # *values* are per-service under the matching `cred_key` in `config`.
