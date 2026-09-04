@@ -73,6 +73,14 @@ private
   end
 
   def credential_params
-    params.require(:oauth_client_credential).permit(:provider, :name, :client_id, :client_secret, scope: [])
+    permitted = params.require(:oauth_client_credential).permit(:provider, :name, :client_id, :client_secret)
+    # `scope` arrives as an array from the checkboxes (or an empty string from
+    # the hidden clear-field) and as a scalar from the text-field fallback for
+    # providers without a scope list; normalize to an array for the model
+    # setter, which joins it space-separated.
+    if (value = params.dig(:oauth_client_credential, :scope)).present?
+      permitted = permitted.merge(scope: Array(value))
+    end
+    permitted
   end
 end

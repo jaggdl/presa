@@ -100,25 +100,19 @@ module ApplicationHelper
                 class: "inline-flex items-center justify-center shrink-0 p-2.5 bg-zinc-900 rounded-lg border border-zinc-700"
   end
 
-  # <option> HTML for the OAuth scopes multi-select on the credential form.
-  # Only OpenAPI-kind providers (Oauth::Base::Dynamic) declare a scope list
-  # ({key => description} extracted from the spec's OAuth flow); static
-  # providers (Google, Spotify, ...) have no canonical list, so their
-  # credential form keeps the plain text field.
-  def oauth_scope_select_options(credential)
+  # Scope choices for the OAuth credential form, as [key, description] pairs
+  # drawn from the spec's OAuth flow. Only OpenAPI-kind providers
+  # (Oauth::Base::Dynamic) declare a scope list; static providers (Google,
+  # Spotify, ...) have no canonical list, so their credential form keeps the
+  # plain text field. Returns [] when there is nothing to pick from.
+  def oauth_scope_options(credential)
     provider = Oauth::Base.for_provider(credential.provider.to_s)
-    return "".html_safe unless provider.is_a?(Oauth::Base::Dynamic)
+    return [] unless provider.is_a?(Oauth::Base::Dynamic)
 
     scopes = provider.scopes
-    return "".html_safe unless scopes.is_a?(Hash) && scopes.any?
+    return [] unless scopes.is_a?(Hash) && scopes.any?
 
-    selected = Array(credential.scope.to_s.split).map(&:strip)
-    scopes.map do |key, desc|
-      attrs = +%( value="#{ERB::Util.html_escape(key)}")
-      attrs << %( selected) if selected.include?(key.to_s)
-      attrs << %( title="#{ERB::Util.html_escape(desc.to_s)}") if desc.present?
-      %(<option#{attrs}>#{ERB::Util.html_escape(key)}</option>)
-    end.join.html_safe
+    scopes.map { |key, desc| [ key.to_s, desc.to_s ] }
   end
 
   # Render a service's brand icon, as declared on the model, padded and framed
