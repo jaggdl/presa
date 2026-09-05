@@ -270,7 +270,8 @@ class Services::OpenapiTest < ActiveSupport::TestCase
   test "test_connection succeeds for a single-enum header operation given a credential" do
     service = build_service("cred_bearer_auth" => "tok")
     service.config[:base_url] = "https://api.example.com/v2"
-    service.define_singleton_method(:operations) { [ pinned_operation ] }
+    op = pinned_operation
+    service.define_singleton_method(:operations) { [ op ] }
     stubs = Faraday::Adapter::Test::Stubs.new
     stubs.get("/v2/pinned") do |env|
       assert_equal "2026-03-11", env.request_headers["Notion-Version"]

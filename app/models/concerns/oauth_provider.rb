@@ -149,7 +149,7 @@ module OauthProvider
   # The provider authorize URL that bounces the user to consent for this
   # service, using the client credential already linked to its grant. The
   # provider key is resolved per instance and passed explicitly when it
-# differs from the class's own (OpenAPI services are the base STI class,
+    # differs from the class's own (OpenAPI services are the base STI class,
     # whose class-level provider is nil); subclasses that override
     # `authorize_url_for` with their own signature keep getting
     # exactly their params.
