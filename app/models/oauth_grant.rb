@@ -17,8 +17,9 @@ class OauthGrant < ApplicationRecord
 
   # True when the access token has (or is about to) expire and so should be
   # refreshed before use. A nil expires_at means the provider issued a
-  # non-rotating token (e.g. Notion, whose integration tokens never expire),
-  # which is treated as not expired — those kinds are also not refreshable.
+  # non-rotating token (e.g. a long-lived integration token that never
+  # expires), which is treated as not expired — those kinds are also not
+  # refreshable.
   def expired?
     expires_at.present? && expires_at <= Time.current + REFRESH_LEEWAY
   end

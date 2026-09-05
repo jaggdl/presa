@@ -1,0 +1,19 @@
+title: Notion
+namespace: notion
+category: productivity
+spec_url: https://developers.notion.com/openapi.json
+base_url: https://api.notion.com
+health_op: get-self
+description: |
+  # Notion
+
+  Notion API — read and write pages, databases, blocks, and users for a Notion workspace as an integration: query and create pages (`POST /v1/pages`, `GET /v1/pages/{page_id}`), search content (`POST /v1/search`), and manage databases and their rows (`GET/PATCH /v1/databases/*`, `POST /v1/databases/{database_id}/query`). See the [official documentation](https://developers.notion.com).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | A Notion integration token. Create one under **Settings & members → Connections → Develop or manage integrations** (internal integration), grant it access to the workspace pages/databases you want to reach, and the token is sent as an `Authorization: Bearer <token>` header on every request. |
+  | `base_url` | No | No | `https://api.notion.com` | The Notion API base URL; Notion-hosted, no self-hosted equivalent. |
+
+  Each operation also requires the `Notion-Version` header pinned to `2026-03-11` (declared by the spec), which the generated tools send automatically. The health check (`GET /v1/users/me`) validates the credential by retrieving the token's bot user.

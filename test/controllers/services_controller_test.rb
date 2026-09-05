@@ -190,7 +190,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "select[name=oauth_client_credential_id]"
     assert_select "option", text: "Prod Google app"
-    refute_select "option", text: "Notion integration"
+    refute_select "option", text: "Strava app"
   end
 
   test "new preselects the team's most recent OAuth client for the provider" do

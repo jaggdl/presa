@@ -61,7 +61,7 @@ class Oauth::ExchangeTest < ActiveSupport::TestCase
     assert_equal "new_acc", tokens["access_token"]
   end
 
-  test "exchange_code with basic auth sends JSON and a Basic Authorization header (Notion)" do
+  test "exchange_code with basic auth sends JSON and a Basic Authorization header" do
     exchange = stub_exchange do |stub|
       stub.post("/token") do |env|
         assert_equal "Basic #{Base64.strict_encode64("cid:secret")}", env.request_headers["Authorization"]
