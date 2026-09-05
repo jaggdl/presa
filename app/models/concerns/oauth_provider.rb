@@ -3,7 +3,7 @@
 require "active_support/concern"
 
 # OAuth-backed service behaviour, shared by `OauthService` subclasses (Google
-# Calendar, Notion, Strava, ...) and OpenAPI-generated services whose spec declares an
+# Calendar, Strava, Spotify, ...) and OpenAPI-generated services whose spec declares an
 # OAuth scheme (`Services::Openapi`). Unlike plain / MCP services, an
 # OAuth-backed service carries no user-typed config fields for auth: the
 # OAuth *client* (client_id/secret) lives on an OauthClientCredential, and
@@ -15,7 +15,7 @@ require "active_support/concern"
 # it (via the service's grant + client) when an expired one is held.
 #
 # The provider (endpoints/icon) is resolved through `Oauth::Base` by
-# `oauth_provider` — a fixed key declared per service class (Google/Notion),
+# `oauth_provider` — a fixed key declared per service class (Google/Strava),
 # or for OpenAPI services derived from the kind's primary OAuth slot.
 module OauthProvider
   extend ActiveSupport::Concern
@@ -31,14 +31,14 @@ module OauthProvider
     class_attribute :oauth_api_base_url, default: nil
 
     # Extra headers merged into every tool request for this service kind,
-    # e.g. Notion's required `Notion-Version` pin. Carried on the composed
+    # e.g. a provider's pinned API-version header. Carried on the composed
     # client so tool bases never repeat them.
     class_attribute :oauth_api_headers, default: {}
 
     # How the client credentials are presented to the provider's token
     # endpoint: `:form` (Google/Spotify/Strava — client_id/client_secret in
-    # the form body) or `:basic` (Notion — an HTTP Basic Authorization header
-    # with a JSON body).
+    # the form body) or `:basic` (an HTTP Basic Authorization header with a
+    # JSON body).
     class_attribute :oauth_client_auth, default: :form
 
     has_one :oauth_grant, foreign_key: :service_id, dependent: :destroy
@@ -149,10 +149,10 @@ module OauthProvider
   # The provider authorize URL that bounces the user to consent for this
   # service, using the client credential already linked to its grant. The
   # provider key is resolved per instance and passed explicitly when it
-  # differs from the class's own (OpenAPI services are the base STI class,
-  # whose class-level provider is nil); subclasses that override
-  # `authorize_url_for` with their own signature (e.g. Notion) keep getting
-  # exactly their params.
+# differs from the class's own (OpenAPI services are the base STI class,
+    # whose class-level provider is nil); subclasses that override
+    # `authorize_url_for` with their own signature keep getting
+    # exactly their params.
   def authorize_url(redirect_uri:, state:)
     client = oauth_client_credential
     raise "No OAuth client credential connected to this service" unless client

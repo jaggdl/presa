@@ -56,12 +56,6 @@ spotify_player:
   name: Spotify Player
   config: {}
 
-notion:
-  team: one
-  type: Services::Notion
-  name: Notion
-  config: {}
-
 places:
   team: one
   type: Services::Places

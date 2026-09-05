@@ -295,11 +295,16 @@ module Openapi
         name = param["name"].to_s
         next if name.blank?
 
+        schema = param["schema"]
         props[name] = {
-          "type" => param_type(param["schema"]),
+          "type" => param_type(schema),
           "description" => param["description"].to_s.presence,
           "x-in" => param["in"].to_s
         }
+        # Carry the param's declared enum onto the property so callers (and
+        # `Services::Openapi#build_request`, which auto-fills a single-value
+        # enum) know the allowed values, e.g. Notion's pinned `Notion-Version`.
+        props[name]["enum"] = schema["enum"] if schema.is_a?(Hash) && schema["enum"].present?
         required << name if param["required"] == true
       end
 

@@ -487,9 +487,13 @@ module Services
 
       op_args(op).each do |arg|
         key = arg_key(arg)
-        next unless args.key?(key)
+        if args.key?(key)
+          value = args[key]
+        else
+          value = pinned_value(arg)
+          next if value.nil?
+        end
 
-        value = args[key]
         case arg["x-in"].to_s
         when "query"
           query[arg["name"]] = query_style_value(arg, value)
@@ -525,6 +529,17 @@ module Services
 
     def query_style_value(arg, value)
       value.is_a?(Array) ? value.join(",") : value
+    end
+
+    # Auto-fills an argument the caller omitted when its schema allows exactly
+    # one enum value (e.g. Notion's required `Notion-Version` header pin), so
+    # the health probe and lenient bare-tool calls work without passing it
+    # explicitly. Returns nil for anything else — the param just stays unset.
+    def pinned_value(arg)
+      enum = arg["enum"]
+      return nil unless enum.is_a?(Array) && enum.length == 1
+
+      enum.first
     end
 
     # Applies the operation's declared security schemes. When the service is set

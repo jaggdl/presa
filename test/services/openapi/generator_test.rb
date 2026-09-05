@@ -95,4 +95,31 @@ class OpenapiGeneratorTest < ActiveSupport::TestCase
 
     assert_includes op["response_fields"], "items[0].id"
   end
+
+  test "carries a parameter's single-value enum onto its args-schema property" do
+    raw, root = Openapi::Parser.parse(source: "raw", input: <<~YAML)
+      openapi: 3.0.0
+      info: { title: "Pinned", version: "1" }
+      paths:
+        /ping:
+          get:
+            operationId: ping
+            parameters:
+              - name: Notion-Version
+                in: header
+                required: true
+                schema:
+                  type: string
+                  enum: [ "2026-03-11" ]
+            responses:
+              "200": { description: OK }
+    YAML
+
+    d = Openapi::Generator.generate(root)
+    op = d["operations"].first
+    props = op["args_schema"]["properties"]
+
+    assert_equal [ "2026-03-11" ], props["Notion-Version"]["enum"]
+    assert_includes op["args_schema"]["required"], "Notion-Version"
+  end
 end

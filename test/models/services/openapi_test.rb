@@ -233,7 +233,69 @@ class Services::OpenapiTest < ActiveSupport::TestCase
     assert_raises(RuntimeError) { service.test_connection({}) }
   end
 
+  test "auto-fills an omitted single-enum header param (e.g. Notion-Version)" do
+    service = build_service("cred_bearer_auth" => "tok")
+    service.define_singleton_method(:operations) { [ pinned_operation ] }
+
+    query, headers, cookies, body, content_type = service.send(:build_request, pinned_operation, {})
+
+    assert_equal "2026-03-11", headers["Notion-Version"]
+    assert_empty query
+    assert_empty cookies
+    assert_nil body
+  end
+
+  test "keeps a caller-supplied value for a single-enum param over the auto-fill" do
+    service = build_service
+    service.define_singleton_method(:operations) { [ pinned_operation ] }
+
+    _, headers, _, _, _ = service.send(:build_request, pinned_operation, "Notion-Version" => "2025-06-24")
+
+    assert_equal "2025-06-24", headers["Notion-Version"]
+  end
+
+  test "does not auto-fill a multi-enum param" do
+    service = build_service
+    op = pinned_operation
+    op["args_schema"]["properties"]["Notion-Version"]["enum"] = [ "2026-03-11", "2025-06-24" ]
+    service.define_singleton_method(:operations) { [ op ] }
+
+    query, headers, cookies, _, _ = service.send(:build_request, op, {})
+
+    refute headers.key?("Notion-Version")
+    assert_empty query
+    assert_empty cookies
+  end
+
+  test "test_connection succeeds for a single-enum header operation given a credential" do
+    service = build_service("cred_bearer_auth" => "tok")
+    service.config[:base_url] = "https://api.example.com/v2"
+    service.define_singleton_method(:operations) { [ pinned_operation ] }
+    stubs = Faraday::Adapter::Test::Stubs.new
+    stubs.get("/v2/pinned") do |env|
+      assert_equal "2026-03-11", env.request_headers["Notion-Version"]
+      [ 200, { "content-type" => "application/json" }, JSON.generate(ok: true) ]
+    end
+    service.instance_variable_set(:@client, faraday_conn(stubs))
+
+    assert service.test_connection("health_op" => "pinnedOp")
+  end
+
   private
+
+  # An operation whose args schema declares a required, single-value enum
+  # header param, mirroring Notion's `Notion-Version` pin.
+  def pinned_operation
+    {
+      "method" => "GET", "path" => "/pinned", "operation_id" => "pinnedOp", "name" => "pinned_op",
+      "summary" => "", "description" => "", "tags" => [], "security" => {}, "security_requirements" => [],
+      "args_schema" => {
+        "type" => "object",
+        "properties" => { "Notion-Version" => { "type" => "string", "x-in" => "header", "enum" => [ "2026-03-11" ] } },
+        "required" => [ "Notion-Version" ]
+      }
+    }
+  end
 
   def faraday_conn(stubs)
     Faraday.new(url: "https://api.example.com") do |f|

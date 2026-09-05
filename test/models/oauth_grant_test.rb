@@ -14,8 +14,9 @@ class OauthGrantTest < ActiveSupport::TestCase
     assert grant.expired?
   end
 
-  test "is not expired when expires_at is nil (non-rotating tokens like Notion)" do
-    grant = oauth_grants(:notion_grant)
+  test "is not expired when expires_at and refresh_token are nil" do
+    grant = oauth_grants(:google_calendar_grant)
+    grant.update!(expires_at: nil, refresh_token: nil)
     assert_nil grant.expires_at
     assert_not grant.expired?
     assert_not grant.refreshable?
