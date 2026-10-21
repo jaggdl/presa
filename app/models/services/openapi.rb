@@ -256,6 +256,16 @@ module Services
       config[:health_op].to_s.presence || openapi_kind&.health_op
     end
 
+    # Arguments handed to the health-check operation when the probe runs, since
+    # some health ops require a value the probe can't infer (e.g. Gmail's
+    # `userId: me` path parameter). A per-service config override wins over the
+    # kind's preset default.
+    def health_check_args(source = nil)
+      args = normalize_config(source)[:health_args]
+      args = openapi_kind&.health_args if args.blank?
+      args.is_a?(Hash) ? args : {}
+    end
+
     # The set of credential keys the spec's schemes use (for display).
     def credential_keys
       security_slots.keys.map { |name| "cred_#{scheme_key(name)}" } +
@@ -412,7 +422,7 @@ module Services
       raise "Health check operation is no longer available" unless op
 
       validate_operation_credentials!(op, cfg)
-      response = run_with(cfg, op, {})
+      response = run_with(cfg, op, health_check_args(cfg))
       status = response.is_a?(Hash) && response["error"] ? false : true
       raise response["error"].to_s unless status
 
