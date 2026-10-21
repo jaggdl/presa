@@ -50,10 +50,34 @@ namespace :registry do
       puts "#{updated} installed kind(s) updated."
     end
 
+    # Backfills the health-check args on already-installed OpenapiKinds that came
+    # from a registry preset declaring `health_args` (e.g. Gmail's required
+    # `userId: me`). Skips presets without the field; idempotent. Cheaper than a
+    # full reprocess (no spec refetch).
+    desc "Backfill health_args on installed OpenapiKinds from their registry preset"
+    task backfill_health_args: :environment do
+      updated = 0
+
+      Registry::Openapi.presets.each do |preset|
+        next if preset.health_args.blank?
+
+        OpenapiKind.where(namespace: preset.namespace).each do |kind|
+          next if kind.health_args == preset.health_args
+
+          kind.update!(health_args: preset.health_args)
+          updated += 1
+          puts "#{kind.namespace}: health_args -> #{preset.health_args}"
+        end
+      end
+
+      puts "#{updated} installed kind(s) updated."
+    end
+
     # Rebuilds already-installed OpenapiKinds from their on-disk registry
     # preset, so edits to `registry/openapi/*.yml` (title, category, spec_url,
-    # base_url, health_op, oauth_provider, description) and the checked-in icon
-    # take effect on existing kinds. Regenerates the definition from spec_url,
+    # base_url, health_op, health_args, oauth_provider, description) and the
+    # checked-in icon take effect on existing kinds. Regenerates the definition
+    # from spec_url,
     # updates the scalar fields, and refreshes the attached icon (the previously
     # attached blob is purged first, so a replaced file — e.g. SVG -> PNG —
     # doesn't stick).
@@ -71,7 +95,7 @@ namespace :registry do
           rebuilt = Registry::Openapi.send(:build_kind, preset, kind.team)
           kind.assign_attributes(
             rebuilt.attributes.slice("title", "category", "description", "base_url",
-                                     "spec_url", "definition", "health_op", "oauth_provider")
+                                     "spec_url", "definition", "health_op", "health_args", "oauth_provider")
           )
           kind.icon.purge if kind.icon.attached?
           Registry::Openapi.send(:attach_preset_icon, kind, preset)

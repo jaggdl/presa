@@ -103,6 +103,14 @@ class OpenapiKind < ApplicationRecord
     list.is_a?(Array) ? list : []
   end
 
+  # Arguments supplied to the `health_op` when "Test connection" probes this
+  # kind (e.g. a required path parameter such as Gmail's `userId: me`). Empty
+  # when the health operation needs none.
+  def health_args
+    args = read_attribute(:health_args)
+    args.is_a?(Hash) ? args : {}
+  end
+
   # Card/subheader description: a stored (wizard-entered or preset) description
   # wins; otherwise the spec's own description, else a short spec-derived
   # summary.

@@ -17,8 +17,8 @@ module Oauth
   # `connection` is honored for tests, mirroring `Mcp::Client`.
   #
   # `default_headers` are merged into every request, letting a service pin
-  # required-but-per-call headers such as Notion's `Notion-Version` without
-  # the tool bases repeating them.
+  # required-but-per-call headers (e.g. a provider's API-version header)
+  # without the tool bases repeating them.
   class Client
     # How many times a rate-limited request is retried before the body is
     # returned as-is. Backoff starts at 1s (never a tight loop) and caps out.

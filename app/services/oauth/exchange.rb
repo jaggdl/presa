@@ -43,9 +43,8 @@ module Oauth
     # Returns a hash of token fields: {access_token, refresh_token, token_type,
     # scope, expires_in} (absent keys omitted). `client_auth` selects how the
     # client credentials are presented: `:form` (the Google/Spotify/Strava
-    # convention — client_id/client_secret in the form body) or `:basic`, used
-    # by Notion, which demands them in an HTTP Basic Authorization header and a
-    # JSON body.
+    # convention — client_id/client_secret in the form body) or `:basic` (an
+    # HTTP Basic Authorization header and a JSON body).
     def exchange_code(token_uri:, code:, client_id:, client_secret:, redirect_uri:, client_auth: :form)
       params = { grant_type: "authorization_code", code: code, redirect_uri: redirect_uri }
       post_tokens(token_uri, params, client_id: client_id, client_secret: client_secret, client_auth: client_auth)

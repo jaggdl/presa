@@ -256,6 +256,16 @@ module Services
       config[:health_op].to_s.presence || openapi_kind&.health_op
     end
 
+    # Arguments handed to the health-check operation when the probe runs, since
+    # some health ops require a value the probe can't infer (e.g. Gmail's
+    # `userId: me` path parameter). A per-service config override wins over the
+    # kind's preset default.
+    def health_check_args(source = nil)
+      args = normalize_config(source)[:health_args]
+      args = openapi_kind&.health_args if args.blank?
+      args.is_a?(Hash) ? args : {}
+    end
+
     # The set of credential keys the spec's schemes use (for display).
     def credential_keys
       security_slots.keys.map { |name| "cred_#{scheme_key(name)}" } +
@@ -412,7 +422,7 @@ module Services
       raise "Health check operation is no longer available" unless op
 
       validate_operation_credentials!(op, cfg)
-      response = run_with(cfg, op, {})
+      response = run_with(cfg, op, health_check_args(cfg))
       status = response.is_a?(Hash) && response["error"] ? false : true
       raise response["error"].to_s unless status
 
@@ -487,9 +497,13 @@ module Services
 
       op_args(op).each do |arg|
         key = arg_key(arg)
-        next unless args.key?(key)
+        if args.key?(key)
+          value = args[key]
+        else
+          value = pinned_value(arg)
+          next if value.nil?
+        end
 
-        value = args[key]
         case arg["x-in"].to_s
         when "query"
           query[arg["name"]] = query_style_value(arg, value)
@@ -525,6 +539,17 @@ module Services
 
     def query_style_value(arg, value)
       value.is_a?(Array) ? value.join(",") : value
+    end
+
+    # Auto-fills an argument the caller omitted when its schema allows exactly
+    # one enum value (e.g. Notion's required `Notion-Version` header pin), so
+    # the health probe and lenient bare-tool calls work without passing it
+    # explicitly. Returns nil for anything else — the param just stays unset.
+    def pinned_value(arg)
+      enum = arg["enum"]
+      return nil unless enum.is_a?(Array) && enum.length == 1
+
+      enum.first
     end
 
     # Applies the operation's declared security schemes. When the service is set

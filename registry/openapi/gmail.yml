@@ -5,6 +5,10 @@ spec_url: https://api.apis.guru/v2/specs/googleapis.com/gmail/v1/openapi.json
 base_url: https://gmail.googleapis.com
 oauth_provider: google
 health_op: gmail.users.getProfile
+# `getProfile` requires a path `userId`; `me` addresses the authenticated
+# user, which is exactly what the probe should validate.
+health_args:
+  userId: me
 description: |
   # Gmail
 
