@@ -233,7 +233,42 @@ class Services::OpenapiTest < ActiveSupport::TestCase
     assert_raises(RuntimeError) { service.test_connection({}) }
   end
 
+  test "health check supplies args for a required path parameter" do
+    service = build_service("cred_bearer_auth" => "tok")
+    service.config[:base_url] = "https://api.example.com/v2"
+    op = path_param_operation
+    service.define_singleton_method(:operations) { [ op ] }
+    stubs = Faraday::Adapter::Test::Stubs.new
+    stubs.get("/v2/users/me/profile") { |_| [ 200, { "content-type" => "application/json" }, JSON.generate(ok: true) ] }
+    service.instance_variable_set(:@client, faraday_conn(stubs))
+
+    assert service.test_connection("health_op" => "getProfile", "health_args" => { "userId" => "me" })
+  end
+
+  test "health_check_args falls back to the kind's preset args" do
+    service = build_service
+    service.define_singleton_method(:openapi_kind) do
+      OpenapiKind.new(health_args: { "userId" => "me" })
+    end
+
+    assert_equal({ "userId" => "me" }, service.health_check_args)
+  end
+
   private
+
+  # An operation requiring a path parameter, mirroring Gmail's `getProfile`
+  # (`/users/{userId}/profile`).
+  def path_param_operation
+    {
+      "method" => "GET", "path" => "/users/{userId}/profile", "operation_id" => "getProfile", "name" => "get_profile",
+      "summary" => "", "description" => "", "tags" => [], "security" => {}, "security_requirements" => [],
+      "args_schema" => {
+        "type" => "object",
+        "properties" => { "userId" => { "type" => "string", "x-in" => "path" } },
+        "required" => [ "userId" ]
+      }
+    }
+  end
 
   def faraday_conn(stubs)
     Faraday.new(url: "https://api.example.com") do |f|

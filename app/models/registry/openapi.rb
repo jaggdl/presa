@@ -101,6 +101,7 @@ module Registry
           spec_url: preset.spec_url,
           definition: definition,
           health_op: preset.health_op,
+          health_args: preset.health_args,
           oauth_provider: preset.oauth_provider
         )
       end

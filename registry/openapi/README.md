@@ -34,6 +34,7 @@ registry/
 | `spec_url`  | yes      | URL of the OpenAPI 3.x document used to generate the kind's definition. |
 | `base_url`  | no       | Default base URL, used when a service doesn't override it. |
 | `health_op` | no | Operation (by `operationId`) used for "Test connection". Prefer an **authenticated** operation so the credential is validated too. |
+| `health_args` | no | Arguments passed to `health_op` when the probe runs, for an operation that requires a value the probe can't infer — e.g. a path parameter (`health_args: { userId: me }` for Gmail's `getProfile`). |
 | `credential`| no | Credential-transmission override for specs whose declared scheme is wrong against the real server (see below). |
 | `oauth_provider` | no | Overrides the OAuth provider key for specs that declare an OAuth flow (see below). |
 | `description` | no     | Markdown description shown on the card / service header (same shape as `docs/services/*.md`; a leading top-level heading is dropped when rendered). |

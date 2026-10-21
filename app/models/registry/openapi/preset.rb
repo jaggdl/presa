@@ -23,6 +23,17 @@ module Registry
         data["health_op"].to_s.presence
       end
 
+      # Optional arguments for the `health_op` probe, for operations that
+      # require a value the probe can't infer (e.g. a path parameter). YAML
+      # shape is a plain map passed through to the operation's args:
+      #
+      #   health_args:
+      #     userId: me
+      def health_args
+        args = data["health_args"]
+        args.is_a?(Hash) ? args : {}
+      end
+
       # Optional OAuth provider key override for kinds whose spec declares an
       # OAuth scheme. Defaults to the namespace (a kind-local dynamic provider);
       # set e.g. `google` so a Google-API kind shares the well-known provider's
