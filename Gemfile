@@ -79,4 +79,4 @@ gem "rails_icons", "~> 1.9"
 
 gem "commonmarker", "~> 2.10"
 
-gem "openapi_parser", "~> 2.3"
+gem "openapi_parser", "~> 2.4"
