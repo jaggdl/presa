@@ -1,0 +1,20 @@
+title: Google Search Console
+namespace: searchconsole
+category: productivity
+spec_url: https://api.apis.guru/v2/specs/googleapis.com/searchconsole/v1/openapi.json
+base_url: https://searchconsole.googleapis.com
+oauth_provider: google
+health_op: webmasters.sites.list
+description: |
+  # Google Search Console
+
+  Google Search Console API — query your site's search performance and manage its configuration. Pull Search Analytics data (clicks, impressions, CTR, and position broken down by query, page, country, and device) with `webmasters.searchanalytics.query`, list and manage the sites you've verified (`webmasters.sites.list`/`get`/`add`/`delete`), inspect and submit sitemaps (`webmasters.sitemaps.*`), and run on-demand URL inspection (`searchconsole.urlInspection.index.inspect`). See the [official documentation](https://developers.google.com/webmaster-tools).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | Google OAuth 2.0 credential. Register a Google Cloud OAuth client (callback URL `oauth_callback_url`) and connect via the OAuth flow, authorizing the `https://www.googleapis.com/auth/webmasters.readonly` scope (or `https://www.googleapis.com/auth/webmasters` to add/remove sites and submit sitemaps). |
+  | `base_url` | No | No | `https://searchconsole.googleapis.com` | The Search Console REST API base URL; Google-hosted, no self-hosted equivalent. |
+
+  The health check (`GET /webmasters/v3/sites`) validates the credential by listing the sites the authenticated user has verified.
