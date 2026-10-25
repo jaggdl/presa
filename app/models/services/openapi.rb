@@ -427,7 +427,18 @@ module Services
       status = response.is_a?(Hash) && response["error"] ? false : true
       raise response["error"].to_s unless status
 
+      @health_label = extract_health_label(response, cfg[:health_identity])
+
       true
+    end
+
+    # A human-readable label pulled from the last successful health-check
+    # response via the configured dotted `health_identity` path (e.g.
+    # "owner.email" -> "ada@example.com"), surfaced next to "Connected
+    # successfully". Nil when no identity path is configured or it can't be
+    # resolved from the response.
+    def health_label
+      @health_label
     end
 
     # Builds the outbound HTTP client against the base URL's origin; a base URL
@@ -749,6 +760,17 @@ module Services
       execute_operation(op, args)
     ensure
       self.config = original if original
+    end
+
+    # Resolves the dotted `identity` path (e.g. "owner.email") against a
+    # health-check response body, returning the value as a string or nil.
+    def extract_health_label(response, identity)
+      path = identity.to_s.presence
+      return nil if path.blank? || !response.is_a?(Hash)
+
+      path.split(".").reduce(response) do |value, key|
+        value.is_a?(Hash) ? value[key] : nil
+      end&.then { |value| value.to_s.presence }
     end
 
     def validate_required_credentials!(cfg)

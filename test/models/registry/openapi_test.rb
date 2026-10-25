@@ -42,10 +42,10 @@ class RegistryOpenapiTest < ActiveSupport::TestCase
 
   test "a preset oauth_provider override is stored on the installed kind" do
     with_fetcher(@spec) do
-      Registry::Openapi.install("youtube_analytics", team: @team)
+      Registry::Openapi.install("searchconsole", team: @team)
     end
 
-    kind = OpenapiKind.find_by(namespace: "youtube_analytics")
+    kind = OpenapiKind.find_by(namespace: "searchconsole")
     assert_equal "google", kind.read_attribute(:oauth_provider)
   end
 
