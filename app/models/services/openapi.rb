@@ -353,7 +353,9 @@ module Services
     end
 
     # Descriptor list for the generated tools: [{name, description, inputSchema}].
-    # Mirrors `Mcp#remote_tools`, cached per spec content.
+    # Mirrors `Mcp#remote_tools`, cached per spec content. Every operation is a
+    # tool, including one designated as the health check — picking an operation
+    # for the connection probe doesn't remove it from the callable tool set.
     def openapi_tools
       cache_key = [ "openapi_tools", (openapi_kind&.definition || config_spec).hash ]
       # The filtered tool set depends on the OAuth scope configuration, so it
@@ -361,7 +363,6 @@ module Services
       cache_key << configured_oauth_scopes.sort.join(",") if oauth_method?
       Rails.cache.fetch(cache_key, expires_in: DISCOVERY_TTL) do
         operations.filter_map do |op|
-          next if op["operation_id"] == health_check_operation || op["name"] == health_check_operation
           next if oauth_method? && !oauth_operation_available?(op)
 
           {

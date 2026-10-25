@@ -16,7 +16,7 @@
             Showing <%= pluralize(@tools.length, "tool") %> under this service's OAuth scopes
             (<code class="text-zinc-400"><%= @service.configured_oauth_scopes.join(" ") %></code>).
           <% else %>
-            Showing all <%= pluralize(@service.operation_count, "operation") %><%= @service.health_check_operation.present? ? " (excluding the health check)" : "" %>.
+            Showing all <%= pluralize(@service.operation_count, "operation") %>.
           <% end %>
         </p>
       <% end %>

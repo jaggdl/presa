@@ -63,6 +63,14 @@ class Services::OpenapiTest < ActiveSupport::TestCase
     assert_includes names, "widgets_create_widget"
   end
 
+  test "exposes the health-check operation as a tool too" do
+    service = build_service("health_op" => "getWidgetById")
+    tools = service.openapi_tools
+
+    assert_equal 4, tools.size
+    assert_includes tools.map { |t| t["name"] }, "widgets_get_widget_by_id"
+  end
+
   test "tool names drop a namespace-shaped lead-in from the operation slug" do
     gmail = build_service(namespace: "gmail")
     assert_equal "gmail_users_get_profile", gmail.tool_name_for("gmail_users_get_profile")
