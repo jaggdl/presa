@@ -15,15 +15,15 @@
   <%= form_with url: openapi_parse_path, method: :post, class: "contents" do |form| %>
     <div class="my-4">
       <%= form.label :spec, "OpenAPI spec", class: "block text-sm text-zinc-400" %>
-      <div class="flex gap-2 mt-2">
+      <div class="flex gap-2 mt-2 items-start">
         <%= select_tag :source, options_for_select([ [ "From a URL", "url" ], [ "Paste JSON/YAML", "raw" ] ], local_assigns[:source] || "url"),
               class: "block rounded-md border border-zinc-700 focus:outline-blue-600 px-2 py-2 bg-zinc-900", data: { openapi_dialog_target: "source", action: "openapi-dialog#syncPlaceholder" } %>
-        <%= form.text_field :spec, id: "openapi_spec",
+        <%= form.text_area :spec, id: "openapi_spec",
               value: local_assigns[:spec],
               placeholder: "https://api.example.com/openapi.json or pasted JSON/YAML",
-              autocomplete: "off", autofocus: true, required: true,
+              autocomplete: "off", autofocus: true, required: true, rows: 12,
               data: { openapi_dialog_target: "spec" },
-              class: "block w-full rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-900 placeholder-zinc-500" %>
+              class: "block w-full rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 bg-zinc-900 placeholder-zinc-500 font-mono text-xs resize-y" %>
       </div>
       <p class="text-xs text-zinc-500 mt-2">Paste a URL or raw JSON/YAML content.</p>
     </div>
