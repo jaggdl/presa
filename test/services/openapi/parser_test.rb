@@ -37,6 +37,21 @@ class OpenapiParserTest < ActiveSupport::TestCase
     end
   end
 
+  test "parses a checked-in spec file" do
+    path = Rails.root.join("test/support/openapi/widget_api.yml")
+    raw, root = Openapi::Parser.parse(source: "file", input: path)
+
+    assert_equal "3.0.3", raw["openapi"]
+    assert_equal "Widget API", root.raw_schema.dig("info", "title")
+  end
+
+  test "raises a friendly error when a spec file is missing" do
+    error = assert_raises(Openapi::Parser::Error) do
+      Openapi::Parser.parse(source: "file", input: "/tmp/does-not-exist-spec.yml")
+    end
+    assert_match(/spec file not found/i, error.message)
+  end
+
   test "swallows fetch failures into a friendly parse error" do
     with_fetcher(nil) do
       # nil proxy fetch raises; Parser dedupes to a friendly message on its own.

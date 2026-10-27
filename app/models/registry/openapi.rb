@@ -86,7 +86,7 @@ module Registry
       # persisted definition, and builds the `OpenapiKind` record (not yet
       # saved).
       def build_kind(preset, team)
-        raw, root = ::Openapi::Parser.parse(source: "url", input: preset.spec_url)
+        raw, root = parse_spec(preset)
         ::Openapi::Parser.validate!(raw)
         definition = ::Openapi::Generator.generate(root, source_url: preset.spec_url)
         apply_credential_overrides!(definition, preset)
@@ -104,6 +104,20 @@ module Registry
           health_args: preset.health_args,
           oauth_provider: preset.oauth_provider
         )
+      end
+
+      # Parses a preset's spec from its checked-in file when it ships one,
+      # otherwise fetches `spec_url`. The generated definition still records
+      # `spec_url` so the kind shows where the spec came from.
+      def parse_spec(preset)
+        if preset.spec_file.present?
+          path = preset.spec_path
+          raise ::Openapi::Parser::Error, "Spec file not found: #{preset.spec_file}" unless path
+
+          ::Openapi::Parser.parse(source: "file", input: path)
+        else
+          ::Openapi::Parser.parse(source: "url", input: preset.spec_url)
+        end
       end
 
       # Rewrites a security scheme's slot in the generated definition to match

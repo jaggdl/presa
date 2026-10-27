@@ -15,6 +15,23 @@ module Registry
         data["spec_url"].to_s.presence
       end
 
+      # Optional checked-in OpenAPI document, relative to `registry/openapi`.
+      # Lets a preset ship a hand-written spec (for APIs with no upstream
+      # OpenAPI source) instead of relying on `spec_url` being reachable at
+      # install time. `spec_url` can still point at the same document's public
+      # location for display/reprocessing after it is published.
+      def spec_file
+        data["spec_file"].to_s.presence
+      end
+
+      def spec_path
+        file = spec_file
+        return nil if file.blank?
+
+        path = self.class.directory.join(file)
+        path.file? ? path : nil
+      end
+
       def base_url
         data["base_url"].to_s.presence
       end

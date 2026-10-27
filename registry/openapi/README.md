@@ -31,7 +31,8 @@ registry/
 | `title`     | yes      | User-facing product name (shown on the card and the kind). |
 | `namespace` | yes      | Machine kind. Unique per team; must match `/[a-z0-9_]/`. |
 | `category`  | yes      | `Service` domain category shown on the card (e.g. `media`, `productivity`). |
-| `spec_url`  | yes      | URL of the OpenAPI 3.x document used to generate the kind's definition. |
+| `spec_url`  | yes*     | URL of the OpenAPI 3.x document used to generate the kind's definition. |
+| `spec_file` | no       | Path (relative to `registry/openapi`) of a checked-in OpenAPI document. When set, installs parse it instead of fetching `spec_url` — use it for APIs with no upstream spec of their own. |
 | `base_url`  | no       | Default base URL, used when a service doesn't override it. |
 | `health_op` | no | Operation (by `operationId`) used for "Test connection". Prefer an **authenticated** operation so the credential is validated too. |
 | `health_args` | no | Arguments passed to `health_op` when the probe runs, for an operation that requires a value the probe can't infer — e.g. a path parameter (`health_args: { userId: me }` for Gmail's `getProfile`). |
@@ -52,6 +53,17 @@ description: |
   # Immich
 
   Self-hosted photo and video backup, at scale.
+```
+
+## Checked-in specs
+
+When an API has no upstream OpenAPI document, write one and check it in under
+`registry/openapi/specs/`, then point `spec_file` at it. Keep `spec_url` as the
+document's public location for display (and for a future remote refetch):
+
+```yaml
+spec_url: https://raw.githubusercontent.com/<owner>/<repo>/master/registry/openapi/specs/example.yml
+spec_file: specs/example.yml
 ```
 
 ## Icon
@@ -130,8 +142,8 @@ OAuth dance alongside any manual credential schemes the spec declares.
 
 ## Notes
 
-- The `definition` payload is generated from `spec_url` at install time; it is
-  **not** stored in this file.
+- The `definition` payload is generated at install time from `spec_file` (when
+  checked in) or `spec_url`; it is **not** stored in this file.
 - `health_op` values are matched against the generated definition's
   `operationId` (e.g. Immich's `/auth/status` → `getAuthStatus`).
 - A preset whose namespace already has an installed `OpenapiKind` is excluded

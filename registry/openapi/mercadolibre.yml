@@ -1,0 +1,20 @@
+title: MercadoLibre
+namespace: mercadolibre
+category: productivity
+spec_url: https://raw.githubusercontent.com/jaggdl/presa/master/registry/openapi/specs/mercadolibre.yml
+spec_file: specs/mercadolibre.yml
+base_url: https://api.mercadolibre.com
+health_op: getAuthenticatedUser
+description: |
+  # MercadoLibre
+
+  The MercadoLibre marketplace API — search public listings and a seller's items, read and manage item listings, and work with MercadoLibre sites, domains, and categories. See the [items and searches documentation](https://developers.mercadolibre.com.mx/es_ar/items-y-busquedas) and the [domains and categories documentation](https://developers.mercadolibre.com.mx/es_ar/dominios-y-categorias).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | MercadoLibre OAuth 2.0 credential. Register an application in the MercadoLibre Developers portal (callback URL `oauth_callback_url`) and connect via the OAuth flow, authorizing the `read` scope (or `read write` to publish and update items). |
+  | `base_url` | No | No | `https://api.mercadolibre.com` | The MercadoLibre API base URL; hosted globally, no self-hosted equivalent. |
+
+  The health check (`GET /users/me`) validates the access token by fetching the authenticated user's profile.

@@ -3,6 +3,7 @@
 require "json"
 require "net/http"
 require "openapi_parser"
+require "pathname"
 require "psych"
 require "uri"
 
@@ -11,8 +12,8 @@ module Openapi
   class ApiError < StandardError; end
 
   # Loads and validates an OpenAPI 3.x document before Presa turns it into a
-  # service. Input may be a URL (fetched over HTTP/HTTPS, capped in size) or a
-  # pasted raw JSON/YAML string.
+  # service. Input may be a URL (fetched over HTTP/HTTPS, capped in size), a
+  # checked-in file path, or a pasted raw JSON/YAML string.
   class Parser
     # Largest spec body we are willing to fetch from a URL (20 MB).
     MAX_SPEC_BYTES = 20 * 1024 * 1024
@@ -22,10 +23,15 @@ module Openapi
     class Error < StandardError; end
 
     # Parses the given input into `[raw_hash, OpenAPIParser root]`. `source` is
-    # `"url"` or `"raw"`; `input` is the URL or the pasted content. Raises
-    # `Openapi::Parser::Error` for anything unparseable.
+    # `"url"`, `"file"`, or `"raw"`; `input` is the URL, local file path, or
+    # pasted content. Raises `Openapi::Parser::Error` for anything unparseable.
     def self.parse(source:, input:)
-      text = source.to_s == "url" ? fetch(input) : input.to_s
+      text =
+        case source.to_s
+        when "url" then fetch(input)
+        when "file" then read_file(input)
+        else input.to_s
+        end
       raw = parse_text(text)
       root = OpenAPIParser.parse(raw, strict_reference_validation: false)
       [ raw, root ]
@@ -67,6 +73,19 @@ module Openapi
           raise Error, "Couldn't fetch the spec URL (HTTP #{response.code})"
         end
       end
+      body
+    end
+
+    # Reads a local, checked-in spec file (e.g. a registry preset's own
+    # OpenAPI document). Capped like a fetched spec so a malformed path can't
+    # be used to read an arbitrarily large file.
+    def self.read_file(path)
+      file = Pathname(path.to_s)
+      raise Error, "Spec file not found: #{file}" unless file.file?
+
+      body = file.read
+      raise Error, "Spec content exceeds 20 MB" if body.bytesize > MAX_SPEC_BYTES
+
       body
     end
 

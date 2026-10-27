@@ -26,6 +26,21 @@ class RegistryOpenapiTest < ActiveSupport::TestCase
     assert_equal "productivity", kind.category
   end
 
+  test "install parses a preset's checked-in spec file without fetching" do
+    kind = Registry::Openapi.install("mercadolibre", team: @team)
+
+    assert kind.persisted?
+    assert_equal "MercadoLibre", kind.title
+    assert_equal "https://api.mercadolibre.com", kind.base_url
+    assert_equal "getAuthenticatedUser", kind.health_op
+    assert_equal "oauth", kind.oauth_slot["kind"]
+    assert_equal "https://auth.mercadolibre.com.mx/authorization", kind.oauth_slot["authorization_url"]
+    assert_equal "https://api.mercadolibre.com/oauth/token", kind.oauth_slot["token_url"]
+    assert_includes kind.oauth_slot["scopes"].keys, "offline_access"
+    assert kind.operation("searchItemsBySite")
+    assert kind.operation("getCategory")
+  end
+
   test "a preset without a category defaults to general" do
     preset = Registry::Openapi::Preset.new("x", { "title" => "X" })
     assert_equal "general", preset.category

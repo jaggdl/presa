@@ -1,0 +1,981 @@
+openapi: 3.0.3
+info:
+  title: MercadoLibre
+  version: "1.0.0"
+  description: |
+    MercadoLibre marketplace API for items, searches, sites, domains, and
+    categories. Every request is authenticated with a MercadoLibre OAuth 2.0
+    access token sent as an `Authorization: Bearer` header.
+servers:
+  - url: https://api.mercadolibre.com
+    description: MercadoLibre API
+security:
+  - oauth2: [ read ]
+tags:
+  - name: Users
+    description: The authenticated MercadoLibre user.
+  - name: Items
+    description: Item details, bulk lookups, and item management.
+  - name: Search
+    description: Search public listings and a seller's items.
+  - name: Sites
+    description: MercadoLibre sites and their listing configuration.
+  - name: Categories
+    description: Category trees, attributes, and category discovery.
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      description: |
+        MercadoLibre OAuth 2.0 authorization-code flow. Register an application
+        in the MercadoLibre Developers portal and use its APP ID as the client
+        ID and its Secret Key as the client secret. Tokens expire after six
+        hours; the `offline_access` scope enables refresh tokens.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.mercadolibre.com.mx/authorization
+          tokenUrl: https://api.mercadolibre.com/oauth/token
+          refreshUrl: https://api.mercadolibre.com/oauth/token
+          scopes:
+            read: Read public and private resources.
+            write: Create and update resources.
+            offline_access: Receive a refresh token so the connection can outlive an access token.
+  schemas:
+    Paging:
+      type: object
+      properties:
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+        site_id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+          nullable: true
+        seller_id:
+          type: integer
+        category_id:
+          type: string
+        official_store_id:
+          type: integer
+          nullable: true
+        price:
+          type: number
+        base_price:
+          type: number
+        original_price:
+          type: number
+          nullable: true
+        currency_id:
+          type: string
+        initial_quantity:
+          type: integer
+        available_quantity:
+          type: integer
+        sold_quantity:
+          type: integer
+        status:
+          type: string
+        condition:
+          type: string
+        permalink:
+          type: string
+        thumbnail:
+          type: string
+        pictures:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              url:
+                type: string
+              secure_url:
+                type: string
+        attributes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              value_id:
+                type: string
+                nullable: true
+              value_name:
+                type: string
+                nullable: true
+        date_created:
+          type: string
+          format: date-time
+        last_updated:
+          type: string
+          format: date-time
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        picture:
+          type: string
+          nullable: true
+        permalink:
+          type: string
+          nullable: true
+        total_items_in_this_category:
+          type: integer
+        path_from_root:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+        children_categories:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              total_items_in_this_category:
+                type: integer
+    ItemInput:
+      type: object
+      required:
+        - title
+        - category_id
+        - price
+        - currency_id
+        - available_quantity
+        - buying_mode
+        - condition
+        - listing_type_id
+      properties:
+        title:
+          type: string
+          description: Listing title (maximum length depends on the category).
+        category_id:
+          type: string
+          description: Category ID the item is published in, e.g. `MLM1055`.
+        price:
+          type: number
+        currency_id:
+          type: string
+          description: ISO currency code for the site, e.g. `MXN`.
+        available_quantity:
+          type: integer
+        buying_mode:
+          type: string
+          enum: [ buy_it_now, auction, classified ]
+        condition:
+          type: string
+          enum: [ new, used, not_specified ]
+        listing_type_id:
+          type: string
+          description: Listing type, e.g. `gold_special`, `gold_pro`, or `free`.
+        description:
+          type: string
+          description: Optional plain-text description.
+        pictures:
+          type: array
+          items:
+            type: object
+            properties:
+              source:
+                type: string
+                description: Public image URL.
+        attributes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              value_name:
+                type: string
+paths:
+  /users/me:
+    get:
+      operationId: getAuthenticatedUser
+      tags: [ Users ]
+      summary: Get the authenticated user
+      description: Returns the MercadoLibre user associated with the access token.
+      security:
+        - oauth2: [ read ]
+      responses:
+        "200":
+          description: The authenticated user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nickname:
+                    type: string
+                  email:
+                    type: string
+                  site_id:
+                    type: string
+                  country_id:
+                    type: string
+                  user_type:
+                    type: string
+                  permalink:
+                    type: string
+        "401":
+          description: The access token is missing, expired, or invalid.
+  /items/{item_id}:
+    get:
+      operationId: getItem
+      tags: [ Items ]
+      summary: Get an item
+      description: Returns the full detail of a single MercadoLibre item.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: Item ID, e.g. `MLM123456789`.
+          schema:
+            type: string
+        - name: attributes
+          in: query
+          required: false
+          description: Comma-separated attribute names to include in the response.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The requested item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          description: The item does not exist or is not visible to the caller.
+    put:
+      operationId: updateItem
+      tags: [ Items ]
+      summary: Update an item
+      description: Updates fields on an existing item.
+      security:
+        - oauth2: [ write ]
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                price:
+                  type: number
+                available_quantity:
+                  type: integer
+                status:
+                  type: string
+                  enum: [ active, paused, closed ]
+                pictures:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        type: string
+                attributes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      value_name:
+                        type: string
+      responses:
+        "200":
+          description: The updated item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "400":
+          description: The update is invalid for the item or category.
+  /items:
+    post:
+      operationId: createItem
+      tags: [ Items ]
+      summary: Publish an item
+      description: Creates a new item listing on the authenticated seller's account.
+      security:
+        - oauth2: [ write ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemInput"
+      responses:
+        "201":
+          description: The created item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "400":
+          description: The item is invalid for the selected category.
+  /items/bulk:
+    get:
+      operationId: getItemsBulk
+      tags: [ Items ]
+      summary: Get multiple items in one call
+      description: |
+        Retrieves up to 20 items in a single request. Each result carries a
+        `status_code` and the item under `body`.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: Comma-separated item IDs, e.g. `MLM123,MLM456`.
+          schema:
+            type: string
+        - name: attributes
+          in: query
+          required: false
+          description: Comma-separated attributes to return, prefixed with `body.` (e.g. `body.id,body.price`).
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One result per requested item.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    status_code:
+                      type: integer
+                    id:
+                      type: string
+                    body:
+                      $ref: "#/components/schemas/Item"
+  /sites:
+    get:
+      operationId: listSites
+      tags: [ Sites ]
+      summary: List sites
+      description: Returns every country site where MercadoLibre operates.
+      security:
+        - oauth2: [ read ]
+      responses:
+        "200":
+          description: The available sites.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Site ID such as `MLM` (Mexico) or `MLA` (Argentina).
+                    name:
+                      type: string
+                    default_currency_id:
+                      type: string
+  /sites/{site_id}/search:
+    get:
+      operationId: searchItemsBySite
+      tags: [ Search ]
+      summary: Search public listings
+      description: |
+        Searches active listings on a MercadoLibre site. Filter by seller,
+        category, condition, and more, and sort the results with `sort`.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          description: Site ID, e.g. `MLM`.
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: false
+          description: Free-text search query.
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          description: Restrict results to a category ID.
+          schema:
+            type: string
+        - name: seller_id
+          in: query
+          required: false
+          description: Restrict results to a seller.
+          schema:
+            type: integer
+        - name: nickname
+          in: query
+          required: false
+          description: Restrict results to a seller nickname.
+          schema:
+            type: string
+        - name: sort
+          in: query
+          required: false
+          description: Sort order ID, e.g. `price_asc` or `price_desc`.
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Results per page (maximum 50).
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: shipping_cost
+          in: query
+          required: false
+          description: Shipping-cost filter, e.g. `free`.
+          schema:
+            type: string
+        - name: condition
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: buying_mode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: listing_type_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: include_filters
+          in: query
+          required: false
+          description: Include the filters and available filters blocks in the response.
+          schema:
+            type: boolean
+        - name: since
+          in: query
+          required: false
+          description: Only include items updated after this ISO-8601 date.
+          schema:
+            type: string
+        - name: until
+          in: query
+          required: false
+          description: Only include items updated before this ISO-8601 date.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The search results.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  site_id:
+                    type: string
+                  query:
+                    type: string
+                    nullable: true
+                  paging:
+                    $ref: "#/components/schemas/Paging"
+                  results:
+                    type: array
+                    items:
+                      type: string
+                  filters:
+                    type: array
+                    items:
+                      type: object
+                  available_filters:
+                    type: array
+                    items:
+                      type: object
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                  available_sorts:
+                    type: array
+                    items:
+                      type: object
+  /users/{user_id}/items/search:
+    get:
+      operationId: searchSellerItems
+      tags: [ Search ]
+      summary: Search a seller's items
+      description: |
+        Lists the items published by a seller. Use `search_type=scan` with the
+        returned `scroll_id` to page through more than 1,000 results.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Seller user ID.
+          schema:
+            type: integer
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sku
+          in: query
+          required: false
+          description: Filter by the item's seller-defined SKU.
+          schema:
+            type: string
+        - name: seller_sku
+          in: query
+          required: false
+          description: Filter by the SELLER_SKU attribute.
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          description: Item status, e.g. `active`, `paused`, or `closed`.
+          schema:
+            type: string
+        - name: listing_type_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: orders
+          in: query
+          required: false
+          description: Sort order ID, e.g. `start_time_desc`.
+          schema:
+            type: string
+        - name: include_filters
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: search_type
+          in: query
+          required: false
+          description: Set to `scan` to iterate over more than 1,000 items.
+          schema:
+            type: string
+        - name: scroll_id
+          in: query
+          required: false
+          description: Cursor returned by a previous `scan` search.
+          schema:
+            type: string
+        - name: reputation_health_gauge
+          in: query
+          required: false
+          description: Filter by reputation health (`healthy`, `warning`, or `unhealthy`).
+          schema:
+            type: string
+        - name: missing_product_identifiers
+          in: query
+          required: false
+          description: Filter items that are missing a product identifier.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: The seller's items.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seller_id:
+                    type: string
+                  query:
+                    type: string
+                    nullable: true
+                  paging:
+                    $ref: "#/components/schemas/Paging"
+                  results:
+                    type: array
+                    items:
+                      type: string
+                  scroll_id:
+                    type: string
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                  available_orders:
+                    type: array
+                    items:
+                      type: object
+                  available_filters:
+                    type: array
+                    items:
+                      type: object
+  /users/{user_id}/items/search/restrictions:
+    get:
+      operationId: getSellerSearchRestrictions
+      tags: [ Search ]
+      summary: Get a seller's search restrictions
+      description: Reports whether a seller is restricted from aggregations, queries, or sorting.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The seller's search restrictions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  aggregations_allowed:
+                    type: boolean
+                  query_allowed:
+                    type: boolean
+                  sort_allowed:
+                    type: boolean
+  /sites/{site_id}/categories:
+    get:
+      operationId: getSiteCategories
+      tags: [ Categories ]
+      summary: List a site's categories
+      description: Returns the top-level category tree for a MercadoLibre site.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The site's top-level categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+  /categories/{category_id}:
+    get:
+      operationId: getCategory
+      tags: [ Categories ]
+      summary: Get a category
+      description: Returns category details, settings, and direct children.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+  /categories/{category_id}/attributes:
+    get:
+      operationId: getCategoryAttributes
+      tags: [ Categories ]
+      summary: Get a category's attributes
+      description: Returns the attributes and allowed values for items in a category.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The category's attributes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    value_type:
+                      type: string
+                    tags:
+                      type: object
+                    values:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+  /sites/{site_id}/domain_discovery/search:
+    get:
+      operationId: predictCategory
+      tags: [ Categories ]
+      summary: Predict a category from a title
+      description: Suggests the category and domain for an item based on its title, domain, or attributes.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: true
+          description: Item title or search phrase, e.g. `iphone 15`.
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: domain_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category_id
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Category predictions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    domain_id:
+                      type: string
+                    domain_name:
+                      type: string
+                    category_id:
+                      type: string
+                    category_name:
+                      type: string
+                    attributes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          value_id:
+                            type: string
+                          value_name:
+                            type: string
+  /sites/{site_id}/listing_exposures:
+    get:
+      operationId: getListingExposures
+      tags: [ Sites ]
+      summary: List listing exposures
+      description: Returns the exposure levels associated with listing types on a site.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The site's listing exposures.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    home_page:
+                      type: boolean
+                    category_home_page:
+                      type: boolean
+                    advertising_on_listing_page:
+                      type: boolean
+                    priority_in_search:
+                      type: integer
+  /sites/{site_id}/listing_prices:
+    get:
+      operationId: getListingPrices
+      tags: [ Sites ]
+      summary: Get listing prices
+      description: Returns the selling fees for each listing type at a given price.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: price
+          in: query
+          required: true
+          description: Item price used to calculate fees.
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Listing prices for the site.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    listing_type_id:
+                      type: string
+                    listing_type_name:
+                      type: string
+                    listing_exposure:
+                      type: string
+                    currency_id:
+                      type: string
+                    listing_fee_amount:
+                      type: number
+                    sale_fee_amount:
+                      type: number
+  /categories/{category_id}/classifieds_promotion_packs:
+    get:
+      operationId: getCategoryPromotionPacks
+      tags: [ Categories ]
+      summary: Get classified promotion packs
+      description: Returns the classifieds promotion packs available for a category.
+      security:
+        - oauth2: [ read ]
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Promotion packs for the category.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    category_id:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                    duration:
+                      type: integer
+                    status:
+                      type: string
+                    listing_details:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          listing_type_id:
+                            type: string
+                          available_listings:
+                            type: integer
