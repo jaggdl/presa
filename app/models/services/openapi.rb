@@ -393,6 +393,10 @@ module Services
       end
 
       success?(response) ? response.body : error_payload(response)
+    rescue Oauth::ReconnectRequired => e
+      # A dead grant is not a data error: surface an explicit, actionable
+      # reconnect payload (and never the provider's raw invalid_grant body).
+      { "error" => e.message, "needs_reconnect" => true, "service" => name }
     rescue StandardError => e
       raise e if e.is_a?(::Openapi::ApiError) || e.is_a?(ArgumentError)
 

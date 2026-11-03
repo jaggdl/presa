@@ -169,4 +169,21 @@ class Bots::ToolsControllerTest < ActionDispatch::IntegrationTest
   ensure
     Current.workspace = nil
   end
+
+  test "POST /bots/tools/:tool/execute returns an actionable reconnect response for a dead grant" do
+    token = ApiToken.issue!(workspace: @workspace, name: "bot")
+    Workspace.define_method(:execute_tool_text) do |*|
+      raise Oauth::ReconnectRequired,
+            "Reconnect Google Search Console — its authorization has expired or been revoked."
+    end
+
+    post execute_bots_tool_path("searchconsole_webmasters_sites_list"), params: "{}",
+         headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
+
+    assert_response :conflict
+    assert_includes response.body, "Reconnect Google Search Console"
+    refute_includes response.body, "invalid_grant"
+  ensure
+    Workspace.send(:remove_method, :execute_tool_text)
+  end
 end

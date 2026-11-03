@@ -262,6 +262,23 @@ class Services::OpenapiTest < ActiveSupport::TestCase
     assert_equal({ "userId" => "me" }, service.health_check_args)
   end
 
+  test "returns an explicit reconnect payload when the OAuth grant is dead" do
+    service = build_service("cred_type" => "oauth")
+    service.define_singleton_method(:oauth_method?) { true }
+    service.define_singleton_method(:oauth_operation_available?) { |_op| true }
+    service.define_singleton_method(:authorized_token) do
+      raise Oauth::ReconnectRequired, service.reconnect_message
+    end
+
+    op = service.operations.find { |o| o["operation_id"] == "getWidgetById" }
+    result = service.execute_operation(op, "id" => "w1")
+
+    assert_equal true, result["needs_reconnect"]
+    assert_equal "Widgets", result["service"]
+    assert_includes result["error"], "Reconnect Widgets"
+    assert_not_includes result["error"], "invalid_grant"
+  end
+
   private
 
   # An operation requiring a path parameter, mirroring Gmail's `getProfile`

@@ -62,6 +62,10 @@ module Bots
       render plain: "Invalid JSON body.\n", status: :bad_request
     rescue ApplicationTool::NotAllowedToolError
       render plain: "Tool not allowed in this workspace.\n", status: :forbidden
+    rescue Oauth::ReconnectRequired => e
+      # A revoked/expired grant is an actionable, non-retryable state, not a
+      # generic tool error: return the reconnect instruction the user needs.
+      render plain: "#{e.message}\n", status: :conflict
     rescue StandardError => e
       render plain: "Tool error: #{e.message}\n", status: :unprocessable_entity
     end

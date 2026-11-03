@@ -27,4 +27,29 @@ class OauthGrantTest < ActiveSupport::TestCase
     grant.update!(refresh_token: nil)
     assert_not grant.refreshable?
   end
+
+  test "starts out not needing a reconnect" do
+    assert_not oauth_grants(:google_calendar_grant).needs_reconnect?
+  end
+
+  test "mark_needs_reconnect! records the state and timestamp, idempotently" do
+    grant = oauth_grants(:google_calendar_grant)
+
+    assert_not grant.needs_reconnect?
+    grant.mark_needs_reconnect!
+    assert grant.reload.needs_reconnect?
+    assert_not_nil grant.needs_reconnect_at
+
+    first_marked_at = grant.needs_reconnect_at
+    grant.mark_needs_reconnect!
+    assert_equal first_marked_at, grant.reload.needs_reconnect_at
+  end
+
+  test "clear_needs_reconnect! resets the state" do
+    grant = oauth_grants(:google_calendar_grant)
+    grant.mark_needs_reconnect!
+    grant.clear_needs_reconnect!
+    assert_not grant.reload.needs_reconnect?
+    assert_nil grant.needs_reconnect_at
+  end
 end

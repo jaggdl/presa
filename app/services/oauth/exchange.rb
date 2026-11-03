@@ -15,6 +15,10 @@ module Oauth
   # OauthClientCredential. This class holds only the protocol mechanics.
   # An optional Faraday `connection` may be injected for testing.
   class Exchange
+    # Provider error codes that mean the stored grant is no longer usable and
+    # a fresh consent is required (as opposed to a transient/transport error).
+    REJECTED_GRANT_CODES = %w[invalid_grant invalid_token expired_token].freeze
+
     def initialize(connection: nil)
       @connection = connection
     end
@@ -53,9 +57,19 @@ module Oauth
 
     # Refresh an expired access token. Returns the same shape as
     # `exchange_code` (refresh_token may be absent/blank).
+    #
+    # A rejected refresh token (`invalid_grant` and friends) means the stored
+    # grant is dead, not that the request was malformed: the provider is
+    # signalling that the *user's* authorization expired or was revoked. That
+    # is surfaced as `Oauth::ReconnectRequired` so callers can mark the grant
+    # and tell the user to reconnect instead of echoing the raw provider error.
     def refresh(token_uri:, refresh_token:, client_id:, client_secret:, client_auth: :form)
       params = { grant_type: "refresh_token", refresh_token: refresh_token }
-      post_tokens(token_uri, params, client_id: client_id, client_secret: client_secret, client_auth: client_auth)
+      post_tokens(
+        token_uri, params,
+        client_id: client_id, client_secret: client_secret, client_auth: client_auth,
+        reconnect_on_rejected_grant: true
+      )
     end
 
     private
@@ -68,7 +82,7 @@ module Oauth
       end
     end
 
-    def post_tokens(token_uri, params, client_id:, client_secret:, client_auth:)
+    def post_tokens(token_uri, params, client_id:, client_secret:, client_auth:, reconnect_on_rejected_grant: false)
       headers = { "Accept" => "application/json" }
       body =
         if client_auth == :basic
@@ -86,6 +100,13 @@ module Oauth
 
       parsed = parse(response.body)
       unless response.success?
+        code = parsed["error"].to_s
+        if reconnect_on_rejected_grant && REJECTED_GRANT_CODES.include?(code)
+          raise ReconnectRequired.new(
+            "The stored authorization was rejected by the provider; it has expired or been revoked",
+            provider: nil
+          )
+        end
         raise Error, "OAuth token request failed (#{response.status}): #{sanitize(response.body)}"
       end
 

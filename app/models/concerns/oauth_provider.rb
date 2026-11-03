@@ -191,6 +191,9 @@ module OauthProvider
     grant.token_type = tokens["token_type"]
     grant.scope = tokens["scope"] || self.class.oauth_scope
     grant.expires_at = time_from_expires_in(tokens["expires_in"])
+    # A fresh consent supersedes any prior "needs reconnect" state.
+    grant.needs_reconnect = false
+    grant.needs_reconnect_at = nil
     grant
   end
 
@@ -209,10 +212,43 @@ module OauthProvider
   # Returns a valid (non-expired) access token for this service, refreshing
   # the underlying grant first if it is expired. Raises when the grant is
   # missing or cannot be refreshed.
+  #
+  # A grant already flagged `needs_reconnect` is not retried: its refresh
+  # token is known-dead, so we fail fast with the actionable reconnect message
+  # rather than hammering the provider on every request.
   def authorized_token
     grant = oauth_grant
     raise Oauth::Error, "OAuth not completed for this service" unless grant
     return grant.access_token unless grant.expired?
+    raise reconnect_error(grant) if grant.needs_reconnect?
+
+    refresh_grant!(grant)
+  end
+
+  # The human-facing name for this service in reconnect messaging. OpenAPI
+  # services carry the spec's title (e.g. "Google Search Console"); static
+  # OAuth kinds fall back to their display name (e.g. "Google Calendar").
+  def oauth_display_name
+    title = respond_to?(:api_title) ? api_title.presence : nil
+    title || display_name
+  end
+
+  # The actionable message returned to bots and shown in the UI when a service
+  # must be reconnected. Never includes provider secrets or raw error bodies.
+  def reconnect_message
+    "Reconnect #{oauth_display_name} — its authorization has expired or been revoked."
+  end
+
+  # Proactively refreshes the grant's access token even while it is still
+  # valid, so a refresh token the provider has since revoked is discovered —
+  # and the grant flagged — before the next data request needs it. Returns the
+  # access token; raises `Oauth::ReconnectRequired` when the grant is dead.
+  # Used by the scheduled health probe (RefreshOauthGrantsJob).
+  def refresh_oauth_grant!
+    grant = oauth_grant
+    raise Oauth::Error, "OAuth not completed for this service" unless grant
+    return grant.access_token unless grant.refreshable?
+    return grant.access_token if grant.needs_reconnect?
 
     refresh_grant!(grant)
   end
@@ -241,16 +277,30 @@ module OauthProvider
     new_token = tokens["access_token"].presence
     raise Oauth::Error, "Refresh returned no access token; reconnect the service" if new_token.blank?
 
-    grant&.update!(
+    grant.update!(
       access_token: new_token,
       refresh_token: tokens["refresh_token"].presence || grant.refresh_token,
-      expires_at: time_from_expires_in(tokens["expires_in"])
+      expires_at: time_from_expires_in(tokens["expires_in"]),
+      needs_reconnect: false,
+      needs_reconnect_at: nil
     )
     new_token
+  rescue Oauth::ReconnectRequired
+    # The provider rejected the refresh token: record the explicit state so
+    # every later call fails fast with an actionable message instead of
+    # echoing the raw provider error. Re-raise enriched with this service's
+    # name so bots and the UI can say exactly what to reconnect.
+    grant.mark_needs_reconnect! if grant.persisted?
+    raise reconnect_error(grant)
   rescue Oauth::Error
     raise
   rescue StandardError => e
     raise Oauth::Error, "Token refresh failed: #{e.message}"
+  end
+
+  # Builds the actionable reconnect error for this service's grant.
+  def reconnect_error(grant)
+    Oauth::ReconnectRequired.new(reconnect_message, provider: oauth_provider_key.presence || grant.provider)
   end
 
   def exchange

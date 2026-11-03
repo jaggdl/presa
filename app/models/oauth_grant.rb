@@ -27,4 +27,27 @@ class OauthGrant < ApplicationRecord
   def refreshable?
     refresh_token.present?
   end
+
+  # True when the provider has rejected this grant's refresh token (it expired
+  # or was revoked). Such a grant can only be restored by reconnecting the
+  # service through the OAuth flow; retrying a refresh is pointless and its
+  # raw error must never be surfaced as if it were transient.
+  def needs_reconnect?
+    needs_reconnect
+  end
+
+  # Flips the grant into the explicit "needs reconnect" state. Idempotent, so
+  # repeated failed probes don't keep rewriting the row; `updated_at` stays
+  # meaningful as the last time a refresh was attempted.
+  def mark_needs_reconnect!
+    return if needs_reconnect?
+
+    update!(needs_reconnect: true, needs_reconnect_at: Time.current)
+  end
+
+  # Clears the "needs reconnect" state, e.g. after a successful reconnect
+  # stored a fresh grant or a later refresh finally succeeded.
+  def clear_needs_reconnect!
+    update!(needs_reconnect: false, needs_reconnect_at: nil) if needs_reconnect?
+  end
 end

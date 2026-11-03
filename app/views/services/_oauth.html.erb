@@ -1,7 +1,20 @@
-<% if @service.connected? %>
+<% grant = @service.oauth_grant %>
+<% if @service.connected? && grant&.needs_reconnect? %>
+  <div class="py-2 space-y-2">
+    <span class="text-sm text-amber-400">⚠ Reconnect required</span>
+    <p class="text-sm text-zinc-400"><%= @service.reconnect_message %></p>
+    <% if (cred = grant.oauth_client_credential) %>
+      <div class="mt-1 flex flex-wrap items-center gap-2">
+        <%= button_to "Reconnect with #{cred.name}",
+              oauth_start_path(service_id: @service.id, oauth_client_credential_id: cred.id),
+              class: "btn-primary text-sm", data: { turbo: false } %>
+      </div>
+    <% end %>
+  </div>
+<% elsif @service.connected? %>
   <div class="flex items-center gap-3 py-2">
     <span class="text-sm text-emerald-400">● Connected</span>
-    <% if (cred = @service.oauth_grant&.oauth_client_credential) %>
+    <% if (cred = grant&.oauth_client_credential) %>
       <span class="text-sm text-zinc-300">via <%= cred.name %></span>
     <% end %>
   </div>

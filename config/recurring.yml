@@ -16,3 +16,6 @@ production:
   expire_sessions:
     class: ExpireSessionsJob
     schedule: every hour at minute 23
+  refresh_oauth_grants:
+    class: RefreshOauthGrantsJob
+    schedule: every 15 minutes

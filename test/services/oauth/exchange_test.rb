@@ -98,4 +98,36 @@ class Oauth::ExchangeTest < ActiveSupport::TestCase
       exchange.refresh(token_uri: "https://oauth2.googleapis.com/token", refresh_token: "r", client_id: "c", client_secret: "s")
     end
   end
+
+  test "a rejected refresh token raises ReconnectRequired, not a raw provider error" do
+    exchange = stub_exchange do |stub|
+      stub.post("/token") do |_env|
+        [ 400, { "content-type" => "application/json" },
+          JSON.generate("error" => "invalid_grant", "error_description" => "Token has been expired or revoked.") ]
+      end
+    end
+
+    error = assert_raises(Oauth::ReconnectRequired) do
+      exchange.refresh(token_uri: "https://oauth2.googleapis.com/token", refresh_token: "r", client_id: "c", client_secret: "s")
+    end
+
+    assert_includes error.message, "expired or been revoked"
+    assert_not_includes error.message, "invalid_grant"
+    assert_not_includes error.message, "Token has been expired or revoked"
+  end
+
+  test "a rejected authorization code stays a generic Oauth::Error (not a reconnect)" do
+    exchange = stub_exchange do |stub|
+      stub.post("/token") do |_env|
+        [ 400, { "content-type" => "application/json" }, JSON.generate("error" => "invalid_grant") ]
+      end
+    end
+
+    assert_raises(Oauth::Error) do
+      exchange.exchange_code(
+        token_uri: "https://oauth2.googleapis.com/token",
+        code: "expired", client_id: "c", client_secret: "s", redirect_uri: "https://presa.example/oauth/callback"
+      )
+    end
+  end
 end
