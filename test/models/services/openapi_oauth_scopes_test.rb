@@ -55,4 +55,20 @@ class OpenapiOAuthScopesTest < ActiveSupport::TestCase
     @service.save!
     assert_empty @service.configured_oauth_scopes
   end
+
+  test "authorize_url requests the kind's scope for a persisted (base-class) instance" do
+    credential = oauth_client_credentials(:google_credential)
+    @service.build_oauth_grant(
+      oauth_client_credential: credential, provider: "google",
+      access_token: "tok", token_type: "Bearer"
+    )
+    @service.save!
+
+    url = @service.authorize_url(redirect_uri: "https://presa.example/oauth/callback", state: "st")
+    params = Rack::Utils.parse_nested_query(URI(url).query)
+
+    assert_equal "https://www.googleapis.com/auth/yt-analytics.readonly", params["scope"]
+    assert_equal "offline", params["access_type"]
+    assert_equal "consent", params["prompt"]
+  end
 end

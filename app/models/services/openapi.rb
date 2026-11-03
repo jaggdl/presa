@@ -229,6 +229,18 @@ module Services
       self.class.oauth_provider.presence || openapi_kind&.oauth_provider.to_s
     end
 
+    # The scopes to request when connecting or reconnecting this instance: the
+    # kind's primary OAuth scheme scopes, space-joined for the consent URL.
+    # The per-kind virtual class exposes the same value, but persisted OpenAPI
+    # rows are the base `Services::Openapi` class (which declares no scope), so
+    # resolve from the kind here — otherwise a reconnect URL would omit
+    # `scope` and Google would reject it with invalid_request.
+    def oauth_scope_for
+      slot = openapi_kind&.oauth_slot
+      scopes = slot && slot["scopes"].is_a?(Hash) ? slot["scopes"].keys : []
+      scopes.join(" ").presence || super
+    end
+
     # Extra "add a method"-style credentials: [{name,in,param_name,cred_key}].
     # Their *definitions* live on the kind (shared by every service); their
     # *values* are per-service under the matching `cred_key` in `config`.

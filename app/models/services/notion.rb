@@ -24,7 +24,7 @@ module Services
     # The authorize URL therefore carries only Notion's own params (a
     # workspace owner), unlike the Google-style scope/offline parameters the
     # shared `OauthService.authorize_url_for` appends for other providers.
-    def self.authorize_url_for(client:, redirect_uri:, state:)
+    def self.authorize_url_for(client:, redirect_uri:, state:, **)
       params = {
         client_id: client.client_id,
         response_type: "code",

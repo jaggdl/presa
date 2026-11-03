@@ -60,7 +60,7 @@ module OauthProvider
     # Builds a provider authorize URL for an arbitrary client credential.
     # Used both for reconnecting an existing service (via `authorize_url`)
     # and for the new-service flow, where no service exists yet.
-    def authorize_url_for(client:, redirect_uri:, state:, oauth_provider: nil)
+    def authorize_url_for(client:, redirect_uri:, state:, oauth_provider: nil, fallback_scope: nil)
       provider = Oauth::Base.for_provider(oauth_provider || self.oauth_provider)
       raise "OAuth provider not configured" unless provider
 
@@ -71,7 +71,7 @@ module OauthProvider
         # The client's registered app scopes win when set (providers like
         # Figma reject authorize requests asking for scopes the app isn't
         # configured with); otherwise the kind's declared scope is used.
-        scope: client.scope.presence || oauth_scope,
+        scope: client.scope.presence || fallback_scope.presence || oauth_scope,
         state: state,
         # OpenAPI-kind providers follow their spec's OAuth flow verbatim;
         # the Google-family extras must not leak into a strict provider's
@@ -157,9 +157,18 @@ module OauthProvider
     client = oauth_client_credential
     raise "No OAuth client credential connected to this service" unless client
 
-    kwargs = { client: client, redirect_uri: redirect_uri, state: state }
+    kwargs = { client: client, redirect_uri: redirect_uri, state: state, fallback_scope: oauth_scope_for }
     kwargs[:oauth_provider] = oauth_provider_key if oauth_provider_key != self.class.oauth_provider.to_s
     self.class.authorize_url_for(**kwargs)
+  end
+
+  # The scope to request at consent for this *instance*. Static OAuth kinds
+  # read it off the class; OpenAPI services override it to resolve from their
+  # kind, since persisted OpenAPI rows are the base STI class (which declares
+  # no scope). Without this, a reconnect URL for e.g. Search Console would
+  # carry no `scope` and Google would reject it with invalid_request.
+  def oauth_scope_for
+    self.class.oauth_scope
   end
 
   # Exchanges an authorization `code` for token fields without persisting
