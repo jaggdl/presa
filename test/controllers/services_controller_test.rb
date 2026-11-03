@@ -128,6 +128,17 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     refute_match(/● Connected/, response.body)
   end
 
+  test "show offers a GET reconnect form when a connected OAuth grant needs reconnecting" do
+    services(:google_calendar).oauth_grant.update!(needs_reconnect: true)
+
+    get service_path(services(:google_calendar))
+
+    assert_response :success
+    assert_includes response.body, "Reconnect required"
+    assert_includes response.body, "Reconnect Google Calendar"
+    assert_match %r{<form[^>]*method="get"[^>]*action="/oauth/start}, response.body
+  end
+
   test "show lists the service's available tools" do
     get service_path(services(:places))
     assert_response :success

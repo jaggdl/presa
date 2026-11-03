@@ -7,7 +7,7 @@
       <div class="mt-1 flex flex-wrap items-center gap-2">
         <%= button_to "Reconnect with #{cred.name}",
               oauth_start_path(service_id: @service.id, oauth_client_credential_id: cred.id),
-              class: "btn-primary text-sm", data: { turbo: false } %>
+              method: :get, class: "btn-primary text-sm", data: { turbo: false } %>
       </div>
     <% end %>
   </div>
@@ -27,7 +27,7 @@
         <% creds.each do |cred| %>
           <%= button_to "Connect with #{cred.name}",
                 oauth_start_path(service_id: @service.id, oauth_client_credential_id: cred.id),
-                class: "btn-primary text-sm", data: { turbo: false } %>
+                method: :get, class: "btn-primary text-sm", data: { turbo: false } %>
         <% end %>
       </div>
     <% end %>
