@@ -78,6 +78,20 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     refute_match(/General/, response.body)
   end
 
+  test "a service page renders the kind's extra credential fields" do
+    kind = nil
+    with_openapi_fetcher(File.read(Rails.root.join("test/support/openapi/discovery_api.json"))) do
+      kind = Registry::Openapi.install("googleads", team: @user.teams.first)
+    end
+    service = kind.services.create!(team: @user.teams.first, name: "Ads", config: { "cred_type" => "oauth" })
+
+    get service_path(service)
+
+    assert_response :success
+    assert_select "input[name=?]", "service[config][cred_developer_token]"
+    assert_select "input[name=?]", "service[config][cred_login_customer_id]"
+  end
+
   test "new renders the form" do
     get new_service_path
     assert_response :success

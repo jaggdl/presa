@@ -148,6 +148,30 @@ class Services::OpenapiTest < ActiveSupport::TestCase
     refute headers.key?("X-API-Key")
   end
 
+  test "extra credentials are applied to every request alongside the primary auth" do
+    service = build_service(
+      "cred_bearer_auth" => "beartok",
+      "extra_credentials" => [
+        { "name" => "developer_token", "in" => "header", "param_name" => "developer-token", "cred_key" => "cred_developer_token" },
+        { "name" => "login_customer_id", "in" => "header", "param_name" => "login-customer-id", "cred_key" => "cred_login_customer_id" },
+        { "name" => "tenant", "in" => "query", "param_name" => "tenant", "cred_key" => "cred_tenant" }
+      ],
+      "cred_developer_token" => "dev-123",
+      "cred_login_customer_id" => "555"
+    )
+
+    op = service.operations.find { |o| o["operation_id"] == "getWidgetById" }
+    query, headers, cookies = {}, {}, {}
+    service.send(:apply_auth, op, query, headers, cookies)
+    service.send(:apply_extra_credentials, query, headers, cookies)
+
+    assert_equal "Bearer beartok", headers["Authorization"]
+    assert_equal "dev-123", headers["developer-token"]
+    assert_equal "555", headers["login-customer-id"]
+    # Blank extra credentials are skipped.
+    refute query.key?("tenant")
+  end
+
   test "rebuilds path params, query, headers, and JSON body when executing" do
     service = build_service("cred_bearer_auth" => "tok")
     captured = {}

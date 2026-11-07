@@ -46,6 +46,41 @@ class RegistryOpenapiTest < ActiveSupport::TestCase
     assert_equal "general", preset.category
   end
 
+  test "a preset normalizes its declared extra credentials" do
+    preset = Registry::Openapi::Preset.new("x", {
+      "extra_credentials" => [
+        { "name" => "developer_token", "in" => "header", "param_name" => "developer-token" },
+        { "name" => "token" },
+        "nope"
+      ]
+    })
+
+    creds = preset.extra_credentials
+    assert_equal 2, creds.size
+    assert_equal "developer-token", creds.first["param_name"]
+    assert_equal "cred_developer_token", creds.first["cred_key"]
+    # Defaults: header location, param name = name, cred_key = cred_<name>.
+    assert_equal "header", creds.last["in"]
+    assert_equal "token", creds.last["param_name"]
+    assert_equal "cred_token", creds.last["cred_key"]
+  end
+
+  test "install copies a preset's extra credentials onto the kind" do
+    kind = nil
+    with_fetcher(File.read(Rails.root.join("test/support/openapi/discovery_api.json"))) do
+      kind = Registry::Openapi.install("googleads", team: @team)
+    end
+
+    assert kind.persisted?
+    assert_equal "productivity", kind.category
+    assert_equal "https://googleads.googleapis.com", kind.base_url
+    assert_equal "googleads.customers.listAccessibleCustomers", kind.health_op
+    assert_equal "google", kind.read_attribute(:oauth_provider)
+    assert_equal "oauth", kind.oauth_slot["kind"]
+    assert_equal %w[developer-token login-customer-id], kind.extra_credentials.map { |c| c["param_name"] }
+    assert_equal "cred_developer_token", kind.extra_credentials.first["cred_key"]
+  end
+
   test "an installed kind's virtual service class reports the preset category, not General" do
     with_fetcher(@spec) do
       Registry::Openapi.install("sonarr", team: @team)

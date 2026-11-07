@@ -1,0 +1,48 @@
+title: Google Ads
+namespace: googleads
+category: productivity
+spec_url: https://googleads.googleapis.com/$discovery/rest?version=v26
+base_url: https://googleads.googleapis.com
+oauth_provider: google
+health_op: googleads.customers.listAccessibleCustomers
+# Google Ads requires a `developer-token` header on every request, alongside
+# the OAuth bearer token — it can't be expressed as a spec security scheme
+# (the app sends one credential method per request). Declared here so it is
+# applied to every operation. `login-customer-id` is needed only when acting
+# through a manager (MCC) account.
+extra_credentials:
+  - name: developer_token
+    in: header
+    param_name: developer-token
+    cred_key: cred_developer_token
+  - name: login_customer_id
+    in: header
+    param_name: login-customer-id
+    cred_key: cred_login_customer_id
+description: |
+  # Google Ads
+
+  Google Ads API — manage Google Ads accounts, campaigns, and reports. Query
+  any resource with the Google Ads Query Language (`customers.googleAds.search`),
+  mutate campaigns, budgets, ad groups, ads, criteria, and more through the
+  resource-specific `:mutate` operations, discover fields
+  (`googleAdsFields.search`), and pull keyword ideas, geo targets, and
+  audience insights. The spec is read straight from the official [v26 discovery
+  document](https://googleads.googleapis.com/$discovery/rest?version=v26) and
+  converted to OpenAPI at install time; see the [official
+  documentation](https://developers.google.com/google-ads/api/).
+
+  ## Configuration
+
+  | Field | Required | Secret | Default | Description |
+  |-------|----------|--------|---------|-------------|
+  | `credential` | Yes | Yes | — | Google OAuth 2.0 credential. Register a Google Cloud OAuth client (callback URL `oauth_callback_url`) and connect via the OAuth flow, authorizing the `https://www.googleapis.com/auth/adwords` scope. |
+  | `developer_token` | Yes | Yes | — | Google Ads developer token from your manager (MCC) account's API Center. Sent as the `developer-token` header on every request; without it Google rejects the call. |
+  | `login_customer_id` | No | Yes | — | Manager account customer ID (digits only, no dashes) to set as the `login-customer-id` header when operating on a client account through an MCC. Leave blank for a direct account. |
+  | `base_url` | No | No | `https://googleads.googleapis.com` | The Google Ads REST API base URL; Google-hosted, no self-hosted equivalent. |
+
+  Because the OAuth method creates the service only after the consent round-trip, set the
+  developer token (and, if needed, login customer ID) on the service page once it connects.
+
+  The health check (`GET /v26/customers:listAccessibleCustomers`) validates the credential
+  by listing the customers the authenticated user can access.

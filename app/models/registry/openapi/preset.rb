@@ -59,6 +59,32 @@ module Registry
         data["oauth_provider"].to_s.presence
       end
 
+      # Optional extra credentials applied to every operation of the kind, on
+      # top of the spec's declared security schemes. Some APIs require a
+      # constant header alongside the primary credential that isn't expressible
+      # as a security scheme — e.g. Google Ads' mandatory `developer-token`
+      # header, which must accompany the OAuth bearer token on every request.
+      # Each entry: {name:, in:, param_name:, cred_key:}; values are per
+      # service, stored under `cred_key` in config (defaults to `cred_<name>`).
+      def extra_credentials
+        list = data["extra_credentials"]
+        return [] unless list.is_a?(Array)
+
+        list.filter_map do |cred|
+          next unless cred.is_a?(Hash)
+
+          name = cred["name"].to_s.presence
+          next if name.blank?
+
+          {
+            "name" => name,
+            "in" => cred["in"].to_s.presence || "header",
+            "param_name" => cred["param_name"].to_s.presence || name,
+            "cred_key" => cred["cred_key"].to_s.presence || "cred_#{name}"
+          }
+        end
+      end
+
       # Optional credential-transmission override for specs whose declared
       # scheme is wrong for the real server (e.g. Jellyfin's spec says
       # `Authorization` but the server wants `X-Emby-Token`). YAML shape:

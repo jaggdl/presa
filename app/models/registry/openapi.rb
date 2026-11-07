@@ -102,7 +102,8 @@ module Registry
           definition: definition,
           health_op: preset.health_op,
           health_args: preset.health_args,
-          oauth_provider: preset.oauth_provider
+          oauth_provider: preset.oauth_provider,
+          extra_credentials: preset.extra_credentials
         )
       end
 

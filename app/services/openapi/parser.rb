@@ -13,7 +13,8 @@ module Openapi
 
   # Loads and validates an OpenAPI 3.x document before Presa turns it into a
   # service. Input may be a URL (fetched over HTTP/HTTPS, capped in size), a
-  # checked-in file path, or a pasted raw JSON/YAML string.
+  # checked-in file path, or a pasted raw JSON/YAML string. Google Discovery
+  # documents are converted to OpenAPI 3.0 on the fly (see `Discovery`).
   class Parser
     # Largest spec body we are willing to fetch from a URL (20 MB).
     MAX_SPEC_BYTES = 20 * 1024 * 1024
@@ -33,6 +34,10 @@ module Openapi
         else input.to_s
         end
       raw = parse_text(text)
+      # Google Discovery documents (e.g. the Google Ads `$discovery` endpoint)
+      # are converted to OpenAPI 3.0 first so the rest of the pipeline — and
+      # `validate!` below — only ever sees OpenAPI.
+      raw = Discovery.to_openapi(raw) if Discovery.discovery?(raw)
       root = OpenAPIParser.parse(raw, strict_reference_validation: false)
       [ raw, root ]
     rescue Openapi::Parser::Error

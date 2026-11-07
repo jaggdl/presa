@@ -92,6 +92,28 @@
           </div>
         </div>
       <% end %>
+
+      <%# Extra credentials the kind applies to every request on top of the
+          chosen auth method (e.g. Google Ads' mandatory `developer-token`
+          header). Hidden on the new-OAuth form, whose config isn't persisted
+          until the callback creates the row; the user sets them once the
+          service exists. %>
+      <% if service.extra_credentials.any? && !oauth_dance %>
+        <div class="my-5">
+          <% service.extra_credentials.each do |cred| %>
+            <% key = cred["cred_key"].to_s %>
+            <div class="my-4">
+              <%= cf.label key, cred["name"].to_s.humanize, class: "block text-sm text-zinc-400" %>
+              <p class="text-xs text-zinc-600 mb-1">
+                Sent as the <span class="text-zinc-400"><%= cred["param_name"] %></span>
+                <%= cred["in"].presence || "header" %> on every request.
+              </p>
+              <%= cf.password_field key, value: service.config[key], placeholder: "••••••••", autocomplete: "new-password",
+                    class: "block shadow-sm rounded-md border border-zinc-700 focus:outline-blue-600 px-3 py-2 mt-2 w-full bg-zinc-900" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
 
     <div class="flex items-center justify-end gap-3">

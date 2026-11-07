@@ -1,0 +1,76 @@
+{
+  "kind": "discovery#restDescription",
+  "discoveryVersion": "v1",
+  "id": "example:v1",
+  "name": "example",
+  "version": "v1",
+  "title": "Example Discovery API",
+  "description": "A tiny Google Discovery document used to exercise the converter.",
+  "rootUrl": "https://example.googleapis.com/",
+  "servicePath": "",
+  "protocol": "rest",
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/example": "See and manage examples."
+      }
+    }
+  },
+  "schemas": {
+    "Thing": {
+      "id": "Thing",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The thing name." },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "parent": { "$ref": "Thing" }
+      }
+    },
+    "ListThingsResponse": {
+      "id": "ListThingsResponse",
+      "type": "object",
+      "properties": {
+        "things": { "type": "array", "items": { "$ref": "Thing" } },
+        "nextPageToken": { "type": "string" }
+      }
+    }
+  },
+  "resources": {
+    "projects": {
+      "methods": {
+        "listThings": {
+          "id": "example.projects.listThings",
+          "path": "v1/projects/{projectsId}/things",
+          "httpMethod": "GET",
+          "description": "List things in a project.",
+          "parameters": {
+            "projectsId": { "type": "string", "location": "path", "required": true, "description": "Project id." },
+            "pageSize": { "type": "integer", "location": "query", "format": "int32" },
+            "filter": { "type": "string", "location": "query" }
+          },
+          "response": { "$ref": "ListThingsResponse" }
+        }
+      },
+      "resources": {
+        "things": {
+          "methods": {
+            "create": {
+              "id": "example.projects.things.create",
+              "path": "v1/projects/{projectsId}/things",
+              "httpMethod": "POST",
+              "description": "Create a thing.",
+              "parameters": {
+                "projectsId": { "type": "string", "location": "path", "required": true }
+              },
+              "request": { "$ref": "Thing" },
+              "response": { "$ref": "Thing" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
