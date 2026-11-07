@@ -14,6 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      # The self-hosted runner keeps its toolchain in mise, but its PATH isn't
+      # exported to jobs (the runner's `.path` file is a single `echo $PATH`
+      # line the runner no longer applies). Put mise's shims on PATH so
+      # `ruby`/`bundle` and the repo binstubs resolve from `.ruby-version`.
+      - name: Activate the runner's mise toolchain
+        run: echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+
       - name: Show Ruby version
         run: ruby -v
 
