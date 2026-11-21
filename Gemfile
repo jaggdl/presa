@@ -75,7 +75,7 @@ gem "faraday", "~> 2.0"
 
 gem "tailwindcss-rails", "~> 4.6"
 
-gem "rails_icons", "~> 1.9"
+gem "rails_icons", "~> 1.10"
 
 gem "commonmarker", "~> 2.10"
 
