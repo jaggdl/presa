@@ -71,7 +71,7 @@ end
 gem "fast-mcp", "~> 1.6"
 gem "fast_mcp_jwt_auth", github: "jchsoft/fast_mcp_jwt_auth"
 
-gem "faraday", "~> 2.0"
+gem "faraday", "~> 2.15"
 
 gem "tailwindcss-rails", "~> 4.6"
 
